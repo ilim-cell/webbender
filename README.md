@@ -1,19 +1,131 @@
-# webbender
-webbender is a short and simple bookmarklet TO *bend* the web to your will
-made by ilim-cell :)
+# Webbender
 
-> [!NOTE]
-> Updating WebBender?
-> 1. Right-click your bookmarks bar and select **Add Page** or **New Bookmark**.
-> 2. Set the **Name** to `Webbender`.
-> 3. Copy the exact code block below and paste it into the **URL** or **Address** field:
+> A powerful bookmarklet to **bend** the web to your will
 
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Node](https://img.shields.io/badge/node-16+-brightgreen)
+
+Webbender is a feature-rich bookmarklet for you to *bend* the web to your will, because the web needs people. Made by power users for everyone. Edit text, remove elements, change fonts, apply themes, and more—all without leaving your browser.
+
+## ✨ Quick Features
+
+- 📝 **Edit Text** - Enable design mode to edit any text on any page
+- 🗑️ **Remove Elements** - Click to delete unwanted page elements
+- 🎨 **Font Override** - Apply custom or system fonts to any website
+- 🌈 **Color Themes** - Dark, Light, Sepia, or create custom themes
+- 💬 **Dialog Helpers** - Test alert, confirm, and prompt boxes
+- 💾 **Persistent Settings** - Your preferences are saved locally
+- 🔄 **Auto-Update** - Built-in update checker with notifications
+
+## 🚀 Quick Install
+
+### Option 1: Auto-Updating (Recommended)
+
+1. Right-click your bookmarks bar → **Add Page** or **New Bookmark**
+2. Name: `Webbender`
+3. URL/Address - **paste this:**
 
 ```javascript
-javascript:(function(){var%20id='webbender-loader';var%20s=document.getElementById(id);if(s){s.remove();}s=document.createElement('script');s.id=id;s.src='https://githack.com;})();
+javascript:(function(){var id='webbender-loader';var s=document.getElementById(id);if(s){s.remove();}s=document.createElement('script');s.id=id;s.src='https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js';s.onload=function(){if(window._webbenderInit)window._webbenderInit();};document.head.appendChild(s);})();
 ```
 
+### Option 2: Manual Installation
 
-> [!WARNING]
-> Changes made with this bookmarklet will not be saved. You should backup all your changes by using the keyboard shortcut Ctrl+S on your website.
+See [Installation Guide](./DEVELOPMENT.md#installation) for detailed instructions.
+
+## 📖 Usage
+
+Click the bookmarklet to open the Webbender panel and:
+
+- **Toggle Edit Mode** - Make webpage content editable
+- **Toggle Remove Mode** - Click elements to remove them
+- **Select Fonts** - Choose from 5 presets or type custom font names
+- **Apply Themes** - Switch color schemes instantly
+- **Test Dialogs** - Experiment with alert/confirm/prompt boxes
+- **Check Updates** - See if newer versions are available
+- **Reset** - Restore all settings to defaults
+
+## 🛠️ Development
+
+### Setup
+
+```bash
+npm install
+npm run build
+```
+
+### Commands
+
+```bash
+npm run build           # Minify and generate bookmarklet
+npm run format          # Format code with Prettier
+npm run format:check    # Check formatting
+npm run watch          # Auto-rebuild on changes
+```
+
+### Project Structure
+
+```
+src/
+├── webbender.js       # Main bookmarklet (raw, formatted)
+└── auto-update.js     # Auto-update service
+
+dist/
+├── webbender.js       # Minified bookmarklet
+├── webbender.min.js   # CDN version
+└── version.json       # Version info
+```
+
+## 🔄 How Updates Work
+
+1. **Source of Truth**: `src/webbender.js` is maintained as clean, readable code
+2. **Automated Building**: `build.js` minifies and generates bookmarklet versions
+3. **CI/CD Pipeline**: GitHub Actions automatically deploys on new releases
+4. **Auto-Update**: The loader bookmarklet fetches latest from jsDelivr CDN
+5. **Notifications**: Users see an update prompt if a newer version exists
+
+## ⚠️ Important
+
+> Changes made with this bookmarklet **will NOT persist** after page reload. Save important edits with **Ctrl+S** before refreshing.
+
+## 🔧 Customization
+
+Want to modify Webbender?
+
+1. Edit `src/webbender.js`
+2. Run `npm run format && npm run build`
+3. Test in your browser
+4. Share your improvements via pull request!
+
+## 🌐 Browser Support
+
+| Chrome | Firefox | Safari | Edge |
+|--------|---------|--------|------|
+| 90+    | 88+     | 14+    | 90+  |
+
+## 📝 Code Quality
+
+This project uses:
+- **Prettier** for consistent formatting
+- **GitHub Actions** for automated testing and deployment
+- **Semantic Versioning** for releases
+
+## 📋 Additional Resources
+
+- [Development Guide](./DEVELOPMENT.md) - Extend and customize Webbender
+- [Release Checklist](./RELEASE_CHECKLIST.md) - For maintainers
+- [GitHub Releases](https://github.com/ilim-cell/webbender/releases) - Version history
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Run `npm run format` before committing
+4. Submit a pull request
+
+---
+
+Made with ❤️ by ilim-cell | [GitHub](https://github.com/ilim-cell/webbender)
 
