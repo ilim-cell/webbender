@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Webbender — Install</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Roboto, 'Segoe UI', Arial; padding: 48px; background:#f7f7fb; color:#111 }
+      .card { max-width:720px; margin:0 auto; background:#fff; padding:24px; border-radius:10px; box-shadow:0 6px 20px rgba(17,24,39,0.06) }
+      a.bookmarklet { display:inline-block; margin:12px 0; padding:10px 16px; background:#111827; color:#fff; border-radius:8px; text-decoration:none }
+      pre { background:#0f172a; color:#e6eef8; padding:12px; border-radius:6px; overflow:auto }
+      button.copy { margin-left:8px }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Install Webbender</h1>
+      <p>Drag the button below to your bookmarks bar, or click <strong>Copy</strong> to copy the bookmarklet code.</p>
+
+      <p>
+        <a class="bookmarklet" id="dragme" href="javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();">Drag Webbender to bookmarks</a>
+        <button class="copy" id="copyBtn">Copy</button>
+      </p>
+
+      <h3>Manual bookmarklet code</h3>
+      <pre id="code">javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();</pre>
+
+      <h3>Guided install (local CLI)</h3>
+      <p>If you'd rather host the installer page on Firebase Hosting (automatic updates), follow these steps locally:</p>
+      <ol>
+        <li>Install Firebase CLI and login: <code>npm install -g firebase-tools</code> and <code>firebase login</code></li>
+        <li>Initialize hosting (choose <code>site</code> as public folder): <code>firebase init hosting --project webbender-pro</code></li>
+        <li>Deploy: <code>firebase deploy --only hosting --project webbender-pro</code></li>
+      </ol>
+
+      <h3>CI/CD</h3>
+      <p>This repository includes a GitHub Actions workflow to deploy this site to Firebase Hosting. You need to provide a Firebase service account JSON as a repository secret named <code>FIREBASE_SERVICE_ACCOUNT_WEBBENDER</code>.</p>
+
+    </div>
+
+    <script>
+      document.getElementById('copyBtn').onclick = function () {
+        const code = document.getElementById('code').textContent;
+        navigator.clipboard.writeText(code).then(()=>{
+          const b = document.getElementById('copyBtn');
+          b.textContent='Copied'; setTimeout(()=>b.textContent='Copy',1500);
+        });
+      };
+    </script>
+  </body>
+</html>
