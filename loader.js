@@ -1,0 +1,1 @@
+javascript:(function(){var%20id='webbender-loader';var%20s=document.getElementById(id);if(s){s.remove();}s=document.createElement('script');s.id=id;s.src='https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js';s.onload=function(){if(window._webbenderInit)window._webbenderInit();};document.head.appendChild(s);})();
