@@ -18,7 +18,7 @@
       <p>Drag the button below to your bookmarks bar, or click <strong>Copy</strong> to copy the bookmarklet code.</p>
 
       <p>
-        <a class="bookmarklet" id="dragme" href="javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();">Drag Webbender to bookmarks</a>
+        <a class="bookmarklet" id="dragme" href="javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();">Webbender</a>
         <button class="copy" id="copyBtn">Copy</button>
       </p>
 
@@ -30,11 +30,11 @@
       <ol>
         <li>Install Firebase CLI and login: <code>npm install -g firebase-tools</code> and <code>firebase login</code></li>
         <li>Initialize hosting (choose <code>site</code> as public folder): <code>firebase init hosting --project webbender-pro</code></li>
-        <li>Deploy: <code>firebase deploy --only hosting --project webbender-pro</code></li>
+        <li>Deploy both sites: <code>firebase deploy --only hosting:sitePrimary,hosting:sitePublic --project webbender-pro</code></li>
       </ol>
 
       <h3>CI/CD</h3>
-      <p>This repository includes a GitHub Actions workflow to deploy this site to Firebase Hosting. You need to provide a Firebase service account JSON as a repository secret named <code>FIREBASE_SERVICE_ACCOUNT_WEBBENDER</code>.</p>
+      <p>This repository includes GitHub Actions workflows to deploy this site to Firebase Hosting. Provide a Firebase service account JSON as repository secret <code>FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO</code>.</p>
 
     </div>
 

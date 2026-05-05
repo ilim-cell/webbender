@@ -34,6 +34,13 @@ javascript:(function(){var id='webbender-loader';var existing=document.getElemen
 
 See [Installation Guide](./DEVELOPMENT.md#installation) for detailed instructions.
 
+### Option 3: Installer Page (Drag-and-Drop)
+
+Open the hosted installer page and drag the button to your bookmarks bar:
+
+- https://webbender.web.app
+- https://webbender.firebaseapp.com
+
 ## 📖 Usage
 
 Click the bookmarklet to open the Webbender panel and:
@@ -110,6 +117,13 @@ This project uses:
 - **Prettier** for consistent formatting
 - **GitHub Actions** for automated testing and deployment
 - **Semantic Versioning** for releases
+
+Firebase Hosting CI/CD is configured via:
+- `.github/workflows/firebase-hosting-merge.yml`
+- `.github/workflows/firebase-hosting-pull-request.yml`
+
+Repository secret required for Firebase deploy:
+- `FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO`
 
 ## 📋 Additional Resources
 
