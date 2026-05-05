@@ -6,3 +6,6 @@ npm-debug.log*
 .env
 .env.local
 .firebase/
+.agents/
+.claude/
+skills-lock.json
