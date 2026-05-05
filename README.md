@@ -27,7 +27,7 @@ Webbender is a feature-rich bookmarklet for you to *bend* the web to your will, 
 3. URL/Address - **paste this:**
 
 ```javascript
-javascript:(function(){var id='webbender-loader';var s=document.getElementById(id);if(s){s.remove();}s=document.createElement('script');s.id=id;s.src='https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js';s.onload=function(){if(window._webbenderInit)window._webbenderInit();};document.head.appendChild(s);})();
+javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();
 ```
 
 ### Option 2: Manual Installation
