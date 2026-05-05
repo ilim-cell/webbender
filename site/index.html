@@ -2,83 +2,500 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Webbender — Install</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Webbender</title>
+    <meta
+      name="description"
+      content="Webbender is a bookmarklet for editing text, removing elements, and testing page styles without installing an extension."
+    />
     <style>
-      body { font-family: system-ui, -apple-system, Roboto, 'Segoe UI', Arial; padding: 48px; background:#f7f7fb; color:#111 }
-      .card { max-width:720px; margin:0 auto; background:#fff; padding:24px; border-radius:10px; box-shadow:0 6px 20px rgba(17,24,39,0.06) }
-      a.bookmarklet { display:inline-block; margin:12px 0; padding:10px 16px; background:#111827; color:#fff; border-radius:8px; text-decoration:none }
-      pre { background:#0f172a; color:#e6eef8; padding:12px; border-radius:6px; overflow:auto }
-      button.copy { margin-left:8px }
+      :root {
+        color-scheme: dark;
+        --bg: #070b14;
+        --panel: rgba(14, 19, 33, 0.84);
+        --panel-strong: #11182a;
+        --text: #eef2ff;
+        --muted: #a8b3cf;
+        --line: rgba(148, 163, 184, 0.18);
+        --accent: #7dd3fc;
+        --accent-2: #8b5cf6;
+        --button: #1e293b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(125, 211, 252, 0.16), transparent 30%),
+          radial-gradient(circle at 90% 10%, rgba(139, 92, 246, 0.18), transparent 28%),
+          linear-gradient(180deg, #050816 0%, #0a1020 48%, #050816 100%);
+        color: var(--text);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        justify-content: space-between;
+        padding: 16px 18px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(10, 16, 32, 0.7);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 24px 60px rgba(2, 6, 23, 0.36);
+        position: sticky;
+        top: 18px;
+        z-index: 10;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 10px 30px rgba(125, 211, 252, 0.25);
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: 0.02em;
+      }
+
+      .brand p {
+        margin: 2px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .tabs {
+        display: inline-flex;
+        padding: 4px;
+        border: 1px solid var(--line);
+        background: rgba(15, 23, 42, 0.82);
+        border-radius: 999px;
+        gap: 4px;
+      }
+
+      .tab,
+      .github-link {
+        appearance: none;
+        border: 0;
+        color: var(--muted);
+        background: transparent;
+        text-decoration: none;
+        padding: 10px 14px;
+        font-size: 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .tab[aria-selected="true"] {
+        color: #08111f;
+        background: linear-gradient(135deg, #e0f2fe, #c4b5fd);
+        font-weight: 700;
+      }
+
+      .github-link {
+        border: 1px solid var(--line);
+        background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.92));
+        color: var(--text);
+      }
+
+      .hero {
+        margin-top: 28px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: linear-gradient(180deg, rgba(17, 24, 39, 0.82), rgba(8, 15, 28, 0.9));
+        box-shadow: 0 32px 80px rgba(2, 6, 23, 0.45);
+        overflow: hidden;
+      }
+
+      .hero-inner {
+        display: grid;
+        grid-template-columns: 1.4fr 0.9fr;
+        gap: 28px;
+        padding: 32px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 13px;
+        background: rgba(15, 23, 42, 0.7);
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      }
+
+      h2 {
+        margin: 18px 0 12px;
+        font-size: clamp(34px, 5vw, 58px);
+        line-height: 0.96;
+        letter-spacing: -0.04em;
+      }
+
+      .lede {
+        margin: 0;
+        max-width: 62ch;
+        color: #d7def0;
+        font-size: 17px;
+        line-height: 1.75;
+      }
+
+      .stats {
+        display: grid;
+        gap: 12px;
+      }
+
+      .stat {
+        padding: 16px;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid var(--line);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 15px;
+        margin-bottom: 6px;
+      }
+
+      .stat span {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .panel {
+        display: none;
+        padding: 0 32px 32px;
+      }
+
+      .panel.active {
+        display: block;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid var(--line);
+      }
+
+      .card h3 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+
+      .card p,
+      .card li {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .card ul,
+      .card ol {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .bookmarklet-box {
+        display: grid;
+        gap: 12px;
+      }
+
+      .bookmarklet {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 16px;
+        border-radius: 14px;
+        text-decoration: none;
+        color: #06101d;
+        background: linear-gradient(135deg, #cffafe, #c4b5fd);
+        font-weight: 700;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .button {
+        appearance: none;
+        border: 1px solid var(--line);
+        color: var(--text);
+        background: rgba(30, 41, 59, 0.95);
+        border-radius: 12px;
+        padding: 11px 14px;
+        cursor: pointer;
+        font: inherit;
+      }
+
+      pre {
+        margin: 0;
+        overflow: auto;
+        padding: 16px;
+        border-radius: 16px;
+        background: #050816;
+        border: 1px solid var(--line);
+        color: #dbeafe;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .footer {
+        padding: 0 32px 32px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .notice {
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: rgba(8, 145, 178, 0.12);
+        border: 1px solid rgba(125, 211, 252, 0.24);
+        color: #d7f4ff;
+      }
+
+      @media (max-width: 900px) {
+        .hero-inner,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .brand {
+          justify-content: space-between;
+        }
+
+        .tabs {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        .tab,
+        .github-link {
+          flex: 1;
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .shell {
+          padding: 14px;
+        }
+
+        .hero-inner,
+        .panel,
+        .footer {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        h2 {
+          font-size: 32px;
+        }
+      }
     </style>
   </head>
   <body>
-    <div class="card">
-      <h1>Webbender</h1>
-      <p>A bookmarklet for quick page editing, element cleanup, and visual experimentation on any website.</p>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark" aria-hidden="true"></div>
+          <div>
+            <h1>Webbender</h1>
+            <p>Bookmarklet-first page editing, without the extension overhead.</p>
+          </div>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Webbender sections">
+          <button class="tab" role="tab" aria-selected="true" aria-controls="panel-description" id="tab-description" data-tab="description">Description</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-install" id="tab-install" data-tab="install">Install</button>
+        </div>
+        <a class="github-link" href="https://github.com/ilim-cell/webbender" target="_blank" rel="noreferrer">GitHub</a>
+      </header>
 
-      <h2>Install</h2>
-      <p>Drag the button below to your bookmarks bar, or click <strong>Copy</strong> to copy the bookmarklet code.</p>
+      <section class="hero">
+        <div class="hero-inner">
+          <div>
+            <span class="eyebrow">Server-hosted bookmarklet</span>
+            <h2>Bend a page without installing anything.</h2>
+            <p class="lede">
+              Webbender gives you a floating control panel for editing text, removing elements, changing typography,
+              and testing dialog behavior. The installer now loads its payload from Webbender's own hosting, which
+              avoids the MIME issues that broke the old raw GitHub/CDN path.
+            </p>
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <strong>Quick edits</strong>
+              <span>Toggle design mode and make page text editable in-place.</span>
+            </div>
+            <div class="stat">
+              <strong>Cleanup mode</strong>
+              <span>Remove distracting elements with a click and clear hover highlighting.</span>
+            </div>
+            <div class="stat">
+              <strong>Hosted payload</strong>
+              <span>Bookmarklet code is served from `webbender.web.app`, so the browser gets executable JavaScript.</span>
+            </div>
+          </div>
+        </div>
 
-      <p>
-        <a class="bookmarklet" id="dragme" href="javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');alert('Webbender failed to load. Check console for details.');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();">Drag Webbender to bookmarks</a>
-        <button class="copy" id="copyBtn">Copy</button>
-      </p>
+        <section class="panel active" id="panel-description" role="tabpanel" aria-labelledby="tab-description">
+          <div class="grid">
+            <article class="card">
+              <h3>What it does</h3>
+              <ul>
+                <li>Edit text directly on the page using design mode.</li>
+                <li>Remove distracting elements without opening devtools.</li>
+                <li>Apply temporary fonts and themes for quick design checks.</li>
+                <li>Trigger alert, confirm, and prompt dialogs for UI testing.</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Why the install changed</h3>
+              <p>
+                The old loader depended on raw GitHub and jsDelivr script URLs. Those responses can be served as
+                `text/plain`, which browsers refuse to execute as script. This page now points the bookmarklet at a
+                hosted JS file with the right MIME type.
+              </p>
+            </article>
+          </div>
+        </section>
 
-      <h3>Manual bookmarklet code</h3>
-      <pre id="code">javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');alert('Webbender failed to load. Check console for details.');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();</pre>
+        <section class="panel" id="panel-install" role="tabpanel" aria-labelledby="tab-install" hidden>
+          <div class="grid">
+            <article class="card bookmarklet-box">
+              <h3>Install the bookmarklet</h3>
+              <p>Drag this button to your bookmarks bar, or copy the code below for manual installation.</p>
+              <a class="bookmarklet" id="dragme" href="javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){alert('Webbender failed to load.');return;}var script=document.createElement('script');script.id=id;script.src=urls[index++];script.onerror=function(){script.remove();load();};document.head.appendChild(script);}load();})();">Drag Webbender to bookmarks</a>
+              <div class="actions">
+                <button class="button" id="copyBtn" type="button">Copy bookmarklet</button>
+              </div>
+            </article>
+            <article class="card">
+              <h3>Manual bookmarklet code</h3>
+              <pre id="code">javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){alert('Webbender failed to load.');return;}var script=document.createElement('script');script.id=id;script.src=urls[index++];script.onerror=function(){script.remove();load();};document.head.appendChild(script);}load();})();</pre>
+            </article>
+          </div>
 
-      <h2>What Webbender Does</h2>
-      <ul>
-        <li>Edit text directly on the page using design mode.</li>
-        <li>Remove distracting elements without opening devtools.</li>
-        <li>Apply temporary fonts and themes for quick design checks.</li>
-        <li>Test native alert/confirm/prompt dialog behavior.</li>
-      </ul>
+          <div class="grid" style="margin-top: 18px;">
+            <article class="card">
+              <h3>How to use</h3>
+              <ol>
+                <li>Open any website.</li>
+                <li>Click your Webbender bookmark.</li>
+                <li>Use the floating panel to edit, remove, or style elements.</li>
+              </ol>
+            </article>
+            <article class="card">
+              <h3>Troubleshooting</h3>
+              <ul>
+                <li>If clicking does nothing, recreate the bookmark from this page.</li>
+                <li>Some sites block injected scripts with CSP restrictions.</li>
+                <li>If the loader fails twice, check the browser console for the error.</li>
+              </ul>
+            </article>
+          </div>
 
-      <h2>How to Use</h2>
-      <ol>
-        <li>Open any website.</li>
-        <li>Click your <strong>Webbender</strong> bookmark.</li>
-        <li>Use the floating panel to toggle edit/remove/theme controls.</li>
-      </ol>
+          <div class="notice" style="margin-top: 18px;">
+            Webbender is published through Firebase Hosting, so the install link stays on a stable domain and the
+            payload can be updated without changing the bookmarklet itself.
+          </div>
+        </section>
+      </section>
 
-      <h2>Troubleshooting</h2>
-      <ul>
-        <li>If clicking does nothing, delete and re-create the bookmark from this page.</li>
-        <li>Some sites block external scripts with strict CSP headers.</li>
-        <li>Open browser console for loader errors if script fetch fails.</li>
-      </ul>
-
-      <h2>Project Links</h2>
-      <ul>
-        <li><a href="https://github.com/ilim-cell/webbender" target="_blank" rel="noreferrer">GitHub Repository</a></li>
-        <li><a href="https://github.com/ilim-cell/webbender/releases" target="_blank" rel="noreferrer">Releases</a></li>
-        <li><a href="https://webbender.web.app" target="_blank" rel="noreferrer">webbender.web.app</a></li>
-        <li><a href="https://webbender-pro.web.app" target="_blank" rel="noreferrer">webbender-pro.web.app</a></li>
-      </ul>
-
-      <h3>Guided install (local CLI)</h3>
-      <p>If you'd rather host the installer page on Firebase Hosting (automatic updates), follow these steps locally:</p>
-      <ol>
-        <li>Install Firebase CLI and login: <code>npm install -g firebase-tools</code> and <code>firebase login</code></li>
-        <li>Initialize hosting (choose <code>site</code> as public folder): <code>firebase init hosting --project webbender-pro</code></li>
-        <li>Deploy both sites: <code>firebase deploy --only hosting:sitePrimary,hosting:sitePublic --project webbender-pro</code></li>
-      </ol>
-
-      <h3>CI/CD</h3>
-      <p>This repository includes GitHub Actions workflows to deploy this site to Firebase Hosting. Provide a Firebase service account JSON as repository secret <code>FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO</code>.</p>
-
-    </div>
+      <section class="footer">
+        <p>
+          Hosted docs: <a href="https://webbender.web.app" target="_blank" rel="noreferrer">webbender.web.app</a>
+          and <a href="https://webbender-pro.web.app" target="_blank" rel="noreferrer">webbender-pro.web.app</a>.
+        </p>
+      </section>
+    </main>
 
     <script>
-      document.getElementById('copyBtn').onclick = function () {
-        const code = document.getElementById('code').textContent;
-        navigator.clipboard.writeText(code).then(()=>{
-          const b = document.getElementById('copyBtn');
-          b.textContent='Copied'; setTimeout(()=>b.textContent='Copy',1500);
-        });
+      const tabs = Array.from(document.querySelectorAll('.tab'));
+      const panels = {
+        description: document.getElementById('panel-description'),
+        install: document.getElementById('panel-install'),
       };
+
+      function activateTab(name) {
+        tabs.forEach((tab) => {
+          const isActive = tab.dataset.tab === name;
+          tab.setAttribute('aria-selected', String(isActive));
+        });
+
+        Object.entries(panels).forEach(([key, panel]) => {
+          const isActive = key === name;
+          panel.hidden = !isActive;
+          panel.classList.toggle('active', isActive);
+        });
+      }
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => activateTab(tab.dataset.tab));
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', () => {
+        const code = document.getElementById('code').textContent;
+        navigator.clipboard.writeText(code).then(() => {
+          const button = document.getElementById('copyBtn');
+          const original = button.textContent;
+          button.textContent = 'Copied';
+          setTimeout(() => {
+            button.textContent = original;
+          }, 1500);
+        });
+      });
     </script>
   </body>
 </html>
