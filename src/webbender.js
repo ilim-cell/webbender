@@ -1,7 +1,7 @@
 /**
  * Webbender - A powerful bookmarklet to bend the web to your will
  * @author ilim-cell
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 (function () {

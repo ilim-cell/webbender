@@ -7,7 +7,7 @@
   const UPDATE_CHECK_KEY = 'webbender-update-check';
   const UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
-  const CURRENT_VERSION = '1.0.1'; // This will be replaced during build
+  const CURRENT_VERSION = '1.0.2'; // This will be replaced during build
   const REPO = 'ilim-cell/webbender';
   const CDN_URL = 'https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/version.json';
 
