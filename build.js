@@ -11,10 +11,12 @@ const { minify } = require('terser');
 
 const SOURCE_FILE = path.join(__dirname, 'src', 'webbender.js');
 const DIST_DIR = path.join(__dirname, 'dist');
+const SITE_DIR = path.join(__dirname, 'site');
 const BOOKMARKLET_FILE = path.join(DIST_DIR, 'webbender.js');
 const BOOKMARKLET_URL_FILE = path.join(DIST_DIR, 'bookmarklet.js');
 const LOADER_FILE = path.join(DIST_DIR, 'loader.js');
 const VERSION_FILE = path.join(DIST_DIR, 'version.json');
+const SITE_BOOKMARKLET_FILE = path.join(SITE_DIR, 'bookmarklet.js');
 
 // Ensure dist directory exists
 if (!fs.existsSync(DIST_DIR)) {
@@ -50,6 +52,7 @@ const loader = `javascript:(function(){var id='webbender-loader';var existing=do
   fs.writeFileSync(BOOKMARKLET_FILE, minified, 'utf8');
   fs.writeFileSync(BOOKMARKLET_URL_FILE, bookmarklet, 'utf8');
   fs.writeFileSync(LOADER_FILE, loader, 'utf8');
+  fs.writeFileSync(SITE_BOOKMARKLET_FILE, minified, 'utf8');
   fs.writeFileSync(
     VERSION_FILE,
     JSON.stringify({ version, buildDate: new Date().toISOString() }, null, 2),
