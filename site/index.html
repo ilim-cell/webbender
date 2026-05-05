@@ -14,16 +14,49 @@
   </head>
   <body>
     <div class="card">
-      <h1>Install Webbender</h1>
+      <h1>Webbender</h1>
+      <p>A bookmarklet for quick page editing, element cleanup, and visual experimentation on any website.</p>
+
+      <h2>Install</h2>
       <p>Drag the button below to your bookmarks bar, or click <strong>Copy</strong> to copy the bookmarklet code.</p>
 
       <p>
-        <a class="bookmarklet" id="dragme" href="javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();">Webbender</a>
+        <a class="bookmarklet" id="dragme" href="javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');alert('Webbender failed to load. Check console for details.');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();">Drag Webbender to bookmarks</a>
         <button class="copy" id="copyBtn">Copy</button>
       </p>
 
       <h3>Manual bookmarklet code</h3>
-      <pre id="code">javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();</pre>
+      <pre id="code">javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');alert('Webbender failed to load. Check console for details.');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();</pre>
+
+      <h2>What Webbender Does</h2>
+      <ul>
+        <li>Edit text directly on the page using design mode.</li>
+        <li>Remove distracting elements without opening devtools.</li>
+        <li>Apply temporary fonts and themes for quick design checks.</li>
+        <li>Test native alert/confirm/prompt dialog behavior.</li>
+      </ul>
+
+      <h2>How to Use</h2>
+      <ol>
+        <li>Open any website.</li>
+        <li>Click your <strong>Webbender</strong> bookmark.</li>
+        <li>Use the floating panel to toggle edit/remove/theme controls.</li>
+      </ol>
+
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li>If clicking does nothing, delete and re-create the bookmark from this page.</li>
+        <li>Some sites block external scripts with strict CSP headers.</li>
+        <li>Open browser console for loader errors if script fetch fails.</li>
+      </ul>
+
+      <h2>Project Links</h2>
+      <ul>
+        <li><a href="https://github.com/ilim-cell/webbender" target="_blank" rel="noreferrer">GitHub Repository</a></li>
+        <li><a href="https://github.com/ilim-cell/webbender/releases" target="_blank" rel="noreferrer">Releases</a></li>
+        <li><a href="https://webbender.web.app" target="_blank" rel="noreferrer">webbender.web.app</a></li>
+        <li><a href="https://webbender-pro.web.app" target="_blank" rel="noreferrer">webbender-pro.web.app</a></li>
+      </ul>
 
       <h3>Guided install (local CLI)</h3>
       <p>If you'd rather host the installer page on Firebase Hosting (automatic updates), follow these steps locally:</p>
