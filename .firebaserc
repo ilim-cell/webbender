@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "webbender-pro"
-  }
+  },
+  "targets": {
+    "webbender-pro": {
+      "hosting": {
+        "sitePrimary": [
+          "webbender-pro"
+        ],
+        "sitePublic": [
+          "webbender"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
