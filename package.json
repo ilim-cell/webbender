@@ -1,0 +1,25 @@
+{
+  "name": "webbender",
+  "version": "1.0.1",
+  "description": "A powerful bookmarklet to bend the web to your will",
+  "author": "ilim-cell",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.js",
+    "format": "prettier --write \"src/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\"",
+    "watch": "node build.js --watch",
+    "prepublishOnly": "npm run format && npm run build"
+  },
+  "keywords": [
+    "bookmarklet",
+    "web-editor",
+    "browser-extension"
+  ],
+  "devDependencies": {
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

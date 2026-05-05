@@ -1,0 +1,54 @@
+name: ⭐ Feature or Enhancement Request
+description: Propose a new feature or improvement for Webbender
+labels:
+  - enhancement
+  - needs-triage
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of the Feature/Enhancement
+      placeholder: |
+        What would you like to see added or improved?
+        Describe the feature in detail.
+      description: Be as detailed as possible
+    validations:
+      required: true
+
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Use Case & Scenario
+      placeholder: |
+        When would you use this?
+        Why is this important to your workflow?
+        What problem does it solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Possible Implementation
+      placeholder: |
+        Do you have ideas on how this could be implemented?
+        What changes would be needed?
+      description: Optional - any technical thoughts are welcome
+    validations:
+      required: false
+
+  - type: textarea
+    id: supporting
+    attributes:
+      label: Supporting Information
+      placeholder: |
+        Share research, examples, mockups, or links that support this request.
+        Links to similar features in other tools are helpful!
+      description: Optional - anything that provides context
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        💡 **Tip:** Please limit one feature request per issue. Create separate issues for different ideas.
