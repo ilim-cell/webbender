@@ -92,7 +92,7 @@ npm run watch
 ### Auto-Updating Version (Recommended)
 Users paste this into a bookmark:
 ```javascript
-javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){alert('Webbender failed to load.');return;}var script=document.createElement('script');script.id=id;script.src=urls[index++];script.onerror=function(){script.remove();load();};document.head.appendChild(script);}load();})();
+javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){console.error('Webbender: failed to load from all URLs');alert('Webbender failed to load. Check the browser console for details.');return;}var src=urls[index++];var script=document.createElement('script');script.id=id;script.src=src;script.onerror=function(){console.error('Webbender: failed to load',src);script.remove();load();};document.head.appendChild(script);}load();})();
 ```
 
 This loader automatically fetches the latest version from Firebase Hosting.
