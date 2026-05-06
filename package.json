@@ -30,7 +30,7 @@
     "@playwright/test": "^1.40.0",
     "commitlint": "^18.0.0",
     "@commitlint/config-conventional": "^18.0.0",
-    "@commitlint/cli": "^18.0.0",
+    "@commitlint/cli": "^20.5.3",
     "@axe-core/cli": "^4.8.0",
     "husky": "^8.0.0"
   },
