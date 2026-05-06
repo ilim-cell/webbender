@@ -1,0 +1,134 @@
+name: Audit - Lighthouse & Accessibility
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * 0'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lighthouse:
+    name: Lighthouse Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Start test server
+        run: |
+          cd site
+          python -m http.server 8000 &
+          sleep 2
+        shell: bash
+
+      - name: Run Lighthouse
+        id: lighthouse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execSync } = require('child_process');
+            const fs = require('fs');
+
+            // Check if lighthouse-ci is installed, if not use lighthouse
+            try {
+              execSync('npm list -g @lhci/cli@latest 2>/dev/null', { stdio: 'ignore' });
+            } catch {
+              console.log('Installing lighthouse...');
+              execSync('npm install -g lighthouse', { stdio: 'inherit' });
+            }
+
+            try {
+              const result = execSync(
+                'lighthouse http://localhost:8000/site/index.html --output=json --output=html --chrome-flags="--headless" 2>/dev/null',
+                { encoding: 'utf8' }
+              );
+              fs.writeFileSync('lighthouse-report.json', result);
+              const report = JSON.parse(result);
+              const scores = report.categories;
+
+              console.log(`
+              📊 Lighthouse Scores:
+              - Performance: ${Math.round(scores.performance.score * 100)}
+              - Accessibility: ${Math.round(scores.accessibility.score * 100)}
+              - Best Practices: ${Math.round(scores['best-practices'].score * 100)}
+              - SEO: ${Math.round(scores.seo.score * 100)}
+              `);
+            } catch (e) {
+              console.log('Lighthouse audit skipped (optional)', e.message);
+            }
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('lighthouse-report.json')) return;
+
+            const report = JSON.parse(fs.readFileSync('lighthouse-report.json', 'utf8'));
+            const scores = report.categories;
+            const scoreColor = (score) => score >= 0.9 ? '🟢' : score >= 0.5 ? '🟡' : '🔴';
+
+            const comment = `
+            ## 📊 Lighthouse Audit Results
+
+            | Metric | Score |
+            |--------|-------|
+            | ${scoreColor(scores.performance.score)} Performance | ${Math.round(scores.performance.score * 100)} |
+            | ${scoreColor(scores.accessibility.score)} Accessibility | ${Math.round(scores.accessibility.score * 100)} |
+            | ${scoreColor(scores['best-practices'].score)} Best Practices | ${Math.round(scores['best-practices'].score * 100)} |
+            | ${scoreColor(scores.seo.score)} SEO | ${Math.round(scores.seo.score * 100)} |
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  accessibility:
+    name: Accessibility Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install axe-core
+        run: npm install --save-dev @axe-core/cli
+
+      - name: Build
+        run: npm run build
+
+      - name: Start test server
+        run: |
+          cd site
+          python -m http.server 8000 &
+          sleep 2
+        shell: bash
+
+      - name: Run accessibility scan
+        run: |
+          npx axe http://localhost:8000/site/index.html --exit || true

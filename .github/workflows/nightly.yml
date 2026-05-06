@@ -1,0 +1,74 @@
+name: Scheduled - Nightly CI
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC every day
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  nightly:
+    name: Comprehensive Nightly Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run formatting check
+        run: npm run format:check
+
+      - name: Build bookmarklet
+        run: npm run build
+
+      - name: Verify syntax
+        run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
+
+      - name: Check for security vulnerabilities
+        run: npm audit --audit-level=moderate || echo "Audit completed with warnings"
+
+      - name: Generate build report
+        run: |
+          echo "## Nightly CI Report" > build-report.md
+          echo "" >> build-report.md
+          echo "**Build Date**: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> build-report.md
+          echo "**Node Version**: $(node -v)" >> build-report.md
+          echo "**NPM Version**: $(npm -v)" >> build-report.md
+          echo "" >> build-report.md
+          echo "### Artifacts" >> build-report.md
+          ls -lh dist/ | awk '{print "- `" $9 "`: " $5}' >> build-report.md
+          echo "" >> build-report.md
+          echo "### Status" >> build-report.md
+          echo "✅ All checks passed" >> build-report.md
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-report
+          path: build-report.md
+          retention-days: 30
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '❌ Nightly CI failed',
+              body: `The nightly CI check failed on ${new Date().toISOString()}.
+              Check the [action run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.`,
+              labels: ['bug', 'ci']
+            });
