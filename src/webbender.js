@@ -7,6 +7,8 @@
 (function () {
   const ID = 'webbender-ui';
   const STORAGE_KEY = 'webbender-settings';
+  const VERSION = '__WEBBENDER_VERSION__';
+  const VERSION_URL = 'https://webbender.web.app/version.json';
 
   // Remove existing instance
   const existing = document.getElementById(ID);
@@ -110,6 +112,56 @@
 
   header.appendChild(title);
   header.appendChild(closeBtn);
+
+  // Update banner (hidden until a newer version is detected)
+  const updateBanner = document.createElement('div');
+  Object.assign(updateBanner.style, {
+    display: 'none',
+    flexDirection: 'column',
+    gap: '4px',
+    padding: '8px 10px',
+    borderRadius: '8px',
+    background: 'rgba(234, 179, 8, 0.12)',
+    border: '1px solid rgba(234, 179, 8, 0.3)',
+    fontSize: '12px',
+    lineHeight: '1.5',
+  });
+
+  const updateBannerRow = document.createElement('div');
+  Object.assign(updateBannerRow.style, {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  });
+
+  const updateText = document.createElement('span');
+  updateText.style.color = '#fde047';
+
+  const updateDismiss = document.createElement('button');
+  updateDismiss.textContent = '✕';
+  Object.assign(updateDismiss.style, {
+    background: 'none',
+    border: 'none',
+    color: '#71717a',
+    cursor: 'pointer',
+    padding: '0',
+    fontSize: '12px',
+  });
+  updateDismiss.onclick = () => {
+    updateBanner.style.display = 'none';
+  };
+
+  const updateLink = document.createElement('a');
+  updateLink.textContent = 'Re-install from webbender.web.app →';
+  updateLink.href = 'https://webbender.web.app';
+  updateLink.target = '_blank';
+  updateLink.rel = 'noreferrer';
+  Object.assign(updateLink.style, { color: '#93c5fd', fontSize: '11px', display: 'block' });
+
+  updateBannerRow.appendChild(updateText);
+  updateBannerRow.appendChild(updateDismiss);
+  updateBanner.appendChild(updateBannerRow);
+  updateBanner.appendChild(updateLink);
 
   // Utility function to get or create style element
   function getStyleElement(id) {
@@ -291,10 +343,10 @@
   function applyFont(fontFamily) {
     const styleEl = getStyleElement('webbender-font-style');
     if (!fontFamily) {
-      styleEl.innerHTML = '';
+      styleEl.textContent = '';
       return;
     }
-    styleEl.innerHTML = `* { font-family: "${fontFamily}" !important; }`;
+    styleEl.textContent = `* { font-family: "${fontFamily}" !important; }`;
   }
 
   fontSelect.onchange = (e) => {
@@ -371,10 +423,10 @@
     btn.onclick = () => {
       const styleEl = getStyleElement('webbender-theme-style');
       if (!theme.bg) {
-        styleEl.innerHTML = '';
+        styleEl.textContent = '';
         settings.theme = 'default';
       } else {
-        styleEl.innerHTML = `* { background-color: ${theme.bg} !important; color: ${theme.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
+        styleEl.textContent = `* { background-color: ${theme.bg} !important; color: ${theme.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
         settings.theme = theme.name.toLowerCase();
       }
       saveSettings();
@@ -503,9 +555,9 @@
     setEditMode(false);
     window._webbenderToggleRemove(false);
     const fontStyle = document.getElementById('webbender-font-style');
-    if (fontStyle) fontStyle.innerHTML = '';
+    if (fontStyle) fontStyle.textContent = '';
     const themeStyle = document.getElementById('webbender-theme-style');
-    if (themeStyle) themeStyle.innerHTML = '';
+    if (themeStyle) themeStyle.textContent = '';
     fontSelect.value = '';
     customFontInput.value = '';
     settings.editMode = false;
@@ -546,7 +598,7 @@
     const themeObj = themes.find((t) => t.name.toLowerCase() === settings.theme);
     if (themeObj && themeObj.bg) {
       const styleEl = getStyleElement('webbender-theme-style');
-      styleEl.innerHTML = `* { background-color: ${themeObj.bg} !important; color: ${themeObj.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
+      styleEl.textContent = `* { background-color: ${themeObj.bg} !important; color: ${themeObj.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
     }
   }
   if (settings.editMode) setEditMode(true);
@@ -558,6 +610,7 @@
 
   // Assemble UI
   container.appendChild(header);
+  container.appendChild(updateBanner);
   container.appendChild(editSection);
   container.appendChild(removeSection);
   container.appendChild(fontSection);
@@ -566,4 +619,30 @@
   container.appendChild(actionRow);
 
   document.body.appendChild(container);
+
+  // Silent version check — fetch only data (not code), so CSP script-src is not involved.
+  // If connect-src blocks the request on a particular site it fails silently; the tool still works.
+  function isNewerVersion(remote, local) {
+    const remoteParts = remote.split('.').map(Number);
+    const localParts = local.split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+      if ((remoteParts[i] || 0) > (localParts[i] || 0)) return true;
+      if ((remoteParts[i] || 0) < (localParts[i] || 0)) return false;
+    }
+    return false;
+  }
+
+  try {
+    fetch(VERSION_URL, { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.version && isNewerVersion(data.version, VERSION)) {
+          updateText.textContent = `Update available: v${data.version} (you have v${VERSION})`;
+          updateBanner.style.display = 'flex';
+        }
+      })
+      .catch(() => {});
+  } catch (e) {
+    // fetch not available or blocked — no update notification, tool still works
+  }
 })();
