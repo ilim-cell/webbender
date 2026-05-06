@@ -45,8 +45,8 @@ async function runBuild() {
   // Generate bookmarklet code
   const bookmarklet = `javascript:${minified}`;
 
-// Generate loader that fetches latest from CDN with fallback to raw GitHub
-const loader = `javascript:(function(){var id='webbender-loader';var existing=document.getElementById(id);if(existing){existing.remove();}var s=document.createElement('script');s.id=id;var tried=0;function attach(src){s.src=src;document.head.appendChild(s);}s.onerror=function(){if(tried===0){tried++;s.remove();s=document.createElement('script');s.id=id;attach('https://raw.githubusercontent.com/ilim-cell/webbender/main/dist/webbender.min.js');}else{console.error('Webbender loader: failed to load script');alert('Webbender failed to load. Check browser console for details.');}};attach('https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js');})();`;
+// Generate loader that fetches from Firebase-hosted URLs (correct MIME type)
+const loader = `javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){alert('Webbender failed to load.');return;}var script=document.createElement('script');script.id=id;script.src=urls[index++];script.onerror=function(){script.remove();load();};document.head.appendChild(script);}load();})();`;
 
   // Write files
   fs.writeFileSync(BOOKMARKLET_FILE, minified, 'utf8');

@@ -21,7 +21,7 @@ A powerful, lightweight bookmarklet to bend the web to your will. Edit text, rem
 3. Copy the following code and paste it into the **URL** or **Address** field:
 
 ```javascript
-javascript:(function(){var id='webbender-loader';var s=document.getElementById(id);if(s){s.remove();}s=document.createElement('script');s.id=id;s.src='https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js';s.onload=function(){if(window._webbenderInit)window._webbenderInit();};document.head.appendChild(s);})();
+javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){alert('Webbender failed to load.');return;}var script=document.createElement('script');script.id=id;script.src=urls[index++];script.onerror=function(){script.remove();load();};document.head.appendChild(script);}load();})();
 ```
 
 ### Manual Install (Static Version)
