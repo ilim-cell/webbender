@@ -416,14 +416,14 @@
             <article class="card bookmarklet-box">
               <h3>Install the bookmarklet</h3>
               <p>Drag this button to your bookmarks bar, or copy the code below for manual installation.</p>
-              <a class="bookmarklet" id="dragme" href="javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){alert('Webbender failed to load.');return;}var script=document.createElement('script');script.id=id;script.src=urls[index++];script.onerror=function(){script.remove();load();};document.head.appendChild(script);}load();})();">Drag Webbender to bookmarks</a>
+              <a class="bookmarklet" id="dragme" href="javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){console.error('Webbender: failed to load from all URLs');alert('Webbender failed to load. Check the browser console for details.');return;}var src=urls[index++];var script=document.createElement('script');script.id=id;script.src=src;script.onerror=function(){console.error('Webbender: failed to load',src);script.remove();load();};document.head.appendChild(script);}load();})();">Drag Webbender to bookmarks</a>
               <div class="actions">
                 <button class="button" id="copyBtn" type="button">Copy bookmarklet</button>
               </div>
             </article>
             <article class="card">
               <h3>Manual bookmarklet code</h3>
-              <pre id="code">javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){alert('Webbender failed to load.');return;}var script=document.createElement('script');script.id=id;script.src=urls[index++];script.onerror=function(){script.remove();load();};document.head.appendChild(script);}load();})();</pre>
+              <pre id="code">javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){console.error('Webbender: failed to load from all URLs');alert('Webbender failed to load. Check the browser console for details.');return;}var src=urls[index++];var script=document.createElement('script');script.id=id;script.src=src;script.onerror=function(){console.error('Webbender: failed to load',src);script.remove();load();};document.head.appendChild(script);}load();})();</pre>
             </article>
           </div>
 

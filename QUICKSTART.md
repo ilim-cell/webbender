@@ -92,10 +92,10 @@ npm run watch
 ### Auto-Updating Version (Recommended)
 Users paste this into a bookmark:
 ```javascript
-javascript:(function(){var id='webbender-loader';var s=document.getElementById(id);if(s){s.remove();}s=document.createElement('script');s.id=id;s.src='https://cdn.jsdelivr.net/gh/ilim-cell/webbender@latest/dist/webbender.min.js';s.onload=function(){if(window._webbenderInit)window._webbenderInit();};document.head.appendChild(s);})();
+javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){console.error('Webbender: failed to load from all URLs');alert('Webbender failed to load. Check the browser console for details.');return;}var src=urls[index++];var script=document.createElement('script');script.id=id;script.src=src;script.onerror=function(){console.error('Webbender: failed to load',src);script.remove();load();};document.head.appendChild(script);}load();})();
 ```
 
-This loader automatically fetches the latest version from the CDN.
+This loader automatically fetches the latest version from Firebase Hosting.
 
 ## Making a Release
 
