@@ -1,3 +1,17 @@
+## [1.1.0](https://github.com/ilim-cell/webbender/compare/v1.0.2...v1.1.0) (2026-05-06)
+
+
+### Features
+
+* **site:** add installer page and Firebase Hosting CI/CD workflow (webbender-pro) ([c749d2a](https://github.com/ilim-cell/webbender/commit/c749d2ac07751e231463b513a7edd4c31bb01130))
+* tabbed install page and hosted bookmarklet ([5c32eeb](https://github.com/ilim-cell/webbender/commit/5c32eebecc73023530dcdfe543befdd6cee0e342))
+
+
+### Bug Fixes
+
+* **build.js:** fix indentation and add console.error to loader on URL failures ([51c7ef1](https://github.com/ilim-cell/webbender/commit/51c7ef1cd1d2db7af54408017151b888f87a89a5))
+* update loader bookmarklet to use Firebase-hosted URLs with correct MIME type ([0c18073](https://github.com/ilim-cell/webbender/commit/0c180732ae61a55127d14f8d9bf2daa42653e232))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
