@@ -343,10 +343,10 @@
   function applyFont(fontFamily) {
     const styleEl = getStyleElement('webbender-font-style');
     if (!fontFamily) {
-      styleEl.innerHTML = '';
+      styleEl.textContent = '';
       return;
     }
-    styleEl.innerHTML = `* { font-family: "${fontFamily}" !important; }`;
+    styleEl.textContent = `* { font-family: "${fontFamily}" !important; }`;
   }
 
   fontSelect.onchange = (e) => {
@@ -423,10 +423,10 @@
     btn.onclick = () => {
       const styleEl = getStyleElement('webbender-theme-style');
       if (!theme.bg) {
-        styleEl.innerHTML = '';
+        styleEl.textContent = '';
         settings.theme = 'default';
       } else {
-        styleEl.innerHTML = `* { background-color: ${theme.bg} !important; color: ${theme.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
+        styleEl.textContent = `* { background-color: ${theme.bg} !important; color: ${theme.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
         settings.theme = theme.name.toLowerCase();
       }
       saveSettings();
@@ -555,9 +555,9 @@
     setEditMode(false);
     window._webbenderToggleRemove(false);
     const fontStyle = document.getElementById('webbender-font-style');
-    if (fontStyle) fontStyle.innerHTML = '';
+    if (fontStyle) fontStyle.textContent = '';
     const themeStyle = document.getElementById('webbender-theme-style');
-    if (themeStyle) themeStyle.innerHTML = '';
+    if (themeStyle) themeStyle.textContent = '';
     fontSelect.value = '';
     customFontInput.value = '';
     settings.editMode = false;
@@ -598,7 +598,7 @@
     const themeObj = themes.find((t) => t.name.toLowerCase() === settings.theme);
     if (themeObj && themeObj.bg) {
       const styleEl = getStyleElement('webbender-theme-style');
-      styleEl.innerHTML = `* { background-color: ${themeObj.bg} !important; color: ${themeObj.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
+      styleEl.textContent = `* { background-color: ${themeObj.bg} !important; color: ${themeObj.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
     }
   }
   if (settings.editMode) setEditMode(true);
@@ -623,11 +623,11 @@
   // Silent version check — fetch only data (not code), so CSP script-src is not involved.
   // If connect-src blocks the request on a particular site it fails silently; the tool still works.
   function isNewerVersion(remote, local) {
-    const r = remote.split('.').map(Number);
-    const l = local.split('.').map(Number);
+    const remoteParts = remote.split('.').map(Number);
+    const localParts = local.split('.').map(Number);
     for (let i = 0; i < 3; i++) {
-      if ((r[i] || 0) > (l[i] || 0)) return true;
-      if ((r[i] || 0) < (l[i] || 0)) return false;
+      if ((remoteParts[i] || 0) > (localParts[i] || 0)) return true;
+      if ((remoteParts[i] || 0) < (localParts[i] || 0)) return false;
     }
     return false;
   }
