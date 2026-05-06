@@ -17,6 +17,7 @@ const BOOKMARKLET_URL_FILE = path.join(DIST_DIR, 'bookmarklet.js');
 const LOADER_FILE = path.join(DIST_DIR, 'loader.js');
 const VERSION_FILE = path.join(DIST_DIR, 'version.json');
 const SITE_BOOKMARKLET_FILE = path.join(SITE_DIR, 'bookmarklet.js');
+const SITE_INDEX_FILE = path.join(SITE_DIR, 'index.html');
 
 // Ensure dist directory exists
 if (!fs.existsSync(DIST_DIR)) {
@@ -53,6 +54,18 @@ async function runBuild() {
   fs.writeFileSync(BOOKMARKLET_URL_FILE, bookmarklet, 'utf8');
   fs.writeFileSync(LOADER_FILE, loader, 'utf8');
   fs.writeFileSync(SITE_BOOKMARKLET_FILE, minified, 'utf8');
+
+  // Update index.html to use the self-contained bookmarklet (no external script loading)
+  // so it works on sites with strict Content Security Policy headers.
+  const selfContained = `javascript:${minified}`;
+  const htmlEscaped = selfContained.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  let html = fs.readFileSync(SITE_INDEX_FILE, 'utf8');
+  // Replace href="javascript:..." on the draggable anchor
+  html = html.replace(/(<a[^>]+id="dragme"[^>]+href=")[^"]*(")/s, `$1${htmlEscaped}$2`);
+  // Replace the <pre> code block
+  html = html.replace(/(<pre[^>]*id="code"[^>]*>)[^<]*(<\/pre>)/s, `$1${selfContained}$2`);
+  fs.writeFileSync(SITE_INDEX_FILE, html, 'utf8');
+
   fs.writeFileSync(
     VERSION_FILE,
     JSON.stringify({ version, buildDate: new Date().toISOString() }, null, 2),
