@@ -1,0 +1,50 @@
+name: Release - Semantic Versioning
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Release
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 23
+          repository-url: https://github.com/${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Purge CDN cache
+        if: success()
+        run: |
+          VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F'"' '{print $4}')
+          echo "Triggering CDN purge for version $VERSION..."
+          curl -s -X POST https://api.jsdelivr.com/v1/purge \
+            -H 'Content-Type: application/json' \
+            -d "{\"path\": \"/gh/ilim-cell/webbender@${VERSION}/dist/webbender.min.js\"}" \
+            || echo "CDN purge request sent (may be rate-limited)"

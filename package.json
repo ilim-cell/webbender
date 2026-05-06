@@ -9,6 +9,10 @@
     "format": "prettier --write \"src/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.js\"",
     "watch": "node build.js --watch",
+    "test": "npm run test:e2e",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
     "prepublishOnly": "npm run format && npm run build"
   },
   "keywords": [
@@ -18,7 +22,17 @@
   ],
   "devDependencies": {
     "prettier": "^3.0.0",
-    "terser": "^5.31.6"
+    "terser": "^5.31.6",
+    "semantic-release": "^23.0.0",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
+    "@semantic-release/github": "^9.0.0",
+    "@playwright/test": "^1.40.0",
+    "commitlint": "^18.0.0",
+    "@commitlint/config-conventional": "^18.0.0",
+    "@commitlint/cli": "^18.0.0",
+    "@axe-core/cli": "^4.8.0",
+    "husky": "^8.0.0"
   },
   "engines": {
     "node": ">=16.0.0"
