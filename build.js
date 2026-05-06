@@ -29,7 +29,10 @@ const source = fs.readFileSync(SOURCE_FILE, 'utf8');
 const version = require('./package.json').version;
 
 async function runBuild() {
-  const minifiedResult = await minify(source, {
+  // Inject version constant before minifying
+  const sourceWithVersion = source.replace('__WEBBENDER_VERSION__', version);
+
+  const minifiedResult = await minify(sourceWithVersion, {
     compress: true,
     mangle: true,
     format: {
@@ -66,11 +69,10 @@ async function runBuild() {
   html = html.replace(/(<pre[^>]*id="code"[^>]*>)[^<]*(<\/pre>)/s, `$1${selfContained}$2`);
   fs.writeFileSync(SITE_INDEX_FILE, html, 'utf8');
 
-  fs.writeFileSync(
-    VERSION_FILE,
-    JSON.stringify({ version, buildDate: new Date().toISOString() }, null, 2),
-    'utf8'
-  );
+  const versionJson = JSON.stringify({ version, buildDate: new Date().toISOString() }, null, 2);
+  fs.writeFileSync(VERSION_FILE, versionJson, 'utf8');
+  // Also publish version.json to site/ so the hosted version check endpoint is always current
+  fs.writeFileSync(path.join(SITE_DIR, 'version.json'), versionJson, 'utf8');
 
   // Also create a minified version for CDN
   const minifiedPath = path.join(DIST_DIR, 'webbender.min.js');
