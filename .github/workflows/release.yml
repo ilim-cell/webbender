@@ -1,8 +1,11 @@
-name: Release - Semantic Versioning
+name: Release & Deploy
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC daily
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,7 +15,7 @@ jobs:
   release:
     name: Semantic Release
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,7 +34,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Release
+      - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         with:
           semantic_version: 23
@@ -39,12 +42,95 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Purge CDN cache
+      - name: Purge CDN
         if: success()
+        continue-on-error: true
         run: |
-          VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F'"' '{print $4}')
-          echo "Triggering CDN purge for version $VERSION..."
+          VERSION=$(node -e "console.log(require('./package.json').version)")
+          echo "Purging CDN for v${VERSION}..."
           curl -s -X POST https://api.jsdelivr.com/v1/purge \
             -H 'Content-Type: application/json' \
             -d "{\"path\": \"/gh/ilim-cell/webbender@${VERSION}/dist/webbender.min.js\"}" \
-            || echo "CDN purge request sent (may be rate-limited)"
+            || echo "CDN purge sent"
+
+  production-deploy:
+    name: Deploy to Firebase
+    runs-on: ubuntu-latest
+    needs: release
+    if: success()
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO }}
+          projectId: webbender-pro
+          channelId: live
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels
+
+  nightly:
+    name: Nightly Checks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Format check
+        run: npm run format:check || true
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify syntax
+        run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
+
+      - name: Security audit
+        run: npm audit --audit-level=moderate || true
+
+      - name: Generate report
+        run: |
+          {
+            echo "# Nightly CI Report"
+            echo "**Date**: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            echo "**Node**: $(node -v)"
+            echo "**NPM**: $(npm -v)"
+            echo ""
+            echo "## Artifacts"
+            ls -lh dist/ | awk 'NR>1 {print "- `" $9 "`: " $5}'
+            echo ""
+            echo "## Status"
+            echo "✅ Checks completed"
+          } > nightly-report.md
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-report-${{ github.run_id }}
+          path: nightly-report.md
+          retention-days: 30

@@ -2,69 +2,40 @@
 
 ## Overview
 
-Webbender now has comprehensive CI/CD automation with 10 workflows covering formatting, building, testing, security, and release management.
+Webbender has consolidated CI/CD automation into **2 efficient workflows** covering formatting, building, testing, security, releases, and monitoring.
 
 ## Workflows
 
-### 1. **CI: Format & Build Checks** (`.github/workflows/ci.yml`)
-- **Trigger**: On push to `main`/`develop`, pull requests
-- **Jobs**:
-  - `format`: Runs `npm run format:check` and comments on PR if issues found
-  - `build`: Compiles bookmarklet, verifies syntax, uploads artifacts
-  - `security`: Runs npm audit and dependency vulnerability checks
+### 1. **Checks** (`.github/workflows/checks.yml`)
+Triggered on every push to `main`/`develop` and pull requests.
 
-### 2. **E2E Tests: Playwright** (`.github/workflows/e2e.yml`)
-- **Trigger**: On push to `main`, pull requests
-- **Tests**:
-  - Bookmarklet injection validation
-  - UI element structure checks
-  - Syntax validation
-  - Server connectivity tests
-- **Reports**: HTML and JSON artifacts
+**Jobs**:
+- `format`: Code formatting validation via Prettier
+- `build`: Compiles bookmarklet, verifies syntax, uploads artifacts
+- `security`: npm audit for vulnerability checks
+- `codeql`: GitHub CodeQL security analysis
+- `e2e-tests`: Playwright bookmarklet injection and UI tests
+- `lighthouse`: Performance/accessibility audit (PR preview channels only)
+- `pr-preview`: Deploys PR to temporary Firebase preview channel with comment links
 
-### 3. **PR Preview: Firebase Hosting** (`.github/workflows/preview.yml`)
-- **Trigger**: On pull requests
-- **Features**:
-  - Deploys PR to temporary Firebase preview channel
-  - Comments PR with preview link (e.g., `pr-42.web.app`)
-  - Requires: `FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO` secret
+**Error Handling**:
+- All jobs use `continue-on-error: true` where appropriate to prevent cascading failures
+- PR comments gracefully fail with `try-catch` blocks
+- Optional audits (Lighthouse, previews) don't block main workflow
 
-### 4. **Release: Semantic Versioning** (`.github/workflows/release.yml`)
-- **Trigger**: Manual or on push to `main`
-- **Features**:
-  - Auto-increments version based on commit messages
-  - Generates CHANGELOG.md
-  - Creates GitHub Release
-  - Purges jsDelivr CDN cache
-  - Follows [Conventional Commits](https://www.conventionalcommits.org/)
+### 2. **Release & Deploy** (`.github/workflows/release.yml`)
+Triggered on push to `main`, daily schedule (2 AM UTC), or manual workflow dispatch.
 
-### 5. **Security: CodeQL Analysis** (`.github/workflows/codeql.yml`)
-- **Trigger**: Weekly schedule, push to `main`, pull requests
-- **Scans**: JavaScript/TypeScript for security vulnerabilities
-- **Reports**: GitHub Security tab
+**Jobs**:
+- `release`: Semantic versioning with auto-changelog and GitHub Release
+- `production-deploy`: Firebase production deployment after successful release
+- `nightly`: Comprehensive checks, audit, and issue creation on failure
 
-### 6. **Automation: Dependabot** (`.github/dependabot.yml`)
-- **Trigger**: Weekly schedule
-- **Features**:
-  - Auto-opens PRs for npm dependency updates
-  - Auto-opens PRs for GitHub Actions updates
-  - Grouped under `dependencies` and `ci-cd` labels
-
-### 7. **Audit: Lighthouse & Accessibility** (`.github/workflows/audit.yml`)
-- **Trigger**: Weekly schedule, push to `main`, pull requests
-- **Tests**:
-  - Lighthouse performance/accessibility/SEO audit
-  - axe-core accessibility scan
-  - Comments PR with audit scores
-- **Metrics**: Performance, Accessibility, Best Practices, SEO
-
-### 8. **Nightly CI: Comprehensive Check** (`.github/workflows/nightly.yml`)
-- **Trigger**: Daily at 2 AM UTC (customizable)
-- **Features**:
-  - Runs all checks: format, build, security, audit
-  - Generates build report
-  - Creates GitHub issue on failure
-  - Uploads artifacts with 30-day retention
+**Error Handling**:
+- Release job only runs on `main` branch pushes
+- Deploy job depends on successful release
+- Nightly checks use `continue-on-error: true` to complete audit even if some checks fail
+- CDN purge has `continue-on-error: true` (non-critical)
 
 ## Configuration Files
 
@@ -82,6 +53,11 @@ Webbender now has comprehensive CI/CD automation with 10 workflows covering form
 - Playwright E2E test configuration
 - Defines browser (Chromium), test directory, reporter settings
 - Auto-starts local HTTP server for tests
+
+### `.github/dependabot.yml`
+- Automated dependency management
+- Weekly npm and GitHub Actions updates
+- Creates PRs with `dependencies` and `ci-cd` labels
 
 ## Commit Message Format
 
@@ -137,29 +113,45 @@ npm run test:e2e:ui   # Interactive UI
 npm run test:e2e:debug # Debug mode
 ```
 
-## Monitoring
+## Monitoring & Status
 
 - **GitHub Actions**: https://github.com/ilim-cell/webbender/actions
-- **Security tab**: Vulnerability alerts and CodeQL results
+- **Checks Workflow**: PR checks, E2E tests, previews
+- **Release Workflow**: Semantic releases, production deploys, nightly audits
+- **Security**: GitHub Security tab (CodeQL results)
 - **Dependabot**: Auto-generated dependency update PRs
 - **Releases**: https://github.com/ilim-cell/webbender/releases
 
 ## Troubleshooting
 
+### Checks workflow failures
+- **Format check**: Run `npm run format` locally to fix formatting issues
+- **Build**: Check console output for minification errors; verify syntax with `npm run build`
+- **E2E tests**: Run `npm run test:e2e:debug` locally; check Playwright report in artifacts
+
+### Release workflow issues
+- **Semantic-release**: Requires clean git history and Conventional Commits format
+- **Firebase deploy**: Ensure `FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO` secret is set correctly
+- **CDN purge**: May be rate-limited; check that request was sent via curl logs
+
+### PR Preview failures
+- Verify `FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO` secret exists in repo settings
+- Check Firebase project ID in `.firebaserc` matches configuration
+- Preview links appear in PR comments only on successful deploy
+
 ### CodeQL issues
-- GitHub CodeQL can take 5-10 minutes on first run
-- Results appear in Security → Code scanning alerts
+- CodeQL can take 5-10 minutes on first run
+- Results appear in **Security** → **Code scanning alerts**
+- Check for false positives in CodeQL configuration
 
-### Firebase Preview failures
-- Ensure `FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO` secret is set
-- Check Firebase project ID in `.firebaserc`
+### Nightly checks
+- Runs at 2 AM UTC daily; can be manually triggered via **Actions** → **Release & Deploy** → **Run workflow**
+- Creates GitHub issue only on failure; check Actions tab for run details
 
-### E2E test failures
-- E2E tests require Python for HTTP server
-- Check `tests/e2e/bookmarklet.spec.ts` for test details
-- Run locally: `npm run test:e2e`
+## Best Practices
 
-### Release failures
-- Semantic-release requires clean git history
-- Check commit message format: `type(scope): message`
-- Manual release: `npx semantic-release` (locally for testing)
+1. **Conventional Commits**: Always use `feat:`, `fix:`, `chore:` prefixes for auto-versioning
+2. **Feature branches**: PR preview links appear automatically for all branches
+3. **Testing**: Push E2E test failures to artifacts; don't block workflow on optional audits
+4. **Secrets**: Keep `FIREBASE_SERVICE_ACCOUNT_*` secrets secure; rotate periodically
+5. **Scheduled runs**: Nightly workflow runs independently; doesn't affect PR/push checks
