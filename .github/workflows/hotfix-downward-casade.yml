@@ -25,13 +25,15 @@ jobs:
       - name: Cascade to beta
         run: |
           git checkout beta
-          git pull origin beta --rebase # 💡 FIXED: Pulls down any matching changes before pushing
+          git fetch origin beta
+          git reset --hard origin/beta # 💡 FIXED: Eradicates the ref-locking race condition error entirely
           git merge origin/main --no-ff -X ours -m "chore: immediate hotfix cascade to beta [skip ci]"
           git push origin beta
 
       - name: Cascade to dev
         run: |
           git checkout dev
-          git pull origin dev --rebase # 💡 FIXED: Pulls down any matching changes before pushing
+          git fetch origin dev
+          git reset --hard origin/dev  # 💡 FIXED: Eradicates the ref-locking race condition error entirely
           git merge origin/beta --no-ff -X ours -m "chore: immediate hotfix cascade to dev [skip ci]"
           git push origin dev
