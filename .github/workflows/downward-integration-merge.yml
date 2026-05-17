@@ -1,0 +1,26 @@
+name: Downward Integration Merge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all history for all branches
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+
+      - name: Merge MAIN into DEVELOPER
+        run: |
+          git checkout developer
+          git merge origin/main --no-ff -m "chore: downward integration merge from main [skip ci]"
+          git push origin developer
