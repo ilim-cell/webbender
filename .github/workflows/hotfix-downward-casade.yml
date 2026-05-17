@@ -1,0 +1,35 @@
+name: Immediate Hotfix Cascade
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  cascade-hotfix:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'hotfix') || contains(github.event.head_commit.message, 'v')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.BYPASS_TOKEN }} # Explicitly uses your admin token to bypass the ruleset
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+
+      - name: Cascade to beta
+        run: |
+          git checkout beta
+          git merge origin/main --no-ff -X ours -m "chore: immediate hotfix cascade to beta [skip ci]"
+          git push origin beta
+
+      - name: Cascade to dev
+        run: |
+          git checkout dev
+          git merge origin/beta --no-ff -X ours -m "chore: immediate hotfix cascade to dev [skip ci]"
+          git push origin dev
