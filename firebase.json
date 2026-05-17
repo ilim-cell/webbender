@@ -4,12 +4,30 @@
       "target": "sitePrimary",
       "public": "site",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "headers": [
+        {
+          "source": "/version.json",
+          "headers": [
+            { "key": "Access-Control-Allow-Origin", "value": "*" },
+            { "key": "Cache-Control", "value": "no-store" }
+          ]
+        }
+      ],
       "rewrites": [{ "source": "**", "destination": "/index.html" }]
     },
     {
       "target": "sitePublic",
       "public": "site",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "headers": [
+        {
+          "source": "/version.json",
+          "headers": [
+            { "key": "Access-Control-Allow-Origin", "value": "*" },
+            { "key": "Cache-Control", "value": "no-store" }
+          ]
+        }
+      ],
       "rewrites": [{ "source": "**", "destination": "/index.html" }]
     }
   ]
