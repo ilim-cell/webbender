@@ -12,15 +12,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetches all history for all branches
+          fetch-depth: 0 
 
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@://github.com"
 
-      - name: Merge MAIN into DEVELOPER
+      - name: Merge main into beta
         run: |
-          git checkout developer
+          git checkout beta
           git merge origin/main --no-ff -m "chore: downward integration merge from main [skip ci]"
-          git push origin developer
+          git push origin beta
+
+      - name: Merge beta into dev
+        run: |
+          git checkout dev
+          git merge origin/beta --no-ff -m "chore: downward integration merge from beta [skip ci]"
+          git push origin dev
