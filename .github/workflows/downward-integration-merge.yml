@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 
+          token: ${{ secrets.BYPASS_TOKEN }} # Explicitly uses your admin token to bypass the ruleset
 
       - name: Configure Git
         run: |
@@ -22,11 +23,11 @@ jobs:
       - name: Merge main into beta
         run: |
           git checkout beta
-          git merge origin/main --no-ff -m "chore: downward integration merge from main [skip ci]"
+          git merge origin/main --no-ff -X ours -m "chore: downward integration merge from main [skip ci]"
           git push origin beta
 
       - name: Merge beta into dev
         run: |
           git checkout dev
-          git merge origin/beta --no-ff -m "chore: downward integration merge from beta [skip ci]"
+          git merge origin/beta --no-ff -X ours -m "chore: downward integration merge from beta [skip ci]"
           git push origin dev
