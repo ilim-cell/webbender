@@ -115,8 +115,15 @@ jobs:
       - name: Install Playwright
         run: npx playwright install --with-deps chromium
 
-      - name: Build
-        run: npm run build
+      - name: Build and Verify Artifacts
+        run: |
+          # 💡 FIXED: Safely rebuilds locally on-the-fly if previous job tree zip context is missing or expired [2]
+          if [ ! -d "dist" ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
+            echo "⚠️ Staged build artifact not found or expired. Rebuilding locally..."
+            npm run build
+          else
+            echo "✓ Valid build artifact detected from previous job tree."
+          fi
 
       - name: Start test server
         run: |
