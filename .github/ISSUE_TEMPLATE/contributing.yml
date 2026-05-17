@@ -1,0 +1,44 @@
+name: 🚀 Become a contributor
+description: Request to join the project and start contributing.
+title: "[Contributor Request]: "
+labels: ["good first issue", "documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Welcome to the project! 
+        Thank you for your interest in contributing. Please fill out the form below to get started.
+
+  - type: checkboxes
+    id: areas-of-interest
+    attributes:
+      label: 🛠️ Areas of Interest
+      description: What would you like to work on? (Select all that apply)
+      options:
+        - label: Bug fixes
+        - label: New features
+        - label: Documentation updates
+        - label: UI/UX improvements
+        - label: Writing tests
+    validations:
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 💡 Your Background
+      description: Tell us a bit about your experience with our stack, or what you hope to learn.
+      placeholder: "I have some experience with..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: coordination-preference
+    attributes:
+      label: 📬 Coordination Preference
+      description: Where should we discuss your contributions?
+      options:
+        - This GitHub Issue
+        - Email
+    validations:
+      required: true
