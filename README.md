@@ -129,6 +129,7 @@ Repository secret required for Firebase deploy:
 
 - [Development Guide](./DEVELOPMENT.md) - Extend and customize Webbender
 - [Release Checklist](./RELEASE_CHECKLIST.md) - For maintainers
+- [Wiki](https://github.com/ilim-cell/webbender/wiki) - Usage and customization docs
 - [GitHub Releases](https://github.com/ilim-cell/webbender/releases) - Version history
 
 ## 🤝 Contributing
@@ -142,4 +143,3 @@ Contributions welcome! Please:
 ---
 
 Made with ❤️ by ilim-cell | [GitHub](https://github.com/ilim-cell/webbender)
-
