@@ -1,0 +1,33 @@
+name: Downward Integration Merge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+          token: ${{ secrets.BYPASS_TOKEN }} # Explicitly uses your admin token to bypass the ruleset
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+
+      - name: Merge main into beta
+        run: |
+          git checkout beta
+          git merge origin/main --no-ff -X ours -m "chore: downward integration merge from main [skip ci]"
+          git push origin beta
+
+      - name: Merge beta into dev
+        run: |
+          git checkout dev
+          git merge origin/beta --no-ff -X ours -m "chore: downward integration merge from beta [skip ci]"
+          git push origin dev
