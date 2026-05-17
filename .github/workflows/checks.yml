@@ -78,7 +78,17 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: dist-${{ github.sha }}
-          path: .
+          path: .artifact-dist
+
+      - name: Restore dist artifact
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          if [ -d .artifact-dist/dist ]; then
+            cp -R .artifact-dist/dist/. dist/
+          else
+            cp -R .artifact-dist/. dist/
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -137,7 +147,17 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: dist-${{ github.sha }}
-          path: .
+          path: .artifact-dist
+
+      - name: Restore dist artifact
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          if [ -d .artifact-dist/dist ]; then
+            cp -R .artifact-dist/dist/. dist/
+          else
+            cp -R .artifact-dist/. dist/
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -196,7 +216,17 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: dist-${{ github.sha }}
-          path: .
+          path: .artifact-dist
+
+      - name: Restore dist artifact
+        run: |
+          rm -rf dist
+          mkdir -p dist
+          if [ -d .artifact-dist/dist ]; then
+            cp -R .artifact-dist/dist/. dist/
+          else
+            cp -R .artifact-dist/. dist/
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
