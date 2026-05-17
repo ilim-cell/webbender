@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.BYPASS_TOKEN }} # Explicitly uses your admin token to bypass the ruleset
+          token: ${{ secrets.BYPASS_TOKEN }}
 
       - name: Configure Git
         run: |
@@ -25,11 +25,13 @@ jobs:
       - name: Cascade to beta
         run: |
           git checkout beta
+          git pull origin beta --rebase # 💡 FIXED: Pulls down any matching changes before pushing
           git merge origin/main --no-ff -X ours -m "chore: immediate hotfix cascade to beta [skip ci]"
           git push origin beta
 
       - name: Cascade to dev
         run: |
           git checkout dev
+          git pull origin dev --rebase # 💡 FIXED: Pulls down any matching changes before pushing
           git merge origin/beta --no-ff -X ours -m "chore: immediate hotfix cascade to dev [skip ci]"
           git push origin dev
