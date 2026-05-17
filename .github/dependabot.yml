@@ -8,6 +8,7 @@ updates:
       day: 'monday'
       time: '04:00'
     open-pull-requests-limit: 5
+    target-branch: 'dev' # Forces npm updates to target dev instead of main
     reviewers:
       - 'ilim-cell'
     labels:
@@ -31,6 +32,7 @@ updates:
       interval: 'weekly'
       day: 'monday'
       time: '04:00'
+    target-branch: 'dev' # Forces CI/CD updates to target dev instead of main
     reviewers:
       - 'ilim-cell'
     labels:
