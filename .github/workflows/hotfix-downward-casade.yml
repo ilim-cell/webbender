@@ -25,15 +25,39 @@ jobs:
       - name: Cascade to beta
         run: |
           git checkout beta
-          git fetch origin beta
-          git reset --hard origin/beta # 💡 FIXED: Eradicates the ref-locking race condition error entirely
-          git merge origin/main --no-ff -X ours -m "chore: immediate hotfix cascade to beta [skip ci]"
-          git push origin beta
+          # 💡 ATOMIC RETRY LOOP: Backs off exponentially up to 5 times if a remote race condition happens
+          for i in {1..5}; do
+            git fetch origin beta
+            git reset --hard origin/beta
+            if git merge origin/main --no-ff -X ours -m "chore: immediate hotfix cascade to beta [skip ci]"; then
+              if git push origin beta; then
+                echo "✓ Successfully pushed to beta!"
+                break
+              fi
+            fi
+            
+            # 💡 EXPONENTIAL BACKOFF CALCULATION: (2^i seconds) -> 2s, 4s, 8s, 16s, 32s
+            BACKOFF=$((2**i))
+            echo "⚠️ Remote changed mid-flight. Backing off for ${BACKOFF}s and retrying ($i/5)..."
+            sleep $BACKOFF
+          done
 
       - name: Cascade to dev
         run: |
           git checkout dev
-          git fetch origin dev
-          git reset --hard origin/dev  # 💡 FIXED: Eradicates the ref-locking race condition error entirely
-          git merge origin/beta --no-ff -X ours -m "chore: immediate hotfix cascade to dev [skip ci]"
-          git push origin dev
+          # 💡 ATOMIC RETRY LOOP: Backs off exponentially up to 5 times if a remote race condition happens
+          for i in {1..5}; do
+            git fetch origin dev
+            git reset --hard origin/dev
+            if git merge origin/beta --no-ff -X ours -m "chore: immediate hotfix cascade to dev [skip ci]"; then
+              if git push origin dev; then
+                echo "✓ Successfully pushed to dev!"
+                break
+              fi
+            fi
+            
+            # 💡 EXPONENTIAL BACKOFF CALCULATION: (2^i seconds) -> 2s, 4s, 8s, 16s, 32s
+            BACKOFF=$((2**i))
+            echo "⚠️ Remote changed mid-flight. Backing off for ${BACKOFF}s and retrying ($i/5)..."
+            sleep $BACKOFF
+          done
