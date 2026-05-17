@@ -20,23 +20,20 @@ Webbender is a feature-rich bookmarklet for you to *bend* the web to your will, 
 
 ## 🚀 Quick Install
 
-### Option 1: Auto-Updating (Recommended)
+### Option 1: CSP-Unblocked Install (Recommended)
 
-1. Right-click your bookmarks bar → **Add Page** or **New Bookmark**
-2. Name: `Webbender`
-3. URL/Address - **paste this:**
+Open the hosted [installer page](https://webbender.web.app), then either:
 
-```javascript
-javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){console.error('Webbender: failed to load from all URLs');alert('Webbender failed to load. Check the browser console for details.');return;}var src=urls[index++];var script=document.createElement('script');script.id=id;script.src=src;script.onerror=function(){console.error('Webbender: failed to load',src);script.remove();load();};document.head.appendChild(script);}load();})();
-```
+1. Drag **“Drag Webbender to bookmarks”** to your bookmarks bar, or
+2. Click **“Copy bookmarklet”** and paste that value into a new bookmark URL.
 
-### Option 2: Manual Installation
+This bookmarklet is now self-contained (no external `<script>` injection), so it runs on strict CSP sites.
 
-See [Installation Guide](./DEVELOPMENT.md#installation) for detailed instructions.
+### Option 2: Manual Installation from Local Build
 
-### Option 3: Installer Page (Drag-and-Drop)
-
-Open the hosted [installer page](https://webbender.web.app) and drag the button to your bookmarks bar:
+1. Run `npm run build`
+2. Copy the full contents of `dist/bookmarklet.js`
+3. Create a bookmark and paste it into the URL field
 
 ## 📖 Usage
 
@@ -72,13 +69,13 @@ npm run watch          # Auto-rebuild on changes
 
 ```
 src/
-├── webbender.js       # Main bookmarklet (raw, formatted)
-└── auto-update.js     # Auto-update service
+└── webbender.js       # Main bookmarklet source
 
 dist/
-├── webbender.js       # Minified bookmarklet
-├── webbender.min.js   # CDN version
-└── version.json       # Version info
+├── webbender.js       # Minified payload
+├── bookmarklet.js     # Self-contained javascript: bookmarklet
+├── loader.js          # Legacy loader output
+└── version.json       # Version info for update checks
 ```
 
 ## 🔄 How Updates Work
@@ -86,8 +83,8 @@ dist/
 1. **Source of Truth**: `src/webbender.js` is maintained as clean, readable code
 2. **Automated Building**: `build.js` minifies and generates bookmarklet versions
 3. **CI/CD Pipeline**: GitHub Actions automatically deploys on new releases
-4. **Auto-Update**: The loader bookmarklet fetches latest from jsDelivr CDN
-5. **Notifications**: Users see an update prompt if a newer version exists
+4. **Install Flow**: `site/index.html` is updated with the current self-contained bookmarklet code
+5. **Notifications**: Runtime version checks use `https://webbender.web.app/version.json` and show reinstall prompts
 
 ## ⚠️ Important
 
@@ -139,4 +136,3 @@ Contributions welcome! Please:
 ---
 
 Made with ❤️ by ilim-cell | [GitHub](https://github.com/ilim-cell/webbender)
-
