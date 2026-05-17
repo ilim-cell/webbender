@@ -129,7 +129,7 @@ jobs:
           } > nightly-report.md
 
       - name: Upload report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nightly-report-${{ github.run_id }}
           path: nightly-report.md
