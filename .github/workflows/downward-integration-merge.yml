@@ -1,0 +1,63 @@
+name: Downward Integration Merge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+    # 💡 FIXED: Inverts the trigger so it steps aside whenever a hotfix or release tag is pushed
+    if: "!contains(github.event.head_commit.message, 'hotfix') && !contains(github.event.head_commit.message, 'v')"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+          token: ${{ secrets.BYPASS_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+
+      - name: Merge main into beta
+        run: |
+          git checkout beta
+          # 💡 ATOMIC RETRY LOOP: Backs off exponentially up to 5 times if a remote race condition happens
+          for i in {1..5}; do
+            git fetch origin beta
+            git reset --hard origin/beta
+            if git merge origin/main --no-ff -X ours -m "chore: downward integration merge from main [skip ci]"; then
+              if git push origin beta; then
+                echo "✓ Successfully pushed to beta!"
+                break
+              fi
+            fi
+            
+            # 💡 EXPONENTIAL BACKOFF CALCULATION: (2^i seconds) -> 2s, 4s, 8s, 16s, 32s
+            BACKOFF=$((2**i))
+            echo "⚠️ Remote changed mid-flight. Backing off for ${BACKOFF}s and retrying ($i/5)..."
+            sleep $BACKOFF
+          done
+
+      - name: Merge beta into dev
+        run: |
+          git checkout dev
+          # 💡 ATOMIC RETRY LOOP: Backs off exponentially up to 5 times if a remote race condition happens
+          for i in {1..5}; do
+            git fetch origin dev
+            git reset --hard origin/dev
+            if git merge origin/beta --no-ff -X ours -m "chore: downward integration merge from beta [skip ci]"; then
+              if git push origin dev; then
+                echo "✓ Successfully pushed to dev!"
+                break
+              fi
+            fi
+            
+            # 💡 EXPONENTIAL BACKOFF CALCULATION: (2^i seconds) -> 2s, 4s, 8s, 16s, 32s
+            BACKOFF=$((2**i))
+            echo "⚠️ Remote changed mid-flight. Backing off for ${BACKOFF}s and retrying ($i/5)..."
+            sleep $BACKOFF
+          done
