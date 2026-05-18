@@ -30,9 +30,6 @@ jobs:
       - name: Auto-fix code formatting
         run: npm run format
 
-      - name: Verify code formatting
-        run: npm run format:check
-
       - name: Commit and push formatting fixes
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
