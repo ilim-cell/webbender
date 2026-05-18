@@ -41,7 +41,14 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
             git commit -m "style: auto-format source with prettier"
-            git push
+            if ! git pull --rebase origin "${{ github.head_ref }}"; then
+              echo "Could not rebase onto latest branch state; skipping auto-push."
+              exit 0
+            fi
+            if ! git push origin "HEAD:${{ github.head_ref }}"; then
+              echo "Auto-push failed due to concurrent updates; please rerun or push locally."
+              exit 0
+            fi
           else
             echo "No formatting fixes to commit."
           fi
