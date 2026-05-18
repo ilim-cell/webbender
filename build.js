@@ -10,6 +10,7 @@ const path = require('path');
 const { minify } = require('terser');
 
 const SOURCE_FILE = path.join(__dirname, 'src', 'webbender.js');
+const SOURCE_SECTIONS_DIR = path.join(__dirname, 'src', 'bookmarklet');
 const DIST_DIR = path.join(__dirname, 'dist');
 const SITE_DIR = path.join(__dirname, 'site');
 const BOOKMARKLET_FILE = path.join(DIST_DIR, 'webbender.js');
@@ -24,11 +25,41 @@ if (!fs.existsSync(DIST_DIR)) {
   fs.mkdirSync(DIST_DIR, { recursive: true });
 }
 
-// Read source file
-const source = fs.readFileSync(SOURCE_FILE, 'utf8');
 const version = require('./package.json').version;
 
+function getSourceFromSections() {
+  if (!fs.existsSync(SOURCE_SECTIONS_DIR)) {
+    return null;
+  }
+
+  const sectionFiles = fs
+    .readdirSync(SOURCE_SECTIONS_DIR)
+    .filter((file) => file.endsWith('.js'))
+    .sort();
+
+  if (sectionFiles.length === 0) {
+    return null;
+  }
+
+  const stitched = sectionFiles
+    .map((file) => fs.readFileSync(path.join(SOURCE_SECTIONS_DIR, file), 'utf8').trimEnd())
+    .join('\n\n');
+
+  // Keep src/webbender.js as a stitched readable source artifact.
+  fs.writeFileSync(SOURCE_FILE, stitched + '\n', 'utf8');
+  return stitched;
+}
+
+function getSource() {
+  const sectionSource = getSourceFromSections();
+  if (sectionSource) {
+    return sectionSource;
+  }
+  return fs.readFileSync(SOURCE_FILE, 'utf8');
+}
+
 async function runBuild() {
+  const source = getSource();
   // Inject version constant before minifying
   const sourceWithVersion = source.replace('__WEBBENDER_VERSION__', version);
 
@@ -80,6 +111,9 @@ async function runBuild() {
 
   console.log('✓ Build complete!');
   console.log(`✓ Source: ${SOURCE_FILE}`);
+  if (fs.existsSync(SOURCE_SECTIONS_DIR)) {
+    console.log(`✓ Stitched sections: ${SOURCE_SECTIONS_DIR}`);
+  }
   console.log(`✓ Minified: ${BOOKMARKLET_FILE} (${minified.length} bytes)`);
   console.log(`✓ Bookmarklet: ${BOOKMARKLET_URL_FILE}`);
   console.log(`✓ Loader: ${LOADER_FILE}`);

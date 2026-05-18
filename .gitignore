@@ -10,3 +10,5 @@ npm-debug.log*
 .claude/
 skills-lock.json
 rulesets/
+playwright-report/
+test-results/
