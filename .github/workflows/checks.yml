@@ -32,17 +32,19 @@ jobs:
 
       - name: Commit and push formatting fixes
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
             git commit -m "style: auto-format source with prettier"
-            if ! git pull --rebase origin "${{ github.head_ref }}"; then
+            if ! git pull --rebase origin "$HEAD_REF"; then
               echo "Could not rebase onto latest branch state; skipping auto-push."
               exit 0
             fi
-            if ! git push origin "HEAD:${{ github.head_ref }}"; then
+            if ! git push origin "HEAD:$HEAD_REF"; then
               echo "Auto-push failed due to concurrent updates; please rerun or push locally."
               exit 0
             fi
