@@ -36,10 +36,7 @@ jobs:
         run: npm run build
 
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v6
-        with:
-          semantic_version: 23
-          repository-url: https://github.com/${{ github.repository }}
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
