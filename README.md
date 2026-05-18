@@ -2,7 +2,6 @@
 
 > A powerful bookmarklet to **bend** the web to your will
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Node](https://img.shields.io/badge/node-16+-brightgreen)
 
