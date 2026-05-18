@@ -36,6 +36,10 @@ jobs:
           HEAD_REF: ${{ github.head_ref }}
         run: |
           if ! git diff --quiet; then
+            if ! printf '%s' "$HEAD_REF" | grep -Eq '^[A-Za-z0-9._/-]+$'; then
+              echo "Unsafe branch name detected; skipping auto-push."
+              exit 0
+            fi
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
