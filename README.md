@@ -72,7 +72,12 @@ npm run watch          # Auto-rebuild on changes
 
 ```
 src/
-├── webbender.js       # Main bookmarklet (raw, formatted)
+├── bookmarklet/       # Sectioned bookmarklet source (author here)
+│   ├── 00-shared-ui.js
+│   ├── 10-state.js
+│   ├── 20-sections.js
+│   └── 99-main.js
+├── webbender.js       # Auto-stitched source artifact from src/bookmarklet
 └── auto-update.js     # Auto-update service
 
 dist/
@@ -83,11 +88,12 @@ dist/
 
 ## 🔄 How Updates Work
 
-1. **Source of Truth**: `src/webbender.js` is maintained as clean, readable code
-2. **Automated Building**: `build.js` minifies and generates bookmarklet versions
-3. **CI/CD Pipeline**: GitHub Actions automatically deploys on new releases
-4. **Auto-Update**: The loader bookmarklet fetches latest from jsDelivr CDN
-5. **Notifications**: Users see an update prompt if a newer version exists
+1. **Source of Truth**: Edit section files in `src/bookmarklet/`
+2. **Stitching**: `build.js` stitches `src/bookmarklet/*.js` into `src/webbender.js`
+3. **Automated Building**: `build.js` minifies and generates bookmarklet versions
+4. **CI/CD Pipeline**: GitHub Actions builds the stitched bookmarklet and deploys on releases
+5. **Auto-Update**: The loader bookmarklet fetches latest from jsDelivr CDN
+6. **Notifications**: Users see an update prompt if a newer version exists
 
 ## ⚠️ Important
 
@@ -97,7 +103,7 @@ dist/
 
 Want to modify Webbender?
 
-1. Edit `src/webbender.js`
+1. Edit files in `src/bookmarklet/`
 2. Run `npm run format && npm run build`
 3. Test in your browser
 4. Share your improvements via pull request!
@@ -139,4 +145,3 @@ Contributions welcome! Please:
 ---
 
 Made with ❤️ by ilim-cell | [GitHub](https://github.com/ilim-cell/webbender)
-
