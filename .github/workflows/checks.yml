@@ -36,7 +36,7 @@ jobs:
           HEAD_REF: ${{ github.head_ref }}
         run: |
           if ! git diff --quiet; then
-            if ! printf '%s' "$HEAD_REF" | grep -Eq '^[A-Za-z0-9/_-]+$'; then
+            if ! git check-ref-format --branch "$HEAD_REF" >/dev/null 2>&1; then
               echo "Unsafe branch name detected; skipping auto-push."
               exit 0
             fi
@@ -44,7 +44,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add -A
-            git commit -m "style: auto-format source with Prettier"
+            git commit -m "style: auto-format source code"
             if ! git pull --rebase origin "$VALIDATED_HEAD_REF"; then
               echo "Could not rebase onto latest branch state; skipping auto-push."
               exit 0
