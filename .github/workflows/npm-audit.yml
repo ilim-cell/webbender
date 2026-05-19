@@ -1,4 +1,4 @@
-name: Node.js CI - npm audit fix, auto PR & issue for high/critical
+name: Node.js Audit
 
 on:
   push:
@@ -16,9 +16,10 @@ jobs:
   npm-audit:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # required for pushing branches/creating PRs
-      issues: write     # required for creating issues
-      pull-requests: write
+      contents: write       # To push branches and create PRs
+      issues: write         # To create issues
+      pull-requests: write  # To create PRs
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,7 +38,7 @@ jobs:
             echo "Running npm audit fix --force"
             npm audit fix --force
           else
-            echo "Running npm audit fix (no --force)"
+            echo "Running npm audit fix"
             npm audit fix
           fi
 
@@ -58,10 +59,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            // Check if a similar open issue already exists
-            const high = ${{ steps.audit.outputs.high }};
-            const critical = ${{ steps.audit.outputs.critical }};
-            const summary = `Security Alert: ${critical>0 ? critical+" critical " : ""}${high>0 ? high+" high " : ""}vulnerabilities detected by npm audit`;
+            const high = Number("${{ steps.audit.outputs.high }}");
+            const critical = Number("${{ steps.audit.outputs.critical }}");
+            const title = `Security Alert: ${critical > 0 ? `${critical} critical ` : ''}${high > 0 ? `${high} high ` : ''}vulnerabilities detected by npm audit`;
             const issues = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -70,20 +70,20 @@ jobs:
             });
             const exists = issues.find(issue => issue.title.includes('Security Alert') && issue.state === 'open');
             if (!exists) {
-              // Only first 6KB so the body doesn't get too big
               const audit = require('fs').readFileSync('audit-results.json', 'utf-8').slice(0, 6000);
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: summary,
-                body: `npm audit detected:\n- ${critical} critical\n- ${high} high vulnerability(ies)\n\n\`\`\`json\n${audit}\n\`\`\``,
+                title,
+                body: `npm audit detected:\n- **${critical} critical**\n- **${high} high** vulnerability(ies)\n\n\`\`\`json\n${audit}\n\`\`\``,
                 labels: ['security', 'automated']
               });
+            } else {
+              console.log("Security alert issue already exists, not creating a new one.");
             }
 
       - name: Create Pull Request for patched audit results
         if: steps.audit.outputs.high != '0' || steps.audit.outputs.critical != '0'
-        id: create-pr
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "chore: npm audit fix for high/critical vulnerabilities"
@@ -95,7 +95,6 @@ jobs:
           labels: security, automated
           delete-branch: true
 
-      # Always fail if remaining high or critical vulnerabilities are present
       - name: Fail if unresolved high or critical vulnerabilities remain
         if: steps.audit.outputs.high != '0' || steps.audit.outputs.critical != '0'
         run: |
