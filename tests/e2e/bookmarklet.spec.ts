@@ -62,6 +62,71 @@ test.describe('Webbender E2E Tests', () => {
     await expect(editToggle).toBeVisible();
   });
 
+  test('should hide and restore panel around dialog acknowledgements', async ({ page }) => {
+    await page.goto('/index.html');
+    const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
+
+    await page.evaluate((code) => {
+      const jsCode = code.substring('javascript:'.length);
+      new Function(jsCode)();
+    }, bookmarkletCode);
+
+    const dialogState = await page.evaluate(async () => {
+      const promptCalls = [];
+      const displayDuringDialog = { alert: null, confirm: null, prompt: null };
+      const originalPrompt = window.prompt;
+      const originalAlert = window.alert;
+      const originalConfirm = window.confirm;
+
+      window.prompt = (message = '', defaultValue = '') => {
+        promptCalls.push({ message, defaultValue });
+        if (message === 'Alert message:') return 'Alert test message';
+        if (message === 'Confirm message:') return 'Confirm test message';
+        if (message === 'Prompt question:') return 'Prompt test question';
+
+        displayDuringDialog.prompt = document.getElementById('webbender-ui')?.style.display ?? null;
+        return 'Prompt answer';
+      };
+      window.alert = () => {
+        displayDuringDialog.alert = document.getElementById('webbender-ui')?.style.display ?? null;
+      };
+      window.confirm = () => {
+        displayDuringDialog.confirm = document.getElementById('webbender-ui')?.style.display ?? null;
+        return true;
+      };
+
+      const clickDialogButton = (label) => {
+        const button = Array.from(document.querySelectorAll('#webbender-ui button')).find(
+          (candidate) => candidate.textContent === label
+        );
+        if (!button) throw new Error(`Missing dialog button: ${label}`);
+        button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      };
+
+      clickDialogButton('Alert');
+      clickDialogButton('Confirm');
+      clickDialogButton('Prompt');
+
+      window.prompt = originalPrompt;
+      window.alert = originalAlert;
+      window.confirm = originalConfirm;
+
+      return {
+        promptCalls,
+        displayDuringDialog,
+        finalDisplay: document.getElementById('webbender-ui')?.style.display ?? null,
+      };
+    });
+
+    expect(dialogState.promptCalls[0]?.message).toBe('Alert message:');
+    expect(dialogState.promptCalls[1]?.message).toBe('Confirm message:');
+    expect(dialogState.promptCalls[2]?.message).toBe('Prompt question:');
+    expect(dialogState.displayDuringDialog.alert).toBe('none');
+    expect(dialogState.displayDuringDialog.confirm).toBe('none');
+    expect(dialogState.displayDuringDialog.prompt).toBe('none');
+    expect(dialogState.finalDisplay).toBe('flex');
+  });
+
   test('should highlight and move page elements without letting them leave the viewport entirely', async ({
     page,
   }) => {
