@@ -82,7 +82,7 @@ dist/
 1. **Source of Truth**: `src/webbender.js` is maintained as clean, readable code
 2. **Automated Building**: `scripts/build.js` minifies and generates bookmarklet versions
 3. **CI/CD Pipeline**: GitHub Actions automatically deploys on new releases
-4. **Install Flow**: `site/index.html` is updated with the current self-contained bookmarklet code
+4. **Install Flow**: `site/index.html` loads `site/bookmarklet.js` at runtime and builds the `javascript:` install code dynamically
 5. **Notifications**: Runtime version checks use `https://webbender.web.app/version.json` and show reinstall prompts
 
 ## ⚠️ Important

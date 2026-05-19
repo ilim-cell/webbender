@@ -381,6 +381,8 @@ function wbCreateEditRemoveSection(ui, container, state) {
 
 function wbCreateFontThemeSection(ui, state) {
   const { settings, saveSettings } = state;
+  const getThemeCss = (bg, fg) =>
+    `* { background: ${bg} !important; color: ${fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; background-image: none !important; } html, body { background: ${bg} !important; background-image: none !important; }`;
 
   const fontSection = ui.create('div', {
     style: { display: 'flex', flexDirection: 'column', gap: '6px' },
@@ -488,7 +490,7 @@ function wbCreateFontThemeSection(ui, state) {
             styleEl.textContent = '';
             settings.theme = 'default';
           } else {
-            styleEl.textContent = `* { background-color: ${theme.bg} !important; color: ${theme.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
+            styleEl.textContent = getThemeCss(theme.bg, theme.fg);
             settings.theme = theme.name.toLowerCase();
           }
           saveSettings();
@@ -654,7 +656,7 @@ function wbRestoreAndAssemble(state, controls) {
     const themeObj = themes.find((t) => t.name.toLowerCase() === settings.theme);
     if (themeObj && themeObj.bg) {
       const styleEl = wbGetStyleElement('webbender-theme-style');
-      styleEl.textContent = `* { background-color: ${themeObj.bg} !important; color: ${themeObj.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
+      styleEl.textContent = getThemeCss(themeObj.bg, themeObj.fg);
     }
   }
   if (settings.editMode) setEditMode(true);
