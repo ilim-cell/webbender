@@ -134,7 +134,8 @@ test.describe('Webbender E2E Tests', () => {
       };
     });
 
-    expect(result.outline).toContain('2px solid');
+    expect(result.outline).toContain('solid');
+    expect(result.outline).toContain('2px');
     expect(result.moved).toBe(true);
     expect(result.stillVisible).toBe(true);
   });
@@ -143,6 +144,15 @@ test.describe('Webbender E2E Tests', () => {
     await page.goto('/index.html');
     const installTab = page.locator('[data-tab="install"]');
     await installTab.evaluate((el) => el.click());
+
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: async () => {},
+        },
+      });
+    });
     
     const copyBtn = page.locator('#copyBtn');
     await expect(copyBtn).toBeVisible();
@@ -155,11 +165,12 @@ test.describe('Webbender E2E Tests', () => {
   });
 
   test('bookmarklet code should be syntactically valid', async ({ page }) => {
-    const bookmarkletCode = '!function(){const e="webbender-ui"';
+    await page.goto('/index.html');
+    const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
     
     const isValid = await page.evaluate((code) => {
       try {
-        new Function(code);
+        new Function(code.substring('javascript:'.length));
         return true;
       } catch {
         return false;
