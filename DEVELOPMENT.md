@@ -78,8 +78,9 @@ webbender/
 
 ## How It Works
 
-1. **Source of Truth**: `src/webbender.js` contains the raw, well-formatted JavaScript
-2. **Building**: `build.js` minifies the source and generates:
+1. **Source of Truth**: Edit section files in `src/bookmarklet/`
+2. **Stitching**: `build.js` stitches section files into `src/webbender.js`
+3. **Building**: `build.js` minifies the source and generates:
    - `dist/webbender.js` - Minified bookmarklet code
    - `dist/webbender.min.js` - CDN-hosted version
    - `dist/version.json` - Version info for update checks
@@ -112,7 +113,7 @@ Configuration is in `.prettierrc`.
 
 To add new features:
 
-1. Edit `src/webbender.js`
+1. Edit `src/bookmarklet/*.js`
 2. Run `npm run format` to format code
 3. Run `npm run build` to generate the bookmarklet
 4. Test in browser
@@ -120,7 +121,7 @@ To add new features:
 ### Building Your Own Version
 
 1. Fork this repository
-2. Make your changes to `src/webbender.js`
+2. Make your changes in `src/bookmarklet/`
 3. Update the version in `package.json`
 4. Push to trigger GitHub Actions
 5. New versions will auto-deploy to GitHub Pages

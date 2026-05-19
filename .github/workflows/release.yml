@@ -36,10 +36,7 @@ jobs:
         run: npm run build
 
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v6
-        with:
-          semantic_version: 23
-          repository-url: https://github.com/${{ github.repository }}
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -103,8 +100,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Format check
-        run: npm run format:check || true
+      - name: Auto-fix formatting
+        run: npm run format
 
       - name: Build
         run: npm run build
@@ -131,7 +128,7 @@ jobs:
           } > nightly-report.md
 
       - name: Upload report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nightly-report-${{ github.run_id }}
           path: nightly-report.md

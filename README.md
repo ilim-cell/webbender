@@ -2,7 +2,6 @@
 
 > A powerful bookmarklet to **bend** the web to your will
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Node](https://img.shields.io/badge/node-16+-brightgreen)
 
@@ -94,7 +93,7 @@ dist/
 
 Want to modify Webbender?
 
-1. Edit `src/webbender.js`
+1. Edit files in `src/bookmarklet/`
 2. Run `npm run format && npm run build`
 3. Test in your browser
 4. Share your improvements via pull request!
