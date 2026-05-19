@@ -9,7 +9,7 @@
 
   const { header } = wbCreateHeader(ui, container);
   const { updateBanner, updateText } = wbCreateUpdateBanner(ui);
-  const { editSection, removeSection, setEditMode } = wbCreateEditRemoveSection(
+  const { editSection, moveSection, removeSection, setEditMode } = wbCreateEditRemoveSection(
     ui,
     container,
     state
@@ -29,6 +29,7 @@
     updateBanner,
     updateText,
     editSection,
+    moveSection,
     removeSection,
     fontSection,
     themeSection,
