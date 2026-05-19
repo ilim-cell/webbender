@@ -53,6 +53,7 @@ function wbInitState() {
 
   const settings = {
     editMode: false,
+    moveMode: false,
     removeMode: false,
     customFont: '',
     theme: 'default',
@@ -150,6 +151,9 @@ function wbCreateHeader(ui, container) {
         if (window._webbenderRemoveMode) {
           window._webbenderToggleRemove(false);
         }
+        if (window._webbenderMoveMode) {
+          window._webbenderToggleMove(false);
+        }
         container.remove();
       },
     }
@@ -209,6 +213,38 @@ function wbCreateUpdateBanner(ui) {
 
 function wbCreateEditRemoveSection(ui, container, state) {
   const { settings, saveSettings } = state;
+  const MOVE_OUTLINE = '2px solid #22c55e';
+  const REMOVE_OUTLINE = '2px solid #ef4444';
+
+  function isBookmarkletElement(target) {
+    return (
+      !target ||
+      target === container ||
+      container.contains(target) ||
+      target.tagName === 'HTML' ||
+      target.tagName === 'BODY'
+    );
+  }
+
+  function setOutline(target, outline) {
+    if (!target || target.dataset.webbenderOutlineBackup !== undefined) return;
+    target.dataset.webbenderOutlineBackup = target.style.outline || '';
+    target.style.outline = outline;
+  }
+
+  function clearOutline(target) {
+    if (!target || target.dataset.webbenderOutlineBackup === undefined) return;
+    target.style.outline = target.dataset.webbenderOutlineBackup;
+    delete target.dataset.webbenderOutlineBackup;
+  }
+
+  function applyMoveTransform(target, x, y) {
+    const baseTransform = target.dataset.webbenderBaseTransform || '';
+    const translate = `translate(${x}px, ${y}px)`;
+    target.style.transform = baseTransform ? `${translate} ${baseTransform}` : translate;
+    target.dataset.webbenderMoveX = String(x);
+    target.dataset.webbenderMoveY = String(y);
+  }
 
   const editSection = ui.create('div', {
     style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
@@ -224,6 +260,12 @@ function wbCreateEditRemoveSection(ui, container, state) {
   editToggle.checked = document.designMode === 'on';
 
   function setEditMode(enabled) {
+    if (enabled && window._webbenderRemoveMode) {
+      window._webbenderToggleRemove(false);
+    }
+    if (enabled && window._webbenderMoveMode) {
+      window._webbenderToggleMove(false);
+    }
     document.designMode = enabled ? 'on' : 'off';
     document.body.contentEditable = enabled ? 'true' : 'false';
     editToggle.checked = enabled;
@@ -234,6 +276,18 @@ function wbCreateEditRemoveSection(ui, container, state) {
   editToggle.onchange = (e) => setEditMode(e.target.checked);
   editLabel.appendChild(editToggle);
   editSection.appendChild(editLabel);
+
+  const moveSection = ui.create('div', {
+    style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  });
+  const moveLabel = ui.create('label', {
+    textContent: 'Grab & Move',
+    style: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', flex: '1' },
+  });
+  const moveToggle = ui.create('input', {
+    attrs: { type: 'checkbox' },
+    style: { cursor: 'pointer', width: '16px', height: '16px' },
+  });
 
   const removeSection = ui.create('div', {
     style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
@@ -247,31 +301,145 @@ function wbCreateEditRemoveSection(ui, container, state) {
     style: { cursor: 'pointer', width: '16px', height: '16px' },
   });
 
+  let moveHoverTarget = null;
+  let activeMoveTarget = null;
+  window._webbenderMoveMode = false;
   window._webbenderRemoveMode = false;
 
-  const hoverHandler = (e) => {
-    if (e.target === container || container.contains(e.target)) return;
-    e.target.style.outline = '2px solid #ef4444';
-  };
-  const leaveHandler = (e) => {
-    if (e.target === container || container.contains(e.target)) return;
-    e.target.style.outline = '';
-  };
-  const clickHandler = (e) => {
-    if (
-      e.target === container ||
-      container.contains(e.target) ||
-      e.target.tagName === 'HTML' ||
-      e.target.tagName === 'BODY'
-    ) {
-      return;
+  function setMoveHoverTarget(target) {
+    if (moveHoverTarget === target) return;
+    clearOutline(moveHoverTarget);
+    moveHoverTarget = target;
+    if (moveHoverTarget) {
+      setOutline(moveHoverTarget, MOVE_OUTLINE);
     }
+  }
+
+  const moveHoverHandler = (e) => {
+    if (activeMoveTarget || isBookmarkletElement(e.target)) return;
+    setMoveHoverTarget(e.target);
+  };
+  const moveLeaveHandler = (e) => {
+    if (activeMoveTarget || e.target !== moveHoverTarget) return;
+    setMoveHoverTarget(null);
+  };
+  const moveDownHandler = (e) => {
+    if (e.button !== 0 || isBookmarkletElement(e.target)) return;
+
+    const rect = e.target.getBoundingClientRect();
+    const moveX = parseFloat(e.target.dataset.webbenderMoveX || '0');
+    const moveY = parseFloat(e.target.dataset.webbenderMoveY || '0');
+
+    if (e.target.dataset.webbenderBaseTransform === undefined) {
+      e.target.dataset.webbenderBaseTransform = e.target.style.transform || '';
+    }
+
+    activeMoveTarget = {
+      target: e.target,
+      startX: e.clientX,
+      startY: e.clientY,
+      moveX,
+      moveY,
+      minDeltaX: -rect.right + 1,
+      maxDeltaX: window.innerWidth - rect.left - 1,
+      minDeltaY: -rect.bottom + 1,
+      maxDeltaY: window.innerHeight - rect.top - 1,
+    };
+
+    setMoveHoverTarget(e.target);
     e.preventDefault();
     e.stopPropagation();
+  };
+  const moveHandler = (e) => {
+    if (!activeMoveTarget) return;
+
+    const deltaX = Math.min(
+      Math.max(e.clientX - activeMoveTarget.startX, activeMoveTarget.minDeltaX),
+      activeMoveTarget.maxDeltaX
+    );
+    const deltaY = Math.min(
+      Math.max(e.clientY - activeMoveTarget.startY, activeMoveTarget.minDeltaY),
+      activeMoveTarget.maxDeltaY
+    );
+
+    applyMoveTransform(
+      activeMoveTarget.target,
+      activeMoveTarget.moveX + deltaX,
+      activeMoveTarget.moveY + deltaY
+    );
+
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const moveUpHandler = (e) => {
+    if (!activeMoveTarget) return;
+    setMoveHoverTarget(activeMoveTarget.target);
+    activeMoveTarget = null;
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const moveClickHandler = (e) => {
+    if (isBookmarkletElement(e.target)) return;
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const hoverHandler = (e) => {
+    if (isBookmarkletElement(e.target)) return;
+    setOutline(e.target, REMOVE_OUTLINE);
+  };
+  const leaveHandler = (e) => {
+    if (isBookmarkletElement(e.target)) return;
+    clearOutline(e.target);
+  };
+  const clickHandler = (e) => {
+    if (isBookmarkletElement(e.target)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    clearOutline(e.target);
     e.target.remove();
   };
 
+  window._webbenderToggleMove = function (enabled) {
+    if (enabled && document.designMode === 'on') {
+      setEditMode(false);
+    }
+    if (enabled && window._webbenderRemoveMode) {
+      window._webbenderToggleRemove(false);
+    }
+
+    window._webbenderMoveMode = enabled;
+    moveToggle.checked = enabled;
+    settings.moveMode = enabled;
+    saveSettings();
+
+    if (enabled) {
+      document.addEventListener('mouseover', moveHoverHandler);
+      document.addEventListener('mouseout', moveLeaveHandler);
+      document.addEventListener('mousedown', moveDownHandler, true);
+      document.addEventListener('mousemove', moveHandler, true);
+      document.addEventListener('mouseup', moveUpHandler, true);
+      document.addEventListener('click', moveClickHandler, true);
+    } else {
+      document.removeEventListener('mouseover', moveHoverHandler);
+      document.removeEventListener('mouseout', moveLeaveHandler);
+      document.removeEventListener('mousedown', moveDownHandler, true);
+      document.removeEventListener('mousemove', moveHandler, true);
+      document.removeEventListener('mouseup', moveUpHandler, true);
+      document.removeEventListener('click', moveClickHandler, true);
+      setMoveHoverTarget(null);
+      activeMoveTarget = null;
+    }
+  };
+
   window._webbenderToggleRemove = function (enabled) {
+    if (enabled && document.designMode === 'on') {
+      setEditMode(false);
+    }
+    if (enabled && window._webbenderMoveMode) {
+      window._webbenderToggleMove(false);
+    }
+
     window._webbenderRemoveMode = enabled;
     removeToggle.checked = enabled;
     settings.removeMode = enabled;
@@ -288,11 +456,15 @@ function wbCreateEditRemoveSection(ui, container, state) {
     }
   };
 
+  moveToggle.onchange = (e) => window._webbenderToggleMove(e.target.checked);
+  moveLabel.appendChild(moveToggle);
+  moveSection.appendChild(moveLabel);
+
   removeToggle.onchange = (e) => window._webbenderToggleRemove(e.target.checked);
   removeLabel.appendChild(removeToggle);
   removeSection.appendChild(removeLabel);
 
-  return { editSection, removeSection, setEditMode };
+  return { editSection, moveSection, removeSection, setEditMode };
 }
 
 function wbCreateFontThemeSection(ui, state) {
@@ -503,6 +675,7 @@ function wbCreateDialogsActions(ui, state, controls) {
       click: () => {
         setEditMode(false);
         window._webbenderToggleRemove(false);
+        window._webbenderToggleMove(false);
         const fontStyle = document.getElementById('webbender-font-style');
         if (fontStyle) fontStyle.textContent = '';
         const themeStyle = document.getElementById('webbender-theme-style');
@@ -510,6 +683,7 @@ function wbCreateDialogsActions(ui, state, controls) {
         fontSelect.value = '';
         customFontInput.value = '';
         settings.editMode = false;
+        settings.moveMode = false;
         settings.removeMode = false;
         settings.customFont = '';
         settings.theme = 'default';
@@ -552,6 +726,7 @@ function wbRestoreAndAssemble(state, controls) {
     updateBanner,
     updateText,
     editSection,
+    moveSection,
     removeSection,
     fontSection,
     themeSection,
@@ -571,6 +746,7 @@ function wbRestoreAndAssemble(state, controls) {
     }
   }
   if (settings.editMode) setEditMode(true);
+  if (settings.moveMode) window._webbenderToggleMove(true);
   if (settings.removeMode) window._webbenderToggleRemove(true);
   if (settings.customFont) {
     customFontInput.value = settings.customFont;
@@ -582,6 +758,7 @@ function wbRestoreAndAssemble(state, controls) {
     header,
     updateBanner,
     editSection,
+    moveSection,
     removeSection,
     fontSection,
     themeSection,
@@ -626,7 +803,7 @@ function wbRestoreAndAssemble(state, controls) {
 
   const { header } = wbCreateHeader(ui, container);
   const { updateBanner, updateText } = wbCreateUpdateBanner(ui);
-  const { editSection, removeSection, setEditMode } = wbCreateEditRemoveSection(
+  const { editSection, moveSection, removeSection, setEditMode } = wbCreateEditRemoveSection(
     ui,
     container,
     state
@@ -646,6 +823,7 @@ function wbRestoreAndAssemble(state, controls) {
     updateBanner,
     updateText,
     editSection,
+    moveSection,
     removeSection,
     fontSection,
     themeSection,
