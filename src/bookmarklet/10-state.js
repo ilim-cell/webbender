@@ -12,6 +12,7 @@ function wbInitState() {
 
   const settings = {
     editMode: false,
+    moveMode: false,
     removeMode: false,
     customFont: '',
     theme: 'default',
