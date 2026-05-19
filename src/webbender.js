@@ -600,7 +600,7 @@ function wbCreateFontThemeSection(ui, state) {
 
 function wbCreateDialogsActions(ui, state, controls) {
   const { settings, saveSettings } = state;
-  const { setEditMode, fontSelect, customFontInput } = controls;
+  const { setEditMode, fontSelect, customFontInput, container } = controls;
 
   const dialogSection = ui.create('div', {
     style: { display: 'flex', flexDirection: 'column', gap: '6px' },
@@ -636,17 +636,35 @@ function wbCreateDialogsActions(ui, state, controls) {
     );
   }
 
+  function runWithPanelHidden(dialogAction) {
+    if (!container) {
+      dialogAction();
+      return;
+    }
+
+    const previousDisplay = container.style.display;
+    container.style.display = 'none';
+    // Force a reflow so the panel visually hides before the native dialog opens.
+    void container.offsetHeight;
+
+    try {
+      dialogAction();
+    } finally {
+      container.style.display = previousDisplay || 'flex';
+    }
+  }
+
   const alertBtn = makeDialogButton('Alert', () => {
     const msg = prompt('Alert message:', 'This is a test alert.');
-    if (msg !== null) alert(msg);
+    if (msg !== null) runWithPanelHidden(() => alert(msg));
   });
   const confirmBtn = makeDialogButton('Confirm', () => {
     const msg = prompt('Confirm message:', 'Are you sure?');
-    if (msg !== null) confirm(msg);
+    if (msg !== null) runWithPanelHidden(() => confirm(msg));
   });
   const promptBtn = makeDialogButton('Prompt', () => {
     const question = prompt('Prompt question:', 'Your question?');
-    if (question !== null) prompt(question, '');
+    if (question !== null) runWithPanelHidden(() => prompt(question, ''));
   });
 
   ui.append(dialogRow, [alertBtn, confirmBtn, promptBtn]);
@@ -814,6 +832,7 @@ function wbRestoreAndAssemble(state, controls) {
     setEditMode,
     fontSelect,
     customFontInput,
+    container,
   });
 
   wbRestoreAndAssemble(state, {
