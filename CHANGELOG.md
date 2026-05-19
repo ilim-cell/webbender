@@ -1,3 +1,13 @@
+## [1.2.0](https://github.com/ilim-cell/webbender/compare/v1.1.0...v1.2.0) (2026-05-19)
+
+### Features
+
+* modularize bookmarklet sections and stitch in build pipeline ([#21](https://github.com/ilim-cell/webbender/issues/21)) ([599d04d](https://github.com/ilim-cell/webbender/commit/599d04db649fc238bf221129f16e7e29f50872f9))
+
+### Bug Fixes
+
+* **ci:** resolve Semantic Release failure in release workflow ([#26](https://github.com/ilim-cell/webbender/issues/26)) ([ae3e1b5](https://github.com/ilim-cell/webbender/commit/ae3e1b5da1e33679b7b2cbab8488e10e056f5bda))
+
 ## [1.1.0](https://github.com/ilim-cell/webbender/compare/v1.0.2...v1.1.0) (2026-05-06)
 
 
