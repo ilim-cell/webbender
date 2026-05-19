@@ -14,22 +14,20 @@ A powerful, lightweight bookmarklet to bend the web to your will. Edit text, rem
 
 ## Installation
 
-### Quick Install (Recommended - Auto-Updates)
+### Quick Install (Recommended - CSP Unblocked)
 
-1. Right-click your bookmarks bar and select **Add Page** or **New Bookmark**
-2. Set the **Name** to `Webbender`
-3. Copy the following code and paste it into the **URL** or **Address** field:
+Use the hosted installer at [https://webbender.web.app](https://webbender.web.app):
 
-```javascript
-javascript:(function(){var urls=['https://webbender.web.app/bookmarklet.js','https://webbender-pro.web.app/bookmarklet.js'];var id='webbender-boot';var existing=document.getElementById(id);if(existing){existing.remove();}var index=0;function load(){if(index>=urls.length){console.error('Webbender: failed to load from all URLs');alert('Webbender failed to load. Check the browser console for details.');return;}var src=urls[index++];var script=document.createElement('script');script.id=id;script.src=src;script.onerror=function(){console.error('Webbender: failed to load',src);script.remove();load();};document.head.appendChild(script);}load();})();
-```
+1. Drag **“Drag Webbender to bookmarks”** to your bookmarks bar, or
+2. Click **“Copy bookmarklet”** and paste into a bookmark URL field.
 
-### Manual Install (Static Version)
+The install code is self-contained, so strict CSP pages do not block it.
 
-1. Go to the [Latest Release](https://github.com/ilim-cell/webbender/releases)
-2. Download `webbender.js`
-3. Copy the entire code
-4. Create a new bookmark with the content `javascript:` followed by the copied code
+### Manual Install (Local Build)
+
+1. Run `npm run build`
+2. Copy `dist/bookmarklet.js`
+3. Create a bookmark and paste the copied value as the URL
 
 ## Usage
 
@@ -69,13 +67,7 @@ npm run watch          # Watch for changes and rebuild
 ```
 webbender/
 ├── src/
-│   ├── bookmarklet/       # Sectioned bookmarklet source (edit here)
-│   │   ├── 00-shared-ui.js
-│   │   ├── 10-state.js
-│   │   ├── 20-sections.js
-│   │   └── 99-main.js
-│   ├── webbender.js       # Auto-stitched source artifact
-│   └── auto-update.js     # Auto-update service
+│   └── webbender.js       # Main bookmarklet source
 ├── dist/                  # Compiled/minified output
 ├── build.js               # Build script
 ├── package.json           # Dependencies and scripts
@@ -92,15 +84,14 @@ webbender/
    - `dist/webbender.js` - Minified bookmarklet code
    - `dist/webbender.min.js` - CDN-hosted version
    - `dist/version.json` - Version info for update checks
-4. **Deployment**: GitHub Actions automatically builds and deploys on new releases
-5. **Updates**: The loader bookmarklet fetches the latest version from jsDelivr CDN
+3. **Deployment**: GitHub Actions automatically builds and deploys on new releases
+4. **Install Output**: `dist/bookmarklet.js` is a self-contained bookmarklet that avoids CSP script injection blocks
 
-## Auto-Update Mechanism
+## Update Notification Mechanism
 
-- The loader bookmarklet (`loader.js`) fetches the latest version from jsDelivr's CDN
-- Update checks happen once per 24 hours
-- Users are notified when a new version is available
-- The update notification includes a link to the release notes
+- Runtime checks fetch `https://webbender.web.app/version.json` with `cache: no-store`
+- If a newer version exists, the UI shows an update notice with a reinstall link
+- No external script payload is injected during bookmarklet execution
 
 ## Code Formatting
 
