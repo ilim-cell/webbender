@@ -1,4 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function getBookmarkletCode(page: Page) {
+  const bookmarklet = page.locator('#dragme');
+  await expect(bookmarklet).toHaveAttribute('href', /^javascript:/);
+  return bookmarklet.getAttribute('href');
+}
 
 test.describe('Webbender E2E Tests', () => {
   test('should load install page without errors', async ({ page }) => {
@@ -22,9 +28,9 @@ test.describe('Webbender E2E Tests', () => {
 
   test('should inject bookmarklet panel when activated', async ({ page }) => {
     await page.goto('/index.html');
-    
+
     // Simulate loading the bookmarklet
-    const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
+    const bookmarkletCode = await getBookmarkletCode(page);
     expect(bookmarkletCode).toContain('javascript:');
     
     // Execute the bookmarklet in the page context
@@ -45,7 +51,7 @@ test.describe('Webbender E2E Tests', () => {
 
   test('should have Edit Text toggle in bookmarklet panel', async ({ page }) => {
     await page.goto('/index.html');
-    const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
+    const bookmarkletCode = await getBookmarkletCode(page);
     
     await page.evaluate((code) => {
       const jsCode = code.substring('javascript:'.length);
@@ -125,7 +131,7 @@ test.describe('Webbender E2E Tests', () => {
     page,
   }) => {
     await page.goto('/index.html');
-    const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
+    const bookmarkletCode = await getBookmarkletCode(page);
 
     await page.evaluate((code) => {
       const jsCode = code.substring('javascript:'.length);
@@ -231,7 +237,7 @@ test.describe('Webbender E2E Tests', () => {
 
   test('bookmarklet code should be syntactically valid', async ({ page }) => {
     await page.goto('/index.html');
-    const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
+    const bookmarkletCode = await getBookmarkletCode(page);
     
     const isValid = await page.evaluate((code) => {
       try {

@@ -379,6 +379,10 @@ function wbCreateEditRemoveSection(ui, container, state) {
   return { editSection, moveSection, removeSection, setEditMode };
 }
 
+function wbGetThemeCss(bgColor, fgColor) {
+  return `* { background: ${bgColor} !important; color: ${fgColor} !important; border-color: rgba(128, 128, 128, 0.2) !important; background-image: none !important; } html, body { background: ${bgColor} !important; background-image: none !important; }`;
+}
+
 function wbCreateFontThemeSection(ui, state) {
   const { settings, saveSettings } = state;
 
@@ -488,7 +492,7 @@ function wbCreateFontThemeSection(ui, state) {
             styleEl.textContent = '';
             settings.theme = 'default';
           } else {
-            styleEl.textContent = `* { background-color: ${theme.bg} !important; color: ${theme.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
+            styleEl.textContent = wbGetThemeCss(theme.bg, theme.fg);
             settings.theme = theme.name.toLowerCase();
           }
           saveSettings();
@@ -672,7 +676,7 @@ function wbRestoreAndAssemble(state, controls) {
     const themeObj = themes.find((t) => t.name.toLowerCase() === settings.theme);
     if (themeObj && themeObj.bg) {
       const styleEl = wbGetStyleElement('webbender-theme-style');
-      styleEl.textContent = `* { background-color: ${themeObj.bg} !important; color: ${themeObj.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`;
+      styleEl.textContent = wbGetThemeCss(themeObj.bg, themeObj.fg);
     }
   }
   if (settings.editMode) setEditMode(true);
