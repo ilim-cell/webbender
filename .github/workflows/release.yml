@@ -21,12 +21,12 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.BYPASS_TOKEN }}        # <-- Use your admin PAT
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24' # 💡 FIXED: Explicitly set to Node 24 with valid syntax layout
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -38,7 +38,7 @@ jobs:
       - name: Semantic Release
         run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BYPASS_TOKEN }} # <-- Use PAT for publication
 
       - name: Purge CDN
         if: success()
@@ -94,7 +94,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24' # 💡 FIXED: Explicitly set to Node 24 with valid syntax layout
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
