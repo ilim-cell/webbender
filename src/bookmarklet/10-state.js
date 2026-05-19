@@ -2,6 +2,7 @@ function wbInitState() {
   const ID = 'webbender-ui';
   const STORAGE_KEY = 'webbender-settings';
   const VERSION = '__WEBBENDER_VERSION__';
+  const BUILD_DATE = '__WEBBENDER_BUILD_DATE__';
   const VERSION_URL = 'https://webbender.web.app/version.json';
 
   const existing = document.getElementById(ID);
@@ -39,6 +40,7 @@ function wbInitState() {
     ID,
     STORAGE_KEY,
     VERSION,
+    BUILD_DATE,
     VERSION_URL,
     settings,
     saveSettings,
