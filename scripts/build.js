@@ -61,8 +61,11 @@ function getSource() {
 
 async function runBuild() {
   const source = getSource();
+  const buildDate = new Date().toISOString();
   // Inject version constant before minifying
-  const sourceWithVersion = source.replace('__WEBBENDER_VERSION__', version);
+  const sourceWithVersion = source
+    .replace('__WEBBENDER_VERSION__', version)
+    .replace('__WEBBENDER_BUILD_DATE__', buildDate);
 
   const minifiedResult = await minify(sourceWithVersion, {
     compress: true,
@@ -101,7 +104,7 @@ async function runBuild() {
   html = html.replace(/(<pre[^>]*id="code"[^>]*>)[^<]*(<\/pre>)/s, `$1${selfContained}$2`);
   fs.writeFileSync(SITE_INDEX_FILE, html, 'utf8');
 
-  const versionJson = JSON.stringify({ version, buildDate: new Date().toISOString() }, null, 2);
+  const versionJson = JSON.stringify({ version, buildDate }, null, 2);
   fs.writeFileSync(VERSION_FILE, versionJson, 'utf8');
   // Also publish version.json to site/ so the hosted version check endpoint is always current
   fs.writeFileSync(path.join(SITE_DIR, 'version.json'), versionJson, 'utf8');

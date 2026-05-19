@@ -620,7 +620,11 @@ function wbCreateDialogsActions(ui, state, controls) {
     {
       mouseover: () => (updateBtn.style.background = '#1d4ed8'),
       mouseout: () => (updateBtn.style.background = '#2563eb'),
-      click: () => window.open('https://github.com/ilim-cell/webbender/releases', '_blank'),
+      click: () => {
+        if (typeof window._webbenderCheckUpdates === 'function') {
+          window._webbenderCheckUpdates();
+        }
+      },
     }
   );
 
@@ -632,6 +636,7 @@ function wbRestoreAndAssemble(state, controls) {
   const {
     settings,
     VERSION,
+    BUILD_DATE,
     VERSION_URL,
     container,
     header,
@@ -668,7 +673,6 @@ function wbRestoreAndAssemble(state, controls) {
   const ui = wbUI();
   ui.append(container, [
     header,
-    updateBanner,
     editSection,
     moveSection,
     removeSection,
@@ -676,6 +680,7 @@ function wbRestoreAndAssemble(state, controls) {
     themeSection,
     dialogSection,
     actionRow,
+    updateBanner,
   ]);
   document.body.appendChild(container);
 
@@ -689,17 +694,43 @@ function wbRestoreAndAssemble(state, controls) {
     return false;
   }
 
-  try {
-    fetch(VERSION_URL, { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.version && isNewerVersion(data.version, VERSION)) {
-          updateText.textContent = `Update available: v${data.version} (you have v${VERSION})`;
-          updateBanner.style.display = 'flex';
-        }
-      })
-      .catch(() => {});
-  } catch (e) {
-    // fetch not available or blocked — no update notification, tool still works
+  function hasNewerBuildDate(remoteDate, localDate) {
+    const remoteTs = Date.parse(remoteDate);
+    const localTs = Date.parse(localDate);
+    if (!Number.isFinite(remoteTs) || !Number.isFinite(localTs)) return false;
+    return remoteTs > localTs;
   }
+
+  function showUpdateAlert(data) {
+    const sameVersionUpdate = data.version === VERSION;
+    updateText.textContent = sameVersionUpdate
+      ? `Update available on main (newer build for v${VERSION})`
+      : `Update available: v${data.version} (you have v${VERSION})`;
+    updateBanner.style.display = 'flex';
+  }
+
+  function checkUpdates() {
+    try {
+      fetch(VERSION_URL, { cache: 'no-store' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data || !data.version) return;
+
+          if (isNewerVersion(data.version, VERSION)) {
+            showUpdateAlert(data);
+            return;
+          }
+
+          if (data.version === VERSION && hasNewerBuildDate(data.buildDate, BUILD_DATE)) {
+            showUpdateAlert(data);
+          }
+        })
+        .catch(() => {});
+    } catch (e) {
+      // fetch not available or blocked — no update notification, tool still works
+    }
+  }
+
+  window._webbenderCheckUpdates = checkUpdates;
+  checkUpdates();
 }
