@@ -69,7 +69,7 @@ webbender/
 ├── src/
 │   └── webbender.js       # Main bookmarklet source
 ├── dist/                  # Compiled/minified output
-├── build.js               # Build script
+├── scripts/build.js       # Build script
 ├── package.json           # Dependencies and scripts
 ├── .prettierrc            # Code formatting config
 └── .github/workflows/     # CI/CD pipeline
@@ -79,8 +79,8 @@ webbender/
 ## How It Works
 
 1. **Source of Truth**: Edit section files in `src/bookmarklet/`
-2. **Stitching**: `build.js` stitches section files into `src/webbender.js`
-3. **Building**: `build.js` minifies the source and generates:
+2. **Stitching**: `scripts/build.js` stitches section files into `src/webbender.js`
+3. **Building**: `scripts/build.js` minifies the source and generates:
    - `dist/webbender.js` - Minified bookmarklet code
    - `dist/webbender.min.js` - CDN-hosted version
    - `dist/version.json` - Version info for update checks
