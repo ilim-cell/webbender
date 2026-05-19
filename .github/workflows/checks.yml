@@ -11,10 +11,6 @@ permissions:
   pull-requests: write
   security-events: write
 
-# 💡 Global Environment Fallback
-env:
-  SITE_INDEX_FILE: site/index.html
-
 jobs:
   format:
     name: Format Check
@@ -78,9 +74,7 @@ jobs:
         run: npm ci
 
       - name: Build bookmarklet
-        env:
-          SITE_INDEX_FILE: site/index.html
-        run: npm run build
+        run: SITE_INDEX_FILE=site/index.html npm run build
 
       - name: Verify syntax
         run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
@@ -149,12 +143,10 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Build and Verify Artifacts
-        env:
-          SITE_INDEX_FILE: site/index.html
         run: |
           if [ ! -d "dist" ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
             echo "⚠️ Staged build artifact not found or expired. Rebuilding locally..."
-            npm run build
+            SITE_INDEX_FILE=site/index.html npm run build
           else
             echo "✓ Valid build artifact detected from previous job tree."
           fi
@@ -210,9 +202,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        env:
-          SITE_INDEX_FILE: site/index.html
-        run: npm run build
+        run: SITE_INDEX_FILE=site/index.html npm run build
 
       - name: Start server
         run: |
@@ -271,9 +261,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        env:
-          SITE_INDEX_FILE: site/index.html
-        run: npm run build
+        run: SITE_INDEX_FILE=site/index.html npm run build
 
       - name: Deploy preview
         continue-on-error: true
