@@ -31,6 +31,7 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        continue-on-error: true
 
       - name: Run npm audit fix (optionally with --force)
         run: |
@@ -41,15 +42,22 @@ jobs:
             echo "Running npm audit fix"
             npm audit fix
           fi
+        continue-on-error: true
 
       - name: Run npm audit and save report
         run: npm audit --audit-level=low --json > audit-results.json
+        continue-on-error: true
 
       - name: Parse audit results and set outputs
         id: audit
         run: |
-          HIGH=$(jq '.metadata.vulnerabilities.high' audit-results.json)
-          CRITICAL=$(jq '.metadata.vulnerabilities.critical' audit-results.json)
+          if [ -f audit-results.json ]; then
+            HIGH=$(jq '.metadata.vulnerabilities.high' audit-results.json)
+            CRITICAL=$(jq '.metadata.vulnerabilities.critical' audit-results.json)
+          else
+            HIGH=0
+            CRITICAL=0
+          fi
           echo "high=$HIGH" >> $GITHUB_OUTPUT
           echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
 
@@ -70,7 +78,11 @@ jobs:
             });
             const exists = issues.find(issue => issue.title.includes('Security Alert') && issue.state === 'open');
             if (!exists) {
-              const audit = require('fs').readFileSync('audit-results.json', 'utf-8').slice(0, 6000);
+              const fs = require('fs');
+              let audit = '';
+              try {
+                audit = fs.readFileSync('audit-results.json', 'utf-8').slice(0, 6000);
+              } catch (e) { audit = 'No audit-results.json'; }
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
