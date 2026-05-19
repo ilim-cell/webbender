@@ -7,7 +7,7 @@
 - [ ] Run `npm run format` to ensure code is formatted
 - [ ] Run `npm run build` to generate dist files
 - [ ] Test the bookmarklet in at least 2 browsers (Chrome, Firefox, Safari)
-- [ ] Update CHANGELOG.md with new features/fixes
+- [ ] Update docs/CHANGELOG.md with new features/fixes
 - [ ] Commit all changes
 
 ## Release Steps

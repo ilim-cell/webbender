@@ -9,10 +9,11 @@ const fs = require('fs');
 const path = require('path');
 const { minify } = require('terser');
 
-const SOURCE_FILE = path.join(__dirname, 'src', 'webbender.js');
-const SOURCE_SECTIONS_DIR = path.join(__dirname, 'src', 'bookmarklet');
-const DIST_DIR = path.join(__dirname, 'dist');
-const SITE_DIR = path.join(__dirname, 'site');
+const ROOT_DIR = path.join(__dirname, '..');
+const SOURCE_FILE = path.join(ROOT_DIR, 'src', 'webbender.js');
+const SOURCE_SECTIONS_DIR = path.join(ROOT_DIR, 'src', 'bookmarklet');
+const DIST_DIR = path.join(ROOT_DIR, 'dist');
+const SITE_DIR = path.join(ROOT_DIR, 'site');
 const BOOKMARKLET_FILE = path.join(DIST_DIR, 'webbender.js');
 const BOOKMARKLET_URL_FILE = path.join(DIST_DIR, 'bookmarklet.js');
 const LOADER_FILE = path.join(DIST_DIR, 'loader.js');
@@ -25,7 +26,7 @@ if (!fs.existsSync(DIST_DIR)) {
   fs.mkdirSync(DIST_DIR, { recursive: true });
 }
 
-const version = require('./package.json').version;
+const version = require(path.join(ROOT_DIR, 'package.json')).version;
 
 function getSourceFromSections() {
   if (!fs.existsSync(SOURCE_SECTIONS_DIR)) {

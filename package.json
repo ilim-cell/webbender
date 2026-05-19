@@ -5,10 +5,10 @@
   "author": "ilim-cell",
   "license": "MIT",
   "scripts": {
-    "build": "node build.js",
+    "build": "node scripts/build.js",
     "format": "prettier --write \"src/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.js\"",
-    "watch": "node build.js --watch",
+    "watch": "node scripts/build.js --watch",
     "test": "npm run test:e2e",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",

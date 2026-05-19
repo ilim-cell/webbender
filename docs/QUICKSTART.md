@@ -54,15 +54,15 @@ webbender/
 ├── .github/workflows/
 │   └── build.yml                 # GitHub Actions CI/CD
 │
-├── build.js                      # Build script (minify + generate)
+├── scripts/build.js              # Build script (minify + generate)
 ├── package.json                  # Dependencies and scripts
 ├── .prettierrc                   # Code formatting config
 ├── .gitignore                    # Git configuration
 │
 ├── README.md                     # Main documentation
-├── DEVELOPMENT.md                # Development guide
-├── CHANGELOG.md                  # Release notes
-└── RELEASE_CHECKLIST.md         # Release procedures
+├── docs/DEVELOPMENT.md           # Development guide
+├── docs/CHANGELOG.md             # Release notes
+└── docs/RELEASE_CHECKLIST.md     # Release procedures
 ```
 
 ## Quick Commands
@@ -95,7 +95,7 @@ The installed bookmarklet is self-contained and does not inject external scripts
 
 1. Update version in `package.json`
 2. Run: `npm run format && npm run build`
-3. Update `CHANGELOG.md`
+3. Update `docs/CHANGELOG.md`
 4. Commit: `git add . && git commit -m "v1.x.x"`
 5. Tag: `git tag v1.x.x && git push origin v1.x.x`
 6. GitHub Actions automatically builds and releases!
@@ -152,4 +152,4 @@ The installed bookmarklet is self-contained and does not inject external scripts
 
 ## Support
 
-See `README.md`, `DEVELOPMENT.md`, and `RELEASE_CHECKLIST.md` for more info.
+See `README.md`, `docs/DEVELOPMENT.md`, and `docs/RELEASE_CHECKLIST.md` for more info.
