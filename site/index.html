@@ -475,7 +475,8 @@
 
       function setBookmarkletCode(source) {
         const trimmed = source.trim();
-        const bookmarkletCode = trimmed.startsWith('javascript:') ? trimmed : `javascript:${trimmed}`;
+        const bookmarkletPayload = trimmed.replace(/^javascript:/i, '');
+        const bookmarkletCode = `javascript:${bookmarkletPayload}`;
         dragme.href = bookmarkletCode;
         dragme.textContent = 'Drag Webbender to bookmarks';
         dragme.setAttribute('aria-busy', 'false');
