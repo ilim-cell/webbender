@@ -20,6 +20,7 @@
     setEditMode,
     fontSelect,
     customFontInput,
+    container,
   });
 
   wbRestoreAndAssemble(state, {
