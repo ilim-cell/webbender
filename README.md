@@ -1,6 +1,6 @@
 # Webbender
 
-> A powerful bookmarklet to **bend** the web to your will
+> A powerful bookmarklet to *bend* the web to your will
 
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Node](https://img.shields.io/badge/node-16+-brightgreen)
