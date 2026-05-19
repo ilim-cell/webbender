@@ -80,7 +80,7 @@ dist/
 ## 🔄 How Updates Work
 
 1. **Source of Truth**: `src/webbender.js` is maintained as clean, readable code
-2. **Automated Building**: `build.js` minifies and generates bookmarklet versions
+2. **Automated Building**: `scripts/build.js` minifies and generates bookmarklet versions
 3. **CI/CD Pipeline**: GitHub Actions automatically deploys on new releases
 4. **Install Flow**: `site/index.html` is updated with the current self-contained bookmarklet code
 5. **Notifications**: Runtime version checks use `https://webbender.web.app/version.json` and show reinstall prompts
@@ -120,8 +120,8 @@ Repository secret required for Firebase deploy:
 
 ## 📋 Additional Resources
 
-- [Development Guide](./DEVELOPMENT.md) - Extend and customize Webbender
-- [Release Checklist](./RELEASE_CHECKLIST.md) - For maintainers
+- [Development Guide](./docs/DEVELOPMENT.md) - Extend and customize Webbender
+- [Release Checklist](./docs/RELEASE_CHECKLIST.md) - For maintainers
 - [Wiki](https://github.com/ilim-cell/webbender/wiki) - Usage and customization docs
 - [GitHub Releases](https://github.com/ilim-cell/webbender/releases) - Version history
 
