@@ -11,15 +11,14 @@
     <style>
       :root {
         color-scheme: dark;
-        --bg: #070b14;
-        --panel: rgba(14, 19, 33, 0.84);
-        --panel-strong: #11182a;
+        --bg: #050914;
+        --bg-soft: #0f172a;
+        --panel: rgba(15, 23, 42, 0.82);
+        --line: rgba(148, 163, 184, 0.24);
         --text: #eef2ff;
-        --muted: #a8b3cf;
-        --line: rgba(148, 163, 184, 0.18);
-        --accent: #7dd3fc;
-        --accent-2: #8b5cf6;
-        --button: #1e293b;
+        --muted: #b8c3dd;
+        --accent: #67e8f9;
+        --accent-2: #a78bfa;
       }
 
       * {
@@ -29,12 +28,12 @@
       body {
         margin: 0;
         min-height: 100vh;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background:
-          radial-gradient(circle at top left, rgba(125, 211, 252, 0.16), transparent 30%),
-          radial-gradient(circle at 90% 10%, rgba(139, 92, 246, 0.18), transparent 28%),
-          linear-gradient(180deg, #050816 0%, #0a1020 48%, #050816 100%);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         color: var(--text);
+        background:
+          radial-gradient(circle at 0% 0%, rgba(103, 232, 249, 0.2), transparent 35%),
+          radial-gradient(circle at 95% 10%, rgba(167, 139, 250, 0.2), transparent 32%),
+          linear-gradient(180deg, #020617 0%, #060d1d 52%, #020617 100%);
       }
 
       a {
@@ -42,46 +41,42 @@
       }
 
       .shell {
-        max-width: 1080px;
+        max-width: 1100px;
         margin: 0 auto;
         padding: 24px;
       }
 
       .topbar {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        justify-content: space-between;
-        padding: 16px 18px;
-        border: 1px solid var(--line);
-        border-radius: 18px;
-        background: rgba(10, 16, 32, 0.7);
-        backdrop-filter: blur(16px);
-        box-shadow: 0 24px 60px rgba(2, 6, 23, 0.36);
         position: sticky;
-        top: 18px;
+        top: 16px;
         z-index: 10;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: rgba(6, 13, 29, 0.84);
+        backdrop-filter: blur(14px);
       }
 
       .brand {
         display: flex;
-        align-items: center;
         gap: 12px;
-        min-width: 0;
+        align-items: center;
       }
 
       .mark {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
         background: linear-gradient(135deg, var(--accent), var(--accent-2));
-        box-shadow: 0 10px 30px rgba(125, 211, 252, 0.25);
       }
 
       .brand h1 {
         margin: 0;
         font-size: 18px;
-        letter-spacing: 0.02em;
       }
 
       .brand p {
@@ -92,37 +87,34 @@
 
       .tabs {
         display: inline-flex;
+        gap: 6px;
         padding: 4px;
-        border: 1px solid var(--line);
-        background: rgba(15, 23, 42, 0.82);
         border-radius: 999px;
-        gap: 4px;
+        border: 1px solid var(--line);
+        background: rgba(15, 23, 42, 0.75);
       }
 
       .tab,
-      .top-link {
-        appearance: none;
+      .top-link,
+      .bookmarklet,
+      .button {
         border: 0;
-        color: var(--muted);
-        background: transparent;
         text-decoration: none;
-        padding: 10px 14px;
-        font-size: 14px;
-        border-radius: 999px;
         cursor: pointer;
-        transition: 0.2s ease;
+        font: inherit;
       }
 
-      .tab[aria-selected="true"] {
-        color: #08111f;
-        background: linear-gradient(135deg, #e0f2fe, #c4b5fd);
+      .tab {
+        padding: 9px 14px;
+        color: var(--muted);
+        border-radius: 999px;
+        background: transparent;
+      }
+
+      .tab[aria-selected='true'] {
+        color: #07101f;
+        background: linear-gradient(135deg, #cffafe, #c4b5fd);
         font-weight: 700;
-      }
-
-      .top-link {
-        border: 1px solid var(--line);
-        background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.92));
-        color: var(--text);
       }
 
       .quick-links {
@@ -130,84 +122,78 @@
         gap: 8px;
       }
 
-      .hero {
-        margin-top: 28px;
+      .top-link {
+        color: var(--text);
         border: 1px solid var(--line);
-        border-radius: 28px;
-        background: linear-gradient(180deg, rgba(17, 24, 39, 0.82), rgba(8, 15, 28, 0.9));
-        box-shadow: 0 32px 80px rgba(2, 6, 23, 0.45);
+        padding: 9px 12px;
+        border-radius: 10px;
+        background: rgba(30, 41, 59, 0.84);
+      }
+
+      .hero {
+        margin-top: 24px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
         overflow: hidden;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(5, 9, 20, 0.95));
       }
 
       .hero-inner {
         display: grid;
-        grid-template-columns: 1.4fr 0.9fr;
-        gap: 28px;
-        padding: 32px;
+        grid-template-columns: 1.25fr 0.9fr;
+        gap: 22px;
+        padding: 28px;
       }
 
       .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
+        display: inline-block;
         border: 1px solid var(--line);
-        border-radius: 999px;
         color: var(--muted);
-        font-size: 13px;
-        background: rgba(15, 23, 42, 0.7);
-      }
-
-      .eyebrow::before {
-        content: "";
-        width: 8px;
-        height: 8px;
         border-radius: 999px;
-        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        padding: 7px 11px;
+        font-size: 12px;
       }
 
       h2 {
-        margin: 18px 0 12px;
-        font-size: clamp(34px, 5vw, 58px);
-        line-height: 0.96;
-        letter-spacing: -0.04em;
+        margin: 14px 0 10px;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        font-size: clamp(31px, 5vw, 56px);
       }
 
       .lede {
         margin: 0;
-        max-width: 62ch;
-        color: #d7def0;
-        font-size: 17px;
+        color: #d7e1f7;
         line-height: 1.75;
       }
 
-      .stats {
+      .stat-grid {
         display: grid;
-        gap: 12px;
+        gap: 10px;
       }
 
       .stat {
-        padding: 16px;
-        border-radius: 18px;
-        background: rgba(15, 23, 42, 0.72);
         border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+        background: rgba(15, 23, 42, 0.66);
       }
 
       .stat strong {
         display: block;
-        font-size: 15px;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
+        font-size: 14px;
       }
 
       .stat span {
         color: var(--muted);
-        font-size: 14px;
-        line-height: 1.6;
+        font-size: 13px;
+        line-height: 1.55;
       }
 
       .panel {
         display: none;
-        padding: 0 32px 32px;
+        padding: 0 28px 28px;
       }
 
       .panel.active {
@@ -217,23 +203,23 @@
       .grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 18px;
+        gap: 14px;
       }
 
       .card {
-        padding: 20px;
-        border-radius: 20px;
-        background: rgba(15, 23, 42, 0.72);
+        border-radius: 16px;
         border: 1px solid var(--line);
+        background: var(--panel);
+        padding: 18px;
       }
 
       .card h3 {
-        margin: 0 0 12px;
-        font-size: 18px;
+        margin: 0 0 10px;
       }
 
       .card p,
       .card li {
+        margin: 0;
         color: var(--muted);
         line-height: 1.7;
       }
@@ -246,89 +232,82 @@
 
       .bookmarklet-box {
         display: grid;
-        gap: 12px;
+        gap: 10px;
       }
 
       .bookmarklet {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 14px 16px;
-        border-radius: 14px;
-        text-decoration: none;
-        color: #06101d;
+        border-radius: 12px;
+        padding: 13px 14px;
+        color: #031225;
         background: linear-gradient(135deg, #cffafe, #c4b5fd);
         font-weight: 700;
       }
 
+      .bookmarklet[aria-busy='true'] {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
       .actions {
         display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
+        gap: 8px;
       }
 
       .button {
-        appearance: none;
-        border: 1px solid var(--line);
         color: var(--text);
-        background: rgba(30, 41, 59, 0.95);
-        border-radius: 12px;
-        padding: 11px 14px;
-        cursor: pointer;
-        font: inherit;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: rgba(30, 41, 59, 0.92);
+        padding: 10px 12px;
+      }
+
+      .button[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
 
       pre {
         margin: 0;
-        overflow: auto;
-        padding: 16px;
-        border-radius: 16px;
-        background: #050816;
+        padding: 14px;
+        border-radius: 12px;
         border: 1px solid var(--line);
+        background: var(--bg);
         color: #dbeafe;
         white-space: pre-wrap;
         word-break: break-word;
+        overflow: auto;
+      }
+
+      .notice {
+        margin-top: 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(103, 232, 249, 0.3);
+        background: rgba(8, 145, 178, 0.12);
+        color: #d7f4ff;
+        padding: 12px 14px;
+        font-size: 14px;
+        line-height: 1.6;
       }
 
       .footer {
-        padding: 0 32px 32px;
+        margin-top: 16px;
         color: var(--muted);
         font-size: 13px;
         line-height: 1.6;
       }
 
-      .notice {
-        padding: 14px 16px;
-        border-radius: 14px;
-        background: rgba(8, 145, 178, 0.12);
-        border: 1px solid rgba(125, 211, 252, 0.24);
-        color: #d7f4ff;
-      }
-
-      @media (max-width: 900px) {
-        .hero-inner,
-        .grid {
-          grid-template-columns: 1fr;
-        }
-
+      @media (max-width: 920px) {
         .topbar {
           flex-direction: column;
           align-items: stretch;
         }
 
-        .brand {
-          justify-content: space-between;
-        }
-
-        .tabs {
-          width: 100%;
-          justify-content: space-between;
-        }
-
-        .tab,
-        .github-link {
-          flex: 1;
-          text-align: center;
+        .hero-inner,
+        .grid {
+          grid-template-columns: 1fr;
         }
       }
 
@@ -338,14 +317,9 @@
         }
 
         .hero-inner,
-        .panel,
-        .footer {
-          padding-left: 18px;
-          padding-right: 18px;
-        }
-
-        h2 {
-          font-size: 32px;
+        .panel {
+          padding-left: 16px;
+          padding-right: 16px;
         }
       }
     </style>
@@ -357,7 +331,7 @@
           <div class="mark" aria-hidden="true"></div>
           <div>
             <h1>Webbender</h1>
-            <p>Bookmarklet-first page editing, without the extension overhead.</p>
+            <p>Turn any page into a fast testing playground.</p>
           </div>
         </div>
         <div class="tabs" role="tablist" aria-label="Webbender sections">
@@ -373,26 +347,25 @@
       <section class="hero">
         <div class="hero-inner">
           <div>
-            <span class="eyebrow">Self-contained bookmarklet</span>
-            <h2>Bend a page without installing anything.</h2>
+            <span class="eyebrow">No extension required</span>
+            <h2>Edit. Remove. Restyle.</h2>
             <p class="lede">
-              Webbender gives you a floating control panel for editing text, removing elements, changing typography,
-              and testing dialog behavior. All code is embedded directly in the bookmark — no external requests,
-              no Content Security Policy conflicts.
+              Webbender is a bookmarklet built for quick UX reviews. Open any page, click the bookmark,
+              and instantly test copy edits, cleanup ideas, dialog behavior, and temporary themes.
             </p>
           </div>
-          <div class="stats">
+          <div class="stat-grid">
             <div class="stat">
-              <strong>Quick edits</strong>
-              <span>Toggle design mode and make page text editable in-place.</span>
+              <strong>Live page editing</strong>
+              <span>Enable design mode and rewrite text directly on production-like pages.</span>
             </div>
             <div class="stat">
-              <strong>Cleanup mode</strong>
-              <span>Remove distracting elements with a click and clear hover highlighting.</span>
+              <strong>Fast cleanup checks</strong>
+              <span>Remove noisy elements and verify layout/readability in seconds.</span>
             </div>
             <div class="stat">
-              <strong>Self-contained</strong>
-              <span>All code is embedded directly in the bookmark — no external script fetch, no CSP issues.</span>
+              <strong>Always-current installer</strong>
+              <span>The install tab loads bookmarklet code from deployed CI/CD artifacts at runtime.</span>
             </div>
           </div>
         </div>
@@ -400,20 +373,19 @@
         <section class="panel active" id="panel-description" role="tabpanel" aria-labelledby="tab-description">
           <div class="grid">
             <article class="card">
-              <h3>What it does</h3>
+              <h3>What you can do</h3>
               <ul>
-                <li>Edit text directly on the page using design mode.</li>
-                <li>Remove distracting elements without opening devtools.</li>
-                <li>Apply temporary fonts and themes for quick design checks.</li>
-                <li>Trigger alert, confirm, and prompt dialogs for UI testing.</li>
+                <li>Edit text in place without opening DevTools.</li>
+                <li>Grab, move, or remove elements for layout experiments.</li>
+                <li>Apply temporary fonts/themes to evaluate readability.</li>
+                <li>Trigger alert, confirm, and prompt dialogs for flow testing.</li>
               </ul>
             </article>
             <article class="card">
-              <h3>Why this approach</h3>
+              <h3>Built for marketing and QA loops</h3>
               <p>
-                The old loader injected an external <code>&lt;script&gt;</code> tag to fetch the payload, which was
-                blocked by Content Security Policy on most sites. All code is now embedded directly in the bookmark,
-                so no network request is ever made and CSP cannot interfere.
+                Use Webbender during content reviews, design QA, and stakeholder demos to validate quick
+                page changes before committing production code.
               </p>
             </article>
           </div>
@@ -426,46 +398,45 @@
               <p>Drag this button to your bookmarks bar, or copy the code below for manual installation.</p>
               <a class="bookmarklet" id="dragme" href="javascript:function wbUI(){return{create(e,t={}){const o=document.createElement(e);return void 0!==t.textContent&amp;&amp;(o.textContent=t.textContent),t.attrs&amp;&amp;Object.entries(t.attrs).forEach(([e,t])=>{o.setAttribute(e,t)}),t.style&amp;&amp;Object.assign(o.style,t.style),o},append:(e,t)=>(t.forEach(t=>e.appendChild(t)),e),button(e,t,o={}){const n=this.create(&quot;button&quot;,{textContent:e,style:t});return o.click&amp;&amp;(n.onclick=o.click),o.mouseover&amp;&amp;(n.onmouseover=o.mouseover),o.mouseout&amp;&amp;(n.onmouseout=o.mouseout),n}}}function wbGetStyleElement(e){let t=document.getElementById(e);return t||(t=document.createElement(&quot;style&quot;),t.id=e,document.head.appendChild(t)),t}function wbInitState(){const e=&quot;webbender-ui&quot;,t=&quot;webbender-settings&quot;,o=document.getElementById(e);if(o)return o.remove(),null;const n={editMode:!1,moveMode:!1,removeMode:!1,customFont:&quot;&quot;,theme:&quot;default&quot;};try{const e=localStorage.getItem(t);e&amp;&amp;Object.assign(n,JSON.parse(e))}catch(e){console.warn(&quot;Failed to load webbender settings:&quot;,e)}return{ID:e,STORAGE_KEY:t,VERSION:&quot;1.0.2&quot;,BUILD_DATE:&quot;2026-05-19T11:02:26.106Z&quot;,VERSION_URL:&quot;https://webbender.web.app/version.json&quot;,settings:n,saveSettings:function(){try{localStorage.setItem(t,JSON.stringify(n))}catch(e){console.warn(&quot;Failed to save webbender settings:&quot;,e)}}}}function wbCreateContainer(e,t){return e.create(&quot;div&quot;,{attrs:{id:t},style:{position:&quot;fixed&quot;,top:&quot;20px&quot;,right:&quot;20px&quot;,width:&quot;300px&quot;,backgroundColor:&quot;#18181b&quot;,color:&quot;#f4f4f5&quot;,padding:&quot;16px&quot;,borderRadius:&quot;12px&quot;,boxShadow:&quot;0 10px 25px -5px rgba(0, 0, 0, 0.5)&quot;,zIndex:&quot;2147483647&quot;,fontFamily:&quot;-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif&quot;,fontSize:&quot;13px&quot;,userSelect:&quot;none&quot;,boxSizing:&quot;border-box&quot;,border:&quot;1px solid #27272a&quot;,display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:&quot;14px&quot;}})}function wbCreateHeader(e,t){const o=e.create(&quot;div&quot;,{style:{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;,borderBottom:&quot;1px solid #27272a&quot;,paddingBottom:&quot;8px&quot;}}),n=e.create(&quot;span&quot;,{textContent:&quot;Webbender&quot;,style:{fontWeight:&quot;700&quot;,fontSize:&quot;14px&quot;}}),r=e.button(&quot;✕&quot;,{cursor:&quot;pointer&quot;,color:&quot;#71717a&quot;,fontWeight:&quot;bold&quot;,background:&quot;none&quot;,border:&quot;none&quot;,fontSize:&quot;16px&quot;,padding:&quot;0 4px&quot;,transition:&quot;color 0.2s&quot;},{mouseover:()=>{r.style.color=&quot;#f4f4f5&quot;},mouseout:()=>{r.style.color=&quot;#71717a&quot;},click:()=>{window._webbenderRemoveMode&amp;&amp;window._webbenderToggleRemove(!1),window._webbenderMoveMode&amp;&amp;window._webbenderToggleMove(!1),t.remove()}});return e.append(o,[n,r]),{header:o}}function wbCreateUpdateBanner(e){const t=e.create(&quot;div&quot;,{style:{display:&quot;none&quot;,flexDirection:&quot;column&quot;,gap:&quot;4px&quot;,padding:&quot;8px 10px&quot;,borderRadius:&quot;8px&quot;,background:&quot;rgba(234, 179, 8, 0.12)&quot;,border:&quot;1px solid rgba(234, 179, 8, 0.3)&quot;,fontSize:&quot;12px&quot;,lineHeight:&quot;1.5&quot;}}),o=e.create(&quot;div&quot;,{style:{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;}}),n=e.create(&quot;span&quot;,{style:{color:&quot;#fde047&quot;}}),r=e.button(&quot;✕&quot;,{background:&quot;none&quot;,border:&quot;none&quot;,color:&quot;#71717a&quot;,cursor:&quot;pointer&quot;,padding:&quot;0&quot;,fontSize:&quot;12px&quot;},{click:()=>t.style.display=&quot;none&quot;}),a=e.create(&quot;a&quot;,{textContent:&quot;Re-install from webbender.web.app →&quot;,attrs:{href:&quot;https://webbender.web.app&quot;,target:&quot;_blank&quot;,rel:&quot;noreferrer&quot;},style:{color:&quot;#93c5fd&quot;,fontSize:&quot;11px&quot;,display:&quot;block&quot;}});return e.append(o,[n,r]),e.append(t,[o,a]),{updateBanner:t,updateText:n}}function wbCreateEditRemoveSection(e,t,o){const{settings:n,saveSettings:r}=o;function a(e){return!e||e===t||t.contains(e)||&quot;HTML&quot;===e.tagName||&quot;BODY&quot;===e.tagName}function i(e,t){e&amp;&amp;void 0===e.dataset.webbenderOutlineBackup&amp;&amp;(e.dataset.webbenderOutlineBackup=e.style.outline||&quot;&quot;,e.style.outline=t)}function d(e){e&amp;&amp;void 0!==e.dataset.webbenderOutlineBackup&amp;&amp;(e.style.outline=e.dataset.webbenderOutlineBackup,delete e.dataset.webbenderOutlineBackup)}const s=e.create(&quot;div&quot;,{style:{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;}}),c=e.create(&quot;label&quot;,{textContent:&quot;Edit Text (Design Mode)&quot;,style:{cursor:&quot;pointer&quot;,display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:&quot;8px&quot;,flex:&quot;1&quot;}}),l=e.create(&quot;input&quot;,{attrs:{type:&quot;checkbox&quot;},style:{cursor:&quot;pointer&quot;,width:&quot;16px&quot;,height:&quot;16px&quot;}});function p(e){e&amp;&amp;window._webbenderRemoveMode&amp;&amp;window._webbenderToggleRemove(!1),e&amp;&amp;window._webbenderMoveMode&amp;&amp;window._webbenderToggleMove(!1),document.designMode=e?&quot;on&quot;:&quot;off&quot;,document.body.contentEditable=e?&quot;true&quot;:&quot;false&quot;,l.checked=e,n.editMode=e,r()}l.checked=&quot;on&quot;===document.designMode,l.onchange=e=>p(e.target.checked),c.appendChild(l),s.appendChild(c);const u=e.create(&quot;div&quot;,{style:{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;}}),m=e.create(&quot;label&quot;,{textContent:&quot;Grab &amp; Move&quot;,style:{cursor:&quot;pointer&quot;,display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:&quot;8px&quot;,flex:&quot;1&quot;}}),b=e.create(&quot;input&quot;,{attrs:{type:&quot;checkbox&quot;},style:{cursor:&quot;pointer&quot;,width:&quot;16px&quot;,height:&quot;16px&quot;}}),g=e.create(&quot;div&quot;,{style:{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;}}),f=e.create(&quot;label&quot;,{textContent:&quot;Remove Elements&quot;,style:{cursor:&quot;pointer&quot;,display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:&quot;8px&quot;,flex:&quot;1&quot;}}),w=e.create(&quot;input&quot;,{attrs:{type:&quot;checkbox&quot;},style:{cursor:&quot;pointer&quot;,width:&quot;16px&quot;,height:&quot;16px&quot;}});let v=null,x=null;function y(e){v!==e&amp;&amp;(d(v),v=e,v&amp;&amp;i(v,&quot;2px solid #22c55e&quot;))}window._webbenderMoveMode=!1,window._webbenderRemoveMode=!1;const h=e=>{x||a(e.target)||y(e.target)},S=e=>{x||e.target!==v||y(null)},C=e=>{if(0!==e.button||a(e.target))return;const t=e.target.getBoundingClientRect(),o=parseFloat(e.target.dataset.webbenderMoveX||&quot;0&quot;),n=parseFloat(e.target.dataset.webbenderMoveY||&quot;0&quot;);void 0===e.target.dataset.webbenderBaseTransform&amp;&amp;(e.target.dataset.webbenderBaseTransform=e.target.style.transform||&quot;&quot;),x={target:e.target,startX:e.clientX,startY:e.clientY,moveX:o,moveY:n,minDeltaX:1-t.right,maxDeltaX:window.innerWidth-t.left-1,minDeltaY:1-t.bottom,maxDeltaY:window.innerHeight-t.top-1},y(e.target),e.preventDefault(),e.stopPropagation()},M=e=>{if(!x)return;const t=Math.min(Math.max(e.clientX-x.startX,x.minDeltaX),x.maxDeltaX),o=Math.min(Math.max(e.clientY-x.startY,x.minDeltaY),x.maxDeltaY);!function(e,t,o){const n=e.dataset.webbenderBaseTransform||&quot;&quot;,r=`translate(${t}px, ${o}px)`;e.style.transform=n?`${r} ${n}`:r,e.dataset.webbenderMoveX=String(t),e.dataset.webbenderMoveY=String(o)}(x.target,x.moveX+t,x.moveY+o),e.preventDefault(),e.stopPropagation()},k=e=>{x&amp;&amp;(y(x.target),x=null,e.preventDefault(),e.stopPropagation())},E=e=>{a(e.target)||(e.preventDefault(),e.stopPropagation())},R=e=>{a(e.target)||i(e.target,&quot;2px solid #ef4444&quot;)},T=e=>{a(e.target)||d(e.target)},I=e=>{a(e.target)||(e.preventDefault(),e.stopPropagation(),d(e.target),e.target.remove())};return window._webbenderToggleMove=function(e){e&amp;&amp;&quot;on&quot;===document.designMode&amp;&amp;p(!1),e&amp;&amp;window._webbenderRemoveMode&amp;&amp;window._webbenderToggleRemove(!1),window._webbenderMoveMode=e,b.checked=e,n.moveMode=e,r(),e?(document.addEventListener(&quot;mouseover&quot;,h),document.addEventListener(&quot;mouseout&quot;,S),document.addEventListener(&quot;mousedown&quot;,C,!0),document.addEventListener(&quot;mousemove&quot;,M,!0),document.addEventListener(&quot;mouseup&quot;,k,!0),document.addEventListener(&quot;click&quot;,E,!0)):(document.removeEventListener(&quot;mouseover&quot;,h),document.removeEventListener(&quot;mouseout&quot;,S),document.removeEventListener(&quot;mousedown&quot;,C,!0),document.removeEventListener(&quot;mousemove&quot;,M,!0),document.removeEventListener(&quot;mouseup&quot;,k,!0),document.removeEventListener(&quot;click&quot;,E,!0),y(null),x=null)},window._webbenderToggleRemove=function(e){e&amp;&amp;&quot;on&quot;===document.designMode&amp;&amp;p(!1),e&amp;&amp;window._webbenderMoveMode&amp;&amp;window._webbenderToggleMove(!1),window._webbenderRemoveMode=e,w.checked=e,n.removeMode=e,r(),e?(document.addEventListener(&quot;mouseover&quot;,R),document.addEventListener(&quot;mouseout&quot;,T),document.addEventListener(&quot;click&quot;,I,!0)):(document.removeEventListener(&quot;mouseover&quot;,R),document.removeEventListener(&quot;mouseout&quot;,T),document.removeEventListener(&quot;click&quot;,I,!0))},b.onchange=e=>window._webbenderToggleMove(e.target.checked),m.appendChild(b),u.appendChild(m),w.onchange=e=>window._webbenderToggleRemove(e.target.checked),f.appendChild(w),g.appendChild(f),{editSection:s,moveSection:u,removeSection:g,setEditMode:p}}function wbCreateFontThemeSection(e,t){const{settings:o,saveSettings:n}=t,r=e.create(&quot;div&quot;,{style:{display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:&quot;6px&quot;}}),a=e.create(&quot;span&quot;,{textContent:&quot;Typography&quot;,style:{color:&quot;#a1a1aa&quot;,fontSize:&quot;11px&quot;,fontWeight:&quot;600&quot;,textTransform:&quot;uppercase&quot;}}),i=e.create(&quot;select&quot;,{style:{background:&quot;#27272a&quot;,color:&quot;#f4f4f5&quot;,border:&quot;1px solid #3f3f46&quot;,borderRadius:&quot;6px&quot;,padding:&quot;6px&quot;,fontSize:&quot;13px&quot;,cursor:&quot;pointer&quot;}});[[&quot;Default&quot;,&quot;&quot;],[&quot;Sans-Serif&quot;,&quot;-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif&quot;],[&quot;Serif&quot;,&quot;Georgia, Times New Roman, serif&quot;],[&quot;Monospace&quot;,&quot;Courier New, monospace&quot;],[&quot;Comic Sans&quot;,&quot;Comic Sans MS, Arial, sans-serif&quot;]].forEach(([t,o])=>{const n=e.create(&quot;option&quot;,{textContent:t});n.value=o,i.appendChild(n)});const d=e.create(&quot;input&quot;,{attrs:{type:&quot;text&quot;,placeholder:&quot;Custom font...&quot;},style:{background:&quot;#27272a&quot;,color:&quot;#f4f4f5&quot;,border:&quot;1px solid #3f3f46&quot;,borderRadius:&quot;6px&quot;,padding:&quot;6px&quot;,fontSize:&quot;12px&quot;}});function s(e){wbGetStyleElement(&quot;webbender-font-style&quot;).textContent=e?`* { font-family: &quot;${e}&quot; !important; }`:&quot;&quot;}i.onchange=e=>{d.value=&quot;&quot;,s(e.target.value),o.customFont=e.target.value,n()},d.oninput=e=>{i.value=&quot;&quot;,s(e.target.value),o.customFont=e.target.value,n()},e.append(r,[a,i,d]);const c=e.create(&quot;div&quot;,{style:{display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:&quot;6px&quot;}}),l=e.create(&quot;span&quot;,{textContent:&quot;Color Theme&quot;,style:{color:&quot;#a1a1aa&quot;,fontSize:&quot;11px&quot;,fontWeight:&quot;600&quot;,textTransform:&quot;uppercase&quot;}}),p=e.create(&quot;div&quot;,{style:{display:&quot;grid&quot;,gridTemplateColumns:&quot;repeat(2, 1fr)&quot;,gap:&quot;6px&quot;}}),u=[{name:&quot;Default&quot;,bg:&quot;&quot;,fg:&quot;&quot;},{name:&quot;Dark&quot;,bg:&quot;#121212&quot;,fg:&quot;#e4e4e7&quot;},{name:&quot;Light&quot;,bg:&quot;#ffffff&quot;,fg:&quot;#18181b&quot;},{name:&quot;Sepia&quot;,bg:&quot;#f4ecd8&quot;,fg:&quot;#433422&quot;}];return u.forEach(t=>{const r=e.button(t.name,{background:&quot;#27272a&quot;,color:&quot;#f4f4f5&quot;,border:&quot;1px solid #3f3f46&quot;,borderRadius:&quot;6px&quot;,padding:&quot;6px&quot;,fontSize:&quot;11px&quot;,cursor:&quot;pointer&quot;,transition:&quot;all 0.2s&quot;},{mouseover:()=>r.style.background=&quot;#3f3f46&quot;,mouseout:()=>r.style.background=&quot;#27272a&quot;,click:()=>{const e=wbGetStyleElement(&quot;webbender-theme-style&quot;);t.bg?(e.textContent=`* { background-color: ${t.bg} !important; color: ${t.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`,o.theme=t.name.toLowerCase()):(e.textContent=&quot;&quot;,o.theme=&quot;default&quot;),n()}});p.appendChild(r)}),e.append(c,[l,p]),{fontSection:r,themeSection:c,fontSelect:i,customFontInput:d,applyFont:s,themes:u}}function wbCreateDialogsActions(e,t,o){const{settings:n,saveSettings:r}=t,{setEditMode:a,fontSelect:i,customFontInput:d}=o,s=e.create(&quot;div&quot;,{style:{display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:&quot;6px&quot;}}),c=e.create(&quot;span&quot;,{textContent:&quot;Dialogs&quot;,style:{color:&quot;#a1a1aa&quot;,fontSize:&quot;11px&quot;,fontWeight:&quot;600&quot;,textTransform:&quot;uppercase&quot;}}),l=e.create(&quot;div&quot;,{style:{display:&quot;grid&quot;,gridTemplateColumns:&quot;repeat(3, 1fr)&quot;,gap:&quot;6px&quot;}}),p={background:&quot;#27272a&quot;,color:&quot;#f4f4f5&quot;,border:&quot;1px solid #3f3f46&quot;,borderRadius:&quot;6px&quot;,padding:&quot;6px&quot;,fontSize:&quot;11px&quot;,cursor:&quot;pointer&quot;,transition:&quot;all 0.2s&quot;};function u(t,o){return e.button(t,{...p},{mouseover:e=>e.target.style.background=&quot;#3f3f46&quot;,mouseout:e=>e.target.style.background=&quot;#27272a&quot;,click:o})}const m=u(&quot;Alert&quot;,()=>{const e=prompt(&quot;Alert message:&quot;,&quot;This is a test alert.&quot;);null!==e&amp;&amp;alert(e)}),b=u(&quot;Confirm&quot;,()=>{const e=prompt(&quot;Confirm message:&quot;,&quot;Are you sure?&quot;);null!==e&amp;&amp;confirm(e)}),g=u(&quot;Prompt&quot;,()=>{const e=prompt(&quot;Prompt question:&quot;,&quot;Your question?&quot;);null!==e&amp;&amp;prompt(e,&quot;&quot;)});e.append(l,[m,b,g]),e.append(s,[c,l]);const f=e.create(&quot;div&quot;,{style:{display:&quot;grid&quot;,gridTemplateColumns:&quot;repeat(2, 1fr)&quot;,gap:&quot;6px&quot;,marginTop:&quot;6px&quot;}}),w=e.button(&quot;Reset&quot;,{background:&quot;#dc2626&quot;,color:&quot;#fff&quot;,border:&quot;none&quot;,borderRadius:&quot;6px&quot;,padding:&quot;8px&quot;,fontSize:&quot;11px&quot;,fontWeight:&quot;bold&quot;,cursor:&quot;pointer&quot;,transition:&quot;all 0.2s&quot;},{mouseover:()=>w.style.background=&quot;#991b1b&quot;,mouseout:()=>w.style.background=&quot;#dc2626&quot;,click:()=>{a(!1),window._webbenderToggleRemove(!1),window._webbenderToggleMove(!1);const e=document.getElementById(&quot;webbender-font-style&quot;);e&amp;&amp;(e.textContent=&quot;&quot;);const t=document.getElementById(&quot;webbender-theme-style&quot;);t&amp;&amp;(t.textContent=&quot;&quot;),i.value=&quot;&quot;,d.value=&quot;&quot;,n.editMode=!1,n.moveMode=!1,n.removeMode=!1,n.customFont=&quot;&quot;,n.theme=&quot;default&quot;,r()}}),v=e.button(&quot;Check Updates&quot;,{background:&quot;#2563eb&quot;,color:&quot;#fff&quot;,border:&quot;none&quot;,borderRadius:&quot;6px&quot;,padding:&quot;8px&quot;,fontSize:&quot;11px&quot;,fontWeight:&quot;bold&quot;,cursor:&quot;pointer&quot;,transition:&quot;all 0.2s&quot;},{mouseover:()=>v.style.background=&quot;#1d4ed8&quot;,mouseout:()=>v.style.background=&quot;#2563eb&quot;,click:()=>{&quot;function&quot;==typeof window._webbenderCheckUpdates&amp;&amp;window._webbenderCheckUpdates()}});return e.append(f,[w,v]),{dialogSection:s,actionRow:f}}function wbRestoreAndAssemble(e,t){const{settings:o,VERSION:n,BUILD_DATE:r,VERSION_URL:a,container:i,header:d,updateBanner:s,updateText:c,editSection:l,moveSection:p,removeSection:u,fontSection:m,themeSection:b,dialogSection:g,actionRow:f,themes:w,setEditMode:v,applyFont:x,customFontInput:y}=t;if(o.theme&amp;&amp;&quot;default&quot;!==o.theme){const e=w.find(e=>e.name.toLowerCase()===o.theme);if(e&amp;&amp;e.bg){wbGetStyleElement(&quot;webbender-theme-style&quot;).textContent=`* { background-color: ${e.bg} !important; color: ${e.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`}}o.editMode&amp;&amp;v(!0),o.moveMode&amp;&amp;window._webbenderToggleMove(!0),o.removeMode&amp;&amp;window._webbenderToggleRemove(!0),o.customFont&amp;&amp;(y.value=o.customFont,x(o.customFont));function h(e){const t=e.version===n;c.textContent=t?`Update available on main (newer build for v${n})`:`Update available: v${e.version} (you have v${n})`,s.style.display=&quot;flex&quot;}function S(){try{fetch(a,{cache:&quot;no-store&quot;}).then(e=>e.json()).then(e=>{e&amp;&amp;e.version&amp;&amp;(!function(e,t){const o=e.split(&quot;.&quot;).map(Number),n=t.split(&quot;.&quot;).map(Number);for(let e=0;e<3;e++){if((o[e]||0)>(n[e]||0))return!0;if((o[e]||0)<(n[e]||0))return!1}return!1}(e.version,n)?e.version===n&amp;&amp;function(e,t){const o=Date.parse(e),n=Date.parse(t);return!(!Number.isFinite(o)||!Number.isFinite(n))&amp;&amp;o>n}(e.buildDate,r)&amp;&amp;h(e):h(e))}).catch(()=>{})}catch(e){}}wbUI().append(i,[d,l,p,u,m,b,g,f,s]),document.body.appendChild(i),window._webbenderCheckUpdates=S,S()}!function(){const e=wbInitState();if(!e)return;const t=wbUI(),o=wbCreateContainer(t,e.ID),{header:n}=wbCreateHeader(t,o),{updateBanner:r,updateText:a}=wbCreateUpdateBanner(t),{editSection:i,moveSection:d,removeSection:s,setEditMode:c}=wbCreateEditRemoveSection(t,o,e),{fontSection:l,themeSection:p,fontSelect:u,customFontInput:m,applyFont:b,themes:g}=wbCreateFontThemeSection(t,e),{dialogSection:f,actionRow:w}=wbCreateDialogsActions(t,e,{setEditMode:c,fontSelect:u,customFontInput:m});wbRestoreAndAssemble(e,{...e,container:o,header:n,updateBanner:r,updateText:a,editSection:i,moveSection:d,removeSection:s,fontSection:l,themeSection:p,dialogSection:f,actionRow:w,themes:g,setEditMode:c,applyFont:b,customFontInput:m})}();">Drag Webbender to bookmarks</a>
               <div class="actions">
-                <button class="button" id="copyBtn" type="button">Copy bookmarklet</button>
+                <button class="button" id="copyBtn" type="button" disabled>Copy bookmarklet</button>
               </div>
             </article>
             <article class="card">
               <h3>Manual bookmarklet code</h3>
-              <pre id="code">javascript:!function(){const e="webbender-ui",t="webbender-settings",n="1.0.2",o=document.getElementById(e);if(o)return void o.remove();const a={editMode:!1,removeMode:!1,customFont:"",theme:"default"};try{const e=localStorage.getItem(t);e&&Object.assign(a,JSON.parse(e))}catch(e){console.warn("Failed to load webbender settings:",e)}function s(){try{localStorage.setItem(t,JSON.stringify(a))}catch(e){console.warn("Failed to save webbender settings:",e)}}const r=document.createElement("div");r.id=e,Object.assign(r.style,{position:"fixed",top:"20px",right:"20px",width:"300px",backgroundColor:"#18181b",color:"#f4f4f5",padding:"16px",borderRadius:"12px",boxShadow:"0 10px 25px -5px rgba(0, 0, 0, 0.5)",zIndex:"2147483647",fontFamily:"-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif",fontSize:"13px",userSelect:"none",boxSizing:"border-box",border:"1px solid #27272a",display:"flex",flexDirection:"column",gap:"14px"});const d=document.createElement("div");Object.assign(d.style,{display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"1px solid #27272a",paddingBottom:"8px"});const c=document.createElement("span");c.textContent="Webbender",Object.assign(c.style,{fontWeight:"700",fontSize:"14px"});const i=document.createElement("button");i.textContent="✕",Object.assign(i.style,{cursor:"pointer",color:"#71717a",fontWeight:"bold",background:"none",border:"none",fontSize:"16px",padding:"0 4px",transition:"color 0.2s"}),i.onmouseover=()=>{i.style.color="#f4f4f5"},i.onmouseout=()=>{i.style.color="#71717a"},i.onclick=()=>{window._webbenderRemoveMode&&window._webbenderToggleRemove(!1),r.remove()},d.appendChild(c),d.appendChild(i);const l=document.createElement("div");Object.assign(l.style,{display:"none",flexDirection:"column",gap:"4px",padding:"8px 10px",borderRadius:"8px",background:"rgba(234, 179, 8, 0.12)",border:"1px solid rgba(234, 179, 8, 0.3)",fontSize:"12px",lineHeight:"1.5"});const p=document.createElement("div");Object.assign(p.style,{display:"flex",justifyContent:"space-between",alignItems:"center"});const m=document.createElement("span");m.style.color="#fde047";const u=document.createElement("button");u.textContent="✕",Object.assign(u.style,{background:"none",border:"none",color:"#71717a",cursor:"pointer",padding:"0",fontSize:"12px"}),u.onclick=()=>{l.style.display="none"};const b=document.createElement("a");function g(e){let t=document.getElementById(e);return t||(t=document.createElement("style"),t.id=e,document.head.appendChild(t)),t}b.textContent="Re-install from webbender.web.app →",b.href="https://webbender.web.app",b.target="_blank",b.rel="noreferrer",Object.assign(b.style,{color:"#93c5fd",fontSize:"11px",display:"block"}),p.appendChild(m),p.appendChild(u),l.appendChild(p),l.appendChild(b);const f=document.createElement("div");Object.assign(f.style,{display:"flex",justifyContent:"space-between",alignItems:"center"});const x=document.createElement("label");x.textContent="Edit Text (Design Mode)",Object.assign(x.style,{cursor:"pointer",display:"flex",alignItems:"center",gap:"8px",flex:"1"});const y=document.createElement("input");function h(e){document.designMode=e?"on":"off",document.body.contentEditable=e?"true":"false",y.checked=e,a.editMode=e,s()}y.type="checkbox",y.checked="on"===document.designMode,Object.assign(y.style,{cursor:"pointer",width:"16px",height:"16px"}),y.onchange=e=>h(e.target.checked),x.appendChild(y),f.appendChild(x);const C=document.createElement("div");Object.assign(C.style,{display:"flex",justifyContent:"space-between",alignItems:"center"});const v=document.createElement("label");v.textContent="Remove Elements",Object.assign(v.style,{cursor:"pointer",display:"flex",alignItems:"center",gap:"8px",flex:"1"});const w=document.createElement("input");w.type="checkbox",Object.assign(w.style,{cursor:"pointer",width:"16px",height:"16px"}),window._webbenderRemoveMode=!1;const E=e=>{e.target===r||r.contains(e.target)||(e.target.style.outline="2px solid #ef4444")},k=e=>{e.target===r||r.contains(e.target)||(e.target.style.outline="")},j=e=>{e.target===r||r.contains(e.target)||"HTML"===e.target.tagName||"BODY"===e.target.tagName||(e.preventDefault(),e.stopPropagation(),e.target.remove())};window._webbenderToggleRemove=function(e){window._webbenderRemoveMode=e,w.checked=e,a.removeMode=e,s(),e?(document.addEventListener("mouseover",E),document.addEventListener("mouseout",k),document.addEventListener("click",j,!0)):(document.removeEventListener("mouseover",E),document.removeEventListener("mouseout",k),document.removeEventListener("click",j,!0))},w.onchange=e=>window._webbenderToggleRemove(e.target.checked),v.appendChild(w),C.appendChild(v);const O=document.createElement("div");Object.assign(O.style,{display:"flex",flexDirection:"column",gap:"6px"});const S=document.createElement("span");S.textContent="Typography",Object.assign(S.style,{color:"#a1a1aa",fontSize:"11px",fontWeight:"600",textTransform:"uppercase"});const M=document.createElement("select");Object.assign(M.style,{background:"#27272a",color:"#f4f4f5",border:"1px solid #3f3f46",borderRadius:"6px",padding:"6px",fontSize:"13px",cursor:"pointer"});[["Default",""],["Sans-Serif","-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"],["Serif","Georgia, Times New Roman, serif"],["Monospace","Courier New, monospace"],["Comic Sans","Comic Sans MS, Arial, sans-serif"]].forEach(([e,t])=>{const n=document.createElement("option");n.value=t,n.textContent=e,M.appendChild(n)});const T=document.createElement("input");function R(e){const t=g("webbender-font-style");t.innerHTML=e?`* { font-family: "${e}" !important; }`:""}T.type="text",T.placeholder="Custom font...",Object.assign(T.style,{background:"#27272a",color:"#f4f4f5",border:"1px solid #3f3f46",borderRadius:"6px",padding:"6px",fontSize:"12px"}),M.onchange=e=>{T.value="",R(e.target.value),a.customFont=e.target.value,s()},T.oninput=e=>{M.value="",R(e.target.value),a.customFont=e.target.value,s()},O.appendChild(S),O.appendChild(M),O.appendChild(T);const z=document.createElement("div");Object.assign(z.style,{display:"flex",flexDirection:"column",gap:"6px"});const L=document.createElement("span");L.textContent="Color Theme",Object.assign(L.style,{color:"#a1a1aa",fontSize:"11px",fontWeight:"600",textTransform:"uppercase"});const I=document.createElement("div");Object.assign(I.style,{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:"6px"});const D=[{name:"Default",bg:"",fg:""},{name:"Dark",bg:"#121212",fg:"#e4e4e7"},{name:"Light",bg:"#ffffff",fg:"#18181b"},{name:"Sepia",bg:"#f4ecd8",fg:"#433422"}];D.forEach(e=>{const t=document.createElement("button");t.textContent=e.name,Object.assign(t.style,{background:"#27272a",color:"#f4f4f5",border:"1px solid #3f3f46",borderRadius:"6px",padding:"6px",fontSize:"11px",cursor:"pointer",transition:"all 0.2s"}),t.onmouseover=()=>{t.style.background="#3f3f46"},t.onmouseout=()=>{t.style.background="#27272a"},t.onclick=()=>{const t=g("webbender-theme-style");e.bg?(t.innerHTML=`* { background-color: ${e.bg} !important; color: ${e.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`,a.theme=e.name.toLowerCase()):(t.innerHTML="",a.theme="default"),s()},I.appendChild(t)}),z.appendChild(L),z.appendChild(I);const F=document.createElement("div");Object.assign(F.style,{display:"flex",flexDirection:"column",gap:"6px"});const _=document.createElement("span");_.textContent="Dialogs",Object.assign(_.style,{color:"#a1a1aa",fontSize:"11px",fontWeight:"600",textTransform:"uppercase"});const B=document.createElement("div");Object.assign(B.style,{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:"6px"});const H={background:"#27272a",color:"#f4f4f5",border:"1px solid #3f3f46",borderRadius:"6px",padding:"6px",fontSize:"11px",cursor:"pointer",transition:"all 0.2s"},N=document.createElement("button");N.textContent="Alert",Object.assign(N.style,H),N.onmouseover=()=>{N.style.background="#3f3f46"},N.onmouseout=()=>{N.style.background="#27272a"},N.onclick=()=>{const e=prompt("Alert message:","This is a test alert.");null!==e&&alert(e)};const W=document.createElement("button");W.textContent="Confirm",Object.assign(W.style,H),W.onmouseover=()=>{W.style.background="#3f3f46"},W.onmouseout=()=>{W.style.background="#27272a"},W.onclick=()=>{const e=prompt("Confirm message:","Are you sure?");null!==e&&confirm(e)};const $=document.createElement("button");$.textContent="Prompt",Object.assign($.style,H),$.onmouseover=()=>{$.style.background="#3f3f46"},$.onmouseout=()=>{$.style.background="#27272a"},$.onclick=()=>{const e=prompt("Prompt question:","Your question?");if(null!==e){prompt(e,"")}},B.appendChild(N),B.appendChild(W),B.appendChild($),F.appendChild(_),F.appendChild(B);const A=document.createElement("div");Object.assign(A.style,{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:"6px",marginTop:"6px"});const U=document.createElement("button");U.textContent="Reset",Object.assign(U.style,{background:"#dc2626",color:"#fff",border:"none",borderRadius:"6px",padding:"8px",fontSize:"11px",fontWeight:"bold",cursor:"pointer",transition:"all 0.2s"}),U.onmouseover=()=>{U.style.background="#991b1b"},U.onmouseout=()=>{U.style.background="#dc2626"},U.onclick=()=>{h(!1),window._webbenderToggleRemove(!1);const e=document.getElementById("webbender-font-style");e&&(e.innerHTML="");const t=document.getElementById("webbender-theme-style");t&&(t.innerHTML=""),M.value="",T.value="",a.editMode=!1,a.removeMode=!1,a.customFont="",a.theme="default",s()};const P=document.createElement("button");if(P.textContent="Check Updates",Object.assign(P.style,{background:"#2563eb",color:"#fff",border:"none",borderRadius:"6px",padding:"8px",fontSize:"11px",fontWeight:"bold",cursor:"pointer",transition:"all 0.2s"}),P.onmouseover=()=>{P.style.background="#1d4ed8"},P.onmouseout=()=>{P.style.background="#2563eb"},P.onclick=()=>{window.open("https://github.com/ilim-cell/webbender/releases","_blank")},A.appendChild(U),A.appendChild(P),a.theme&&"default"!==a.theme){const e=D.find(e=>e.name.toLowerCase()===a.theme);if(e&&e.bg){g("webbender-theme-style").innerHTML=`* { background-color: ${e.bg} !important; color: ${e.fg} !important; border-color: rgba(128, 128, 128, 0.2) !important; }`}}a.editMode&&h(!0),a.removeMode&&window._webbenderToggleRemove(!0),a.customFont&&(T.value=a.customFont,R(a.customFont)),r.appendChild(d),r.appendChild(l),r.appendChild(f),r.appendChild(C),r.appendChild(O),r.appendChild(z),r.appendChild(F),r.appendChild(A),document.body.appendChild(r);try{fetch("https://webbender.web.app/version.json",{cache:"no-store"}).then(e=>e.json()).then(e=>{e&&e.version&&function(e,t){const n=e.split(".").map(Number),o=t.split(".").map(Number);for(let e=0;e<3;e++){if((n[e]||0)>(o[e]||0))return!0;if((n[e]||0)<(o[e]||0))return!1}return!1}(e.version,n)&&(m.textContent=`Update available: v${e.version} (you have v${n})`,l.style.display="flex")}).catch(()=>{})}catch(e){}}();</pre>
+              <pre id="code">Loading latest bookmarklet code…</pre>
             </article>
           </div>
 
-          <div class="grid" style="margin-top: 18px;">
+          <div class="grid" style="margin-top: 14px;">
             <article class="card">
               <h3>How to use</h3>
               <ol>
                 <li>Open any website.</li>
                 <li>Click your Webbender bookmark.</li>
-                <li>Use the floating panel to edit, remove, or style elements.</li>
+                <li>Use the floating panel to edit, remove, and restyle.</li>
               </ol>
             </article>
             <article class="card">
               <h3>Troubleshooting</h3>
               <ul>
-                <li>If clicking does nothing, recreate the bookmark from this page.</li>
-                <li>Some sites block injected scripts with CSP restrictions.</li>
-                <li>If the loader fails twice, check the browser console for the error.</li>
+                <li>If install code fails to load, refresh this page.</li>
+                <li>Recreate your bookmark after each new Webbender release.</li>
+                <li>Use the “Check Updates” action in the panel for version checks.</li>
               </ul>
             </article>
           </div>
 
-          <div class="notice" style="margin-top: 18px;">
-            Webbender is published through Firebase Hosting, so the install link stays on a stable domain and the
-            payload can be updated without changing the bookmarklet itself.
+          <div class="notice" id="installStatus">
+            Loading bookmarklet from <code>/bookmarklet.js</code> (generated by CI/CD build + deploy).
           </div>
         </section>
       </section>
 
       <section class="footer">
-        <p>
-          Hosted docs: <a href="https://webbender.web.app" target="_blank" rel="noreferrer">webbender.web.app</a>
-          and <a href="https://webbender-pro.web.app" target="_blank" rel="noreferrer">webbender-pro.web.app</a>.
-        </p>
+        Hosted docs:
+        <a href="https://webbender.web.app" target="_blank" rel="noreferrer">webbender.web.app</a>
+        and
+        <a href="https://webbender-pro.web.app" target="_blank" rel="noreferrer">webbender-pro.web.app</a>.
       </section>
     </main>
 
@@ -489,21 +460,51 @@
         });
       }
 
-      tabs.forEach((tab) => {
-        tab.addEventListener('click', () => activateTab(tab.dataset.tab));
-      });
+      tabs.forEach((tab) => tab.addEventListener('click', () => activateTab(tab.dataset.tab)));
 
-      document.getElementById('copyBtn').addEventListener('click', () => {
-        const code = document.getElementById('code').textContent;
+      const dragme = document.getElementById('dragme');
+      const codeEl = document.getElementById('code');
+      const copyBtn = document.getElementById('copyBtn');
+      const installStatus = document.getElementById('installStatus');
+
+      function setBookmarkletCode(source) {
+        const trimmed = source.trim();
+        const bookmarkletPayload = trimmed.replace(/^javascript:/i, '');
+        const bookmarkletCode = `javascript:${bookmarkletPayload}`;
+        dragme.href = bookmarkletCode;
+        dragme.textContent = 'Drag Webbender to bookmarks';
+        dragme.setAttribute('aria-busy', 'false');
+        codeEl.textContent = bookmarkletCode;
+        copyBtn.disabled = false;
+        installStatus.innerHTML =
+          'Install code synced from <code>/bookmarklet.js</code>; this updates automatically when CI/CD deploys a new build.';
+      }
+
+      async function loadBookmarkletCode() {
+        try {
+          const response = await fetch('./bookmarklet.js?cache=' + Date.now(), { cache: 'no-store' });
+          if (!response.ok) throw new Error('Unable to load bookmarklet artifact');
+          const js = await response.text();
+          setBookmarkletCode(js);
+        } catch (error) {
+          dragme.textContent = 'Bookmarklet unavailable';
+          codeEl.textContent = 'Failed to load bookmarklet.js. Please refresh this page.';
+          installStatus.textContent = 'Could not load bookmarklet code from deployed artifacts.';
+        }
+      }
+
+      copyBtn.addEventListener('click', () => {
+        const code = codeEl.textContent;
         navigator.clipboard.writeText(code).then(() => {
-          const button = document.getElementById('copyBtn');
-          const original = button.textContent;
-          button.textContent = 'Copied';
+          const original = copyBtn.textContent;
+          copyBtn.textContent = 'Copied';
           setTimeout(() => {
-            button.textContent = original;
+            copyBtn.textContent = original;
           }, 1500);
         });
       });
+
+      loadBookmarkletCode();
     </script>
   </body>
 </html>

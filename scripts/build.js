@@ -19,7 +19,6 @@ const BOOKMARKLET_URL_FILE = path.join(DIST_DIR, 'bookmarklet.js');
 const LOADER_FILE = path.join(DIST_DIR, 'loader.js');
 const VERSION_FILE = path.join(DIST_DIR, 'version.json');
 const SITE_BOOKMARKLET_FILE = path.join(SITE_DIR, 'bookmarklet.js');
-const SITE_INDEX_FILE = path.join(SITE_DIR, 'index.html');
 
 // Ensure dist directory exists
 if (!fs.existsSync(DIST_DIR)) {
