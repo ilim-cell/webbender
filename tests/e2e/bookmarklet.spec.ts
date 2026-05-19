@@ -2,26 +2,26 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Webbender E2E Tests', () => {
   test('should load install page without errors', async ({ page }) => {
-    await page.goto('/site/index.html');
+    await page.goto('/index.html');
     expect(page).toHaveTitle('Webbender');
     await expect(page.locator('h1')).toContainText('Webbender');
   });
 
   test('should display description tab by default', async ({ page }) => {
-    await page.goto('/site/index.html');
+    await page.goto('/index.html');
     const descriptionTab = page.locator('[data-tab="description"]');
     await expect(descriptionTab).toHaveAttribute('aria-selected', 'true');
   });
 
   test('should switch to install tab', async ({ page }) => {
-    await page.goto('/site/index.html');
+    await page.goto('/index.html');
     const installTab = page.locator('[data-tab="install"]');
     await installTab.evaluate((el) => el.click());
     await expect(installTab).toHaveAttribute('aria-selected', 'true');
   });
 
   test('should inject bookmarklet panel when activated', async ({ page }) => {
-    await page.goto('/site/index.html');
+    await page.goto('/index.html');
     
     // Simulate loading the bookmarklet
     const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
@@ -44,7 +44,7 @@ test.describe('Webbender E2E Tests', () => {
   });
 
   test('should have Edit Text toggle in bookmarklet panel', async ({ page }) => {
-    await page.goto('/site/index.html');
+    await page.goto('/index.html');
     const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
     
     await page.evaluate((code) => {
@@ -59,7 +59,7 @@ test.describe('Webbender E2E Tests', () => {
   test('should highlight and move page elements without letting them leave the viewport entirely', async ({
     page,
   }) => {
-    await page.goto('/site/index.html');
+    await page.goto('/index.html');
     const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
 
     await page.evaluate((code) => {
@@ -140,7 +140,7 @@ test.describe('Webbender E2E Tests', () => {
   });
 
   test('should have copy button functional', async ({ page }) => {
-    await page.goto('/site/index.html');
+    await page.goto('/index.html');
     const installTab = page.locator('[data-tab="install"]');
     await installTab.evaluate((el) => el.click());
     
@@ -170,7 +170,7 @@ test.describe('Webbender E2E Tests', () => {
   });
 
   test('should display GitHub link in header', async ({ page }) => {
-    await page.goto('/site/index.html');
+    await page.goto('/index.html');
     const githubLink = page.locator('a:has-text("GitHub")');
     await expect(githubLink).toHaveAttribute('href', 'https://github.com/ilim-cell/webbender');
   });
