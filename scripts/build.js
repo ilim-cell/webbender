@@ -20,6 +20,9 @@ const LOADER_FILE = path.join(DIST_DIR, 'loader.js');
 const VERSION_FILE = path.join(DIST_DIR, 'version.json');
 const SITE_BOOKMARKLET_FILE = path.join(SITE_DIR, 'bookmarklet.js');
 
+// Declare SITE_INDEX_FILE checking process.env with a reliable default fallback
+const SITE_INDEX_FILE = process.env.SITE_INDEX_FILE || path.join(SITE_DIR, 'index.html');
+
 // Ensure dist directory exists
 if (!fs.existsSync(DIST_DIR)) {
   fs.mkdirSync(DIST_DIR, { recursive: true });
