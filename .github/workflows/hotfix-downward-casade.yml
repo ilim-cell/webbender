@@ -23,11 +23,13 @@ jobs:
 
       - name: Cascade to beta
         run: |
-          # 💡 Ensure the runner knows about the remote beta branch before switching
+          # Fetch explicitly so Git absolutely knows about origin/beta
           git fetch origin beta || true
-          git checkout beta || git checkout -b beta origin/beta || git checkout -b beta
           
-          # 💡 ATOMIC RETRY LOOP: Backs off exponentially up to 5 times if a remote race condition happens
+          # Force create/reset local beta branch to match origin/beta, or create fresh if it doesn't exist
+          git checkout -B beta origin/beta || git checkout -b beta
+          
+          # 💡 ATOMIC RETRY LOOP
           for i in {1..5}; do
             git fetch origin beta
             git reset --hard origin/beta
@@ -38,7 +40,6 @@ jobs:
               fi
             fi
             
-            # 💡 EXPONENTIAL BACKOFF CALCULATION: (2^i seconds) -> 2s, 4s, 8s, 16s, 32s
             BACKOFF=$((2**i))
             echo "⚠️ Remote changed mid-flight. Backing off for ${BACKOFF}s and retrying ($i/5)..."
             sleep $BACKOFF
@@ -46,11 +47,13 @@ jobs:
 
       - name: Cascade to dev
         run: |
-          # 💡 Ensure the runner knows about the remote dev branch before switching
+          # Fetch explicitly so Git absolutely knows about origin/dev
           git fetch origin dev || true
-          git checkout dev || git checkout -b dev origin/dev || git checkout -b dev
           
-          # 💡 ATOMIC RETRY LOOP: Backs off exponentially up to 5 times if a remote race condition happens
+          # Force create/reset local dev branch to match origin/dev, or create fresh if it doesn't exist
+          git checkout -B dev origin/dev || git checkout -b dev
+          
+          # 💡 ATOMIC RETRY LOOP
           for i in {1..5}; do
             git fetch origin dev
             git reset --hard origin/dev
@@ -61,7 +64,6 @@ jobs:
               fi
             fi
             
-            # 💡 EXPONENTIAL BACKOFF CALCULATION: (2^i seconds) -> 2s, 4s, 8s, 16s, 32s
             BACKOFF=$((2**i))
             echo "⚠️ Remote changed mid-flight. Backing off for ${BACKOFF}s and retrying ($i/5)..."
             sleep $BACKOFF
