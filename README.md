@@ -12,6 +12,7 @@ Webbender is a feature-rich bookmarklet for you to *bend* the web to your will, 
 - 📝 **Edit Text** - Enable design mode to edit any text on any page
 - 🗑️ **Remove Elements** - Click to delete unwanted page elements
 - 🎨 **Font Override** - Apply custom or system fonts to any website
+- ↗️ **Item Move** - Click and drag to reposition objects around the page
 - 🌈 **Color Themes** - Dark, Light, Sepia, or create custom themes
 - 💬 **Dialog Helpers** - Test alert, confirm, and prompt boxes
 - 💾 **Persistent Settings** - Your preferences are saved locally
