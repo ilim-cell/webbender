@@ -5,15 +5,18 @@
   "author": "ilim-cell",
   "license": "MIT",
   "scripts": {
-    "build": "cross-env SITE_INDEX_FILE=site/index.html node scripts/build.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:legacy": "cross-env SITE_INDEX_FILE=site/index.html node scripts/build.js",
+    "watch": "cross-env SITE_INDEX_FILE=site/index.html node scripts/build.js --watch",
     "format": "prettier --write \"src/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.js\"",
-    "watch": "cross-env SITE_INDEX_FILE=site/index.html node scripts/build.js --watch",
-    "test": "npm run test:e2e",
+    "test": "pnpm run test:e2e",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
-    "prepublishOnly": "npm run format && npm run build"
+    "prepublishOnly": "pnpm run format && pnpm run build"
   },
   "keywords": [
     "bookmarklet",
@@ -21,19 +24,20 @@
     "browser-extension"
   ],
   "devDependencies": {
-    "cross-env": "^7.0.3",
-    "prettier": "^3.0.0",
-    "terser": "^5.47.1",
-    "semantic-release": "^25.0.3",
+    "@axe-core/cli": "^4.8.0",
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
+    "@playwright/test": "^1.60.0",
     "@semantic-release/changelog": "^6.0.0",
     "@semantic-release/git": "^10.0.0",
     "@semantic-release/github": "^12.0.8",
-    "@playwright/test": "^1.60.0",
     "commitlint": "^21.0.1",
-    "@commitlint/config-conventional": "^21.0.1",
-    "@commitlint/cli": "^21.0.1",
-    "@axe-core/cli": "^4.8.0",
-    "husky": "^9.1.7"
+    "cross-env": "^7.0.3",
+    "husky": "^9.1.7",
+    "prettier": "^3.0.0",
+    "semantic-release": "^25.0.3",
+    "terser": "^5.47.1",
+    "vite": "^8.0.14"
   },
   "engines": {
     "node": ">=16.0.0"
