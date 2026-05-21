@@ -10,6 +10,7 @@ permissions:
   contents: write
   pull-requests: write
   security-events: write
+  checks: write
 
 jobs:
   format:
@@ -243,46 +244,14 @@ jobs:
               console.log('Failed to parse lighthouse report', e.message);
             }
 
-  pr-preview:
-    name: Preview Deploy
+  build_and_preview:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
-    continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: SITE_INDEX_FILE=site/index.html npm run build
-
-      - name: Deploy preview
-        continue-on-error: true
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: actions/checkout@v4
+      - run: npm ci && npm run build
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO }}
           projectId: webbender-pro
-          channelId: pr-${{ github.event.number }}
-        env:
-          FIREBASE_CLI_PREVIEWS: hostingchannels
-
-      - name: Comment PR with preview link
-        if: success()
-        uses: actions/github-script@v9
-        continue-on-error: true
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🚀 Preview deployed!\n- Webbender: https://webbender-pro--pr-${{ github.event.number }}.web.app\n- Install: https://webbender-pro--pr-${{ github.event.number }}.web.app/site/index.html`
-            });
