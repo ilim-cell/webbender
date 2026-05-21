@@ -9,7 +9,6 @@ jobs:
   cascade-hotfix:
     runs-on: ubuntu-latest
     if: contains(github.event.head_commit.message, 'hotfix') || contains(github.event.head_commit.message, 'v')
-    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -20,11 +19,14 @@ jobs:
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@://github.com"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Cascade to beta
         run: |
-          git checkout beta
+          # 💡 Ensure the runner knows about the remote beta branch before switching
+          git fetch origin beta || true
+          git checkout beta || git checkout -b beta origin/beta || git checkout -b beta
+          
           # 💡 ATOMIC RETRY LOOP: Backs off exponentially up to 5 times if a remote race condition happens
           for i in {1..5}; do
             git fetch origin beta
@@ -44,7 +46,10 @@ jobs:
 
       - name: Cascade to dev
         run: |
-          git checkout dev
+          # 💡 Ensure the runner knows about the remote dev branch before switching
+          git fetch origin dev || true
+          git checkout dev || git checkout -b dev origin/dev || git checkout -b dev
+          
           # 💡 ATOMIC RETRY LOOP: Backs off exponentially up to 5 times if a remote race condition happens
           for i in {1..5}; do
             git fetch origin dev
