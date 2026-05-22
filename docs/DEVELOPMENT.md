@@ -34,6 +34,8 @@ The install code is self-contained, so strict CSP pages do not block it.
 1. **Click the bookmarklet** on any webpage to open the Webbender panel
 2. **Toggle features** using the checkboxes:
    - Edit Text: Make webpage content editable
+   - Immersive Edit: Visual formatting, image/button insertion, element copy/paste, rounded corners, and drawing with undo/redo
+   - Grab & Move: Tap and drag elements around the viewport
    - Remove Elements: Click elements to remove them
 3. **Apply fonts**: Select from preset fonts or type a custom font name
 4. **Change theme**: Click a theme button to apply colors

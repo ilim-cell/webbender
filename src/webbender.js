@@ -156,6 +156,9 @@ function wbCreateHeader(ui, container) {
         if (window._webbenderMoveMode) {
           window._webbenderToggleMove(false);
         }
+        if (window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
+          window._webbenderToggleDraw(false);
+        }
         container.remove();
       },
     }
@@ -217,6 +220,7 @@ function wbCreateEditRemoveSection(ui, container, state) {
   const { settings, saveSettings } = state;
   const MOVE_OUTLINE = '2px solid #22c55e';
   const REMOVE_OUTLINE = '2px solid #ef4444';
+  const SELECT_OUTLINE = '2px dashed #60a5fa';
 
   function isBookmarkletElement(target) {
     return (
@@ -268,6 +272,9 @@ function wbCreateEditRemoveSection(ui, container, state) {
     if (enabled && window._webbenderMoveMode) {
       window._webbenderToggleMove(false);
     }
+    if (enabled && window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
+      window._webbenderToggleDraw(false);
+    }
     document.designMode = enabled ? 'on' : 'off';
     document.body.contentEditable = enabled ? 'true' : 'false';
     editToggle.checked = enabled;
@@ -307,6 +314,7 @@ function wbCreateEditRemoveSection(ui, container, state) {
   let activeMoveTarget = null;
   window._webbenderMoveMode = false;
   window._webbenderRemoveMode = false;
+  window._webbenderDrawMode = false;
 
   function setMoveHoverTarget(target) {
     if (moveHoverTarget === target) return;
@@ -409,6 +417,9 @@ function wbCreateEditRemoveSection(ui, container, state) {
     if (enabled && window._webbenderRemoveMode) {
       window._webbenderToggleRemove(false);
     }
+    if (enabled && window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
+      window._webbenderToggleDraw(false);
+    }
 
     window._webbenderMoveMode = enabled;
     moveToggle.checked = enabled;
@@ -441,6 +452,9 @@ function wbCreateEditRemoveSection(ui, container, state) {
     if (enabled && window._webbenderMoveMode) {
       window._webbenderToggleMove(false);
     }
+    if (enabled && window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
+      window._webbenderToggleDraw(false);
+    }
 
     window._webbenderRemoveMode = enabled;
     removeToggle.checked = enabled;
@@ -466,7 +480,276 @@ function wbCreateEditRemoveSection(ui, container, state) {
   removeLabel.appendChild(removeToggle);
   removeSection.appendChild(removeLabel);
 
-  return { editSection, moveSection, removeSection, setEditMode };
+  const immersiveSection = ui.create('div', {
+    style: { display: 'flex', flexDirection: 'column', gap: '6px' },
+  });
+  const immersiveLabel = ui.create('span', {
+    textContent: 'Immersive Edit',
+    style: { color: '#a1a1aa', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' },
+  });
+  const immersiveHint = ui.create('span', {
+    textContent: 'Tap Pick, then element tools. Draw mode supports undo/redo.',
+    style: { color: '#71717a', fontSize: '10px' },
+  });
+  const immersiveGrid = ui.create('div', {
+    style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' },
+  });
+
+  const immersiveButtonStyle = {
+    background: '#27272a',
+    color: '#f4f4f5',
+    border: '1px solid #3f3f46',
+    borderRadius: '6px',
+    padding: '6px',
+    fontSize: '10px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  };
+
+  function createImmersiveButton(text, onClick) {
+    return ui.button(
+      text,
+      { ...immersiveButtonStyle },
+      {
+        mouseover: (e) => (e.target.style.background = '#3f3f46'),
+        mouseout: (e) => (e.target.style.background = '#27272a'),
+        click: onClick,
+      }
+    );
+  }
+
+  function getSelectionElement() {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return null;
+    const node = selection.anchorNode;
+    if (!node) return null;
+    return node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  }
+
+  let selectedElement = null;
+  let copiedElement = null;
+  let pickModeEnabled = false;
+  let drawCanvas = null;
+  let drawCtx = null;
+  let currentStroke = null;
+  let drawStrokes = [];
+  let drawRedoStrokes = [];
+
+  function setSelectedElement(target) {
+    clearOutline(selectedElement);
+    selectedElement = isBookmarkletElement(target) ? null : target;
+    if (selectedElement) {
+      setOutline(selectedElement, SELECT_OUTLINE);
+    }
+  }
+
+  function getActiveElement() {
+    if (selectedElement && selectedElement.isConnected) return selectedElement;
+    const selectionElement = getSelectionElement();
+    return isBookmarkletElement(selectionElement) ? null : selectionElement;
+  }
+
+  function applyRoundedCorners(step) {
+    const target = getActiveElement();
+    if (!target) return;
+    const radius = parseFloat(window.getComputedStyle(target).borderRadius || '0') || 0;
+    const nextRadius = Math.max(0, radius + step);
+    target.style.borderRadius = `${nextRadius}px`;
+  }
+
+  function execEditCommand(command, value) {
+    if (document.designMode !== 'on') {
+      setEditMode(true);
+    }
+    try {
+      document.execCommand(command, false, value);
+    } catch (e) {
+      // Ignore unsupported commands.
+    }
+  }
+
+  function renderDrawCanvas() {
+    if (!drawCtx || !drawCanvas) return;
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+    drawCtx.lineCap = 'round';
+    drawCtx.lineJoin = 'round';
+    drawCtx.strokeStyle = '#f97316';
+    drawCtx.lineWidth = 3;
+    drawStrokes.forEach((stroke) => {
+      if (stroke.length === 0) return;
+      drawCtx.beginPath();
+      drawCtx.moveTo(stroke[0].x, stroke[0].y);
+      for (let i = 1; i < stroke.length; i++) {
+        drawCtx.lineTo(stroke[i].x, stroke[i].y);
+      }
+      drawCtx.stroke();
+    });
+  }
+
+  function ensureDrawCanvas() {
+    if (drawCanvas) return;
+    drawCanvas = ui.create('canvas', {
+      style: {
+        position: 'fixed',
+        inset: '0',
+        zIndex: '2147483646',
+        cursor: 'crosshair',
+      },
+    });
+    drawCanvas.width = window.innerWidth;
+    drawCanvas.height = window.innerHeight;
+    drawCtx = drawCanvas.getContext('2d');
+
+    drawCanvas.onmousedown = (e) => {
+      currentStroke = [{ x: e.clientX, y: e.clientY }];
+      drawStrokes.push(currentStroke);
+      drawRedoStrokes = [];
+      renderDrawCanvas();
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    drawCanvas.onmousemove = (e) => {
+      if (!currentStroke) return;
+      currentStroke.push({ x: e.clientX, y: e.clientY });
+      renderDrawCanvas();
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const stopDrawing = (e) => {
+      if (!currentStroke) return;
+      currentStroke = null;
+      renderDrawCanvas();
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    drawCanvas.onmouseup = stopDrawing;
+    drawCanvas.onmouseleave = stopDrawing;
+  }
+
+  window._webbenderToggleDraw = function (enabled) {
+    if (enabled && document.designMode === 'on') {
+      setEditMode(false);
+    }
+    if (enabled && window._webbenderMoveMode) {
+      window._webbenderToggleMove(false);
+    }
+    if (enabled && window._webbenderRemoveMode) {
+      window._webbenderToggleRemove(false);
+    }
+    if (enabled) {
+      ensureDrawCanvas();
+      drawCanvas.width = window.innerWidth;
+      drawCanvas.height = window.innerHeight;
+      document.body.appendChild(drawCanvas);
+      renderDrawCanvas();
+    } else if (drawCanvas && drawCanvas.parentNode) {
+      drawCanvas.parentNode.removeChild(drawCanvas);
+      currentStroke = null;
+    }
+    window._webbenderDrawMode = enabled;
+    drawBtn.textContent = enabled ? 'Draw: On' : 'Draw';
+  };
+
+  const pickBtn = createImmersiveButton('Pick', () => {
+    if (pickModeEnabled) return;
+    pickModeEnabled = true;
+    pickBtn.textContent = 'Tap...';
+    const pickHandler = (e) => {
+      if (isBookmarkletElement(e.target)) return;
+      setSelectedElement(e.target);
+      pickModeEnabled = false;
+      pickBtn.textContent = 'Pick';
+      document.removeEventListener('click', pickHandler, true);
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    document.addEventListener('click', pickHandler, true);
+  });
+  const boldBtn = createImmersiveButton('Bold', () => execEditCommand('bold'));
+  const italicBtn = createImmersiveButton('Italic', () => execEditCommand('italic'));
+  const underlineBtn = createImmersiveButton('Underline', () => execEditCommand('underline'));
+  const imageBtn = createImmersiveButton('Image', () => {
+    const url = prompt('Image URL:', 'https://');
+    if (url) execEditCommand('insertImage', url);
+  });
+  const buttonBtn = createImmersiveButton('Button', () => {
+    const label = prompt('Button text:', 'Button');
+    if (!label) return;
+    execEditCommand(
+      'insertHTML',
+      `<button style="padding:8px 12px;border-radius:8px;border:1px solid #555;background:#2563eb;color:#fff;">${label}</button>`
+    );
+  });
+  const roundPlusBtn = createImmersiveButton('Round +', () => applyRoundedCorners(4));
+  const roundMinusBtn = createImmersiveButton('Round -', () => applyRoundedCorners(-4));
+  const copyBtn = createImmersiveButton('Copy', () => {
+    const target = getActiveElement();
+    if (!target) return;
+    copiedElement = target.cloneNode(true);
+  });
+  const pasteBtn = createImmersiveButton('Paste', () => {
+    if (!copiedElement) return;
+    const target = getActiveElement();
+    const clone = copiedElement.cloneNode(true);
+    if (target && target.parentNode) {
+      target.parentNode.insertBefore(clone, target.nextSibling);
+      setSelectedElement(clone);
+    } else {
+      document.body.appendChild(clone);
+      setSelectedElement(clone);
+    }
+  });
+  const deleteBtn = createImmersiveButton('Delete', () => {
+    const target = getActiveElement();
+    if (!target) return;
+    setSelectedElement(null);
+    target.remove();
+  });
+  const undoBtn = createImmersiveButton('Undo', () => {
+    if (window._webbenderDrawMode && drawStrokes.length > 0) {
+      drawRedoStrokes.push(drawStrokes.pop());
+      renderDrawCanvas();
+      return;
+    }
+    execEditCommand('undo');
+  });
+  const redoBtn = createImmersiveButton('Redo', () => {
+    if (window._webbenderDrawMode && drawRedoStrokes.length > 0) {
+      drawStrokes.push(drawRedoStrokes.pop());
+      renderDrawCanvas();
+      return;
+    }
+    execEditCommand('redo');
+  });
+  const clearDrawBtn = createImmersiveButton('Clear Draw', () => {
+    drawStrokes = [];
+    drawRedoStrokes = [];
+    renderDrawCanvas();
+  });
+  const drawBtn = createImmersiveButton('Draw', () =>
+    window._webbenderToggleDraw(!window._webbenderDrawMode)
+  );
+
+  ui.append(immersiveGrid, [
+    pickBtn,
+    boldBtn,
+    italicBtn,
+    underlineBtn,
+    imageBtn,
+    buttonBtn,
+    roundPlusBtn,
+    roundMinusBtn,
+    copyBtn,
+    pasteBtn,
+    deleteBtn,
+    drawBtn,
+    undoBtn,
+    redoBtn,
+    clearDrawBtn,
+  ]);
+  ui.append(immersiveSection, [immersiveLabel, immersiveHint, immersiveGrid]);
+
+  return { editSection, moveSection, removeSection, immersiveSection, setEditMode };
 }
 
 function wbGetThemeCss(bgColor, fgColor) {
@@ -700,6 +983,9 @@ function wbCreateDialogsActions(ui, state, controls) {
         setEditMode(false);
         window._webbenderToggleRemove(false);
         window._webbenderToggleMove(false);
+        if (window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
+          window._webbenderToggleDraw(false);
+        }
         const fontStyle = document.getElementById('webbender-font-style');
         if (fontStyle) fontStyle.textContent = '';
         const themeStyle = document.getElementById('webbender-theme-style');
@@ -757,6 +1043,7 @@ function wbRestoreAndAssemble(state, controls) {
     editSection,
     moveSection,
     removeSection,
+    immersiveSection,
     fontSection,
     themeSection,
     dialogSection,
@@ -788,6 +1075,7 @@ function wbRestoreAndAssemble(state, controls) {
     editSection,
     moveSection,
     removeSection,
+    immersiveSection,
     fontSection,
     themeSection,
     dialogSection,
@@ -858,11 +1146,8 @@ function wbRestoreAndAssemble(state, controls) {
 
   const { header } = wbCreateHeader(ui, container);
   const { updateBanner, updateText } = wbCreateUpdateBanner(ui);
-  const { editSection, moveSection, removeSection, setEditMode } = wbCreateEditRemoveSection(
-    ui,
-    container,
-    state
-  );
+  const { editSection, moveSection, removeSection, immersiveSection, setEditMode } =
+    wbCreateEditRemoveSection(ui, container, state);
   const { fontSection, themeSection, fontSelect, customFontInput, applyFont, themes } =
     wbCreateFontThemeSection(ui, state);
   const { dialogSection, actionRow } = wbCreateDialogsActions(ui, state, {
@@ -881,6 +1166,7 @@ function wbRestoreAndAssemble(state, controls) {
     editSection,
     moveSection,
     removeSection,
+    immersiveSection,
     fontSection,
     themeSection,
     dialogSection,

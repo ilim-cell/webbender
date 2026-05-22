@@ -7,6 +7,34 @@ async function getBookmarkletCode(page: Page) {
 }
 
 test.describe('Webbender E2E Tests', () => {
+  test('should expose immersive edit controls for visual editing', async ({ page }) => {
+    await page.goto('/index.html');
+    const bookmarkletCode = await page.locator('#drag-btn').getAttribute('href');
+    expect(bookmarkletCode).toContain('javascript:');
+
+    await page.evaluate((code) => {
+      const jsCode = code.substring('javascript:'.length);
+      new Function(jsCode)();
+    }, bookmarkletCode);
+
+    const panel = page.locator('#webbender-ui');
+    await expect(panel).toContainText('Immersive Edit');
+    await expect(panel.getByRole('button', { name: 'Draw', exact: true })).toBeVisible();
+
+    await panel.getByRole('button', { name: 'Pick' }).click();
+    await page.locator('h1').click();
+
+    const beforeCount = await page.locator('h1').count();
+    await panel.getByRole('button', { name: 'Copy' }).click();
+    await panel.getByRole('button', { name: 'Paste' }).click();
+    await expect(page.locator('h1')).toHaveCount(beforeCount + 1);
+
+    await panel.getByRole('button', { name: 'Draw', exact: true }).click();
+    await expect(panel.getByRole('button', { name: 'Draw: On' })).toBeVisible();
+    await panel.getByRole('button', { name: 'Draw: On' }).click();
+    await expect(panel.getByRole('button', { name: 'Draw', exact: true })).toBeVisible();
+  });
+
   test('should load install page without errors', async ({ page }) => {
     await page.goto('/index.html');
     expect(page).toHaveTitle('Webbender');
