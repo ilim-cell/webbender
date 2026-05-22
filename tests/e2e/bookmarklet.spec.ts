@@ -7,7 +7,7 @@ async function getBookmarkletCode(page: Page) {
 }
 
 test.describe('Webbender E2E Tests', () => {
-  test('should expose immersive edit controls for visual editing', async ({ page }) => {
+  test('should open immersive floating action sheet from start button', async ({ page }) => {
     await page.goto('/index.html');
     const bookmarkletCode = await page.locator('#drag-btn').getAttribute('href');
     expect(bookmarkletCode).toContain('javascript:');
@@ -19,20 +19,30 @@ test.describe('Webbender E2E Tests', () => {
 
     const panel = page.locator('#webbender-ui');
     await expect(panel).toContainText('Immersive Edit');
-    await expect(panel.getByRole('button', { name: 'Draw', exact: true })).toBeVisible();
+    await panel.getByRole('button', { name: 'Start Immersive Edit' }).click();
 
-    await panel.getByRole('button', { name: 'Pick' }).click();
-    await page.locator('h1').click();
+    const sheet = page.locator('#webbender-immersive-sheet');
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Undo' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Redo' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Select' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Pan' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Text' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Shapes' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Image' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Duplicate' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Delete' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Color picker' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Options' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Save' })).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'Close' })).toBeVisible();
 
-    const beforeCount = await page.locator('h1').count();
-    await panel.getByRole('button', { name: 'Copy' }).click();
-    await panel.getByRole('button', { name: 'Paste' }).click();
-    await expect(page.locator('h1')).toHaveCount(beforeCount + 1);
+    await sheet.getByRole('button', { name: 'Text' }).click();
+    await expect(page.locator('text=Editable text')).toBeVisible();
 
-    await panel.getByRole('button', { name: 'Draw', exact: true }).click();
-    await expect(panel.getByRole('button', { name: 'Draw: On' })).toBeVisible();
-    await panel.getByRole('button', { name: 'Draw: On' }).click();
-    await expect(panel.getByRole('button', { name: 'Draw', exact: true })).toBeVisible();
+    await sheet.getByRole('button', { name: 'Save' }).click();
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await expect(sheet).not.toBeVisible();
   });
 
   test('should load install page without errors', async ({ page }) => {

@@ -66,8 +66,9 @@ function wbCreateHeader(ui, container) {
         if (window._webbenderMoveMode) {
           window._webbenderToggleMove(false);
         }
-        if (window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
-          window._webbenderToggleDraw(false);
+        if (typeof window._webbenderCloseImmersiveSheet === 'function') {
+          const canClose = window._webbenderCloseImmersiveSheet();
+          if (!canClose) return;
         }
         container.remove();
       },
@@ -128,15 +129,65 @@ function wbCreateUpdateBanner(ui) {
 
 function wbCreateEditRemoveSection(ui, container, state) {
   const { settings, saveSettings } = state;
-  const MOVE_OUTLINE = '2px solid #22c55e';
-  const REMOVE_OUTLINE = '2px solid #ef4444';
   const SELECT_OUTLINE = '2px dashed #60a5fa';
+  const immersiveSection = ui.create('div', {
+    style: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  });
+  const immersiveLabel = ui.create('span', {
+    textContent: 'Immersive Edit',
+    style: { color: '#a1a1aa', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' },
+  });
+  const startBtn = ui.button(
+    'Start Immersive Edit',
+    {
+      background: '#22c55e',
+      color: '#052e16',
+      border: 'none',
+      borderRadius: '8px',
+      padding: '8px',
+      fontSize: '12px',
+      fontWeight: '700',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+    },
+    {
+      mouseover: () => (startBtn.style.background = '#4ade80'),
+      mouseout: () => (startBtn.style.background = '#22c55e'),
+      click: () => openImmersivePanel(),
+    }
+  );
+  const immersiveHint = ui.create('span', {
+    textContent: 'Paint-style sheet with icon tools appears at the bottom.',
+    style: { color: '#71717a', fontSize: '10px' },
+  });
+  ui.append(immersiveSection, [immersiveLabel, startBtn, immersiveHint]);
+
+  const editSection = ui.create('div', { style: { display: 'none' } });
+  const moveSection = ui.create('div', { style: { display: 'none' } });
+  const removeSection = ui.create('div', { style: { display: 'none' } });
+  settings.editMode = false;
+  settings.moveMode = false;
+  settings.removeMode = false;
+  saveSettings();
+
+  let immersivePanel = null;
+  let optionsBody = null;
+  let selectedElement = null;
+  let copiedElement = null;
+  let activeTool = 'select';
+  let unsavedChanges = false;
+  let pointerDrag = null;
+  const undoStack = [];
+  const redoStack = [];
+  const sessionStack = [];
 
   function isBookmarkletElement(target) {
     return (
       !target ||
       target === container ||
       container.contains(target) ||
+      target === immersivePanel ||
+      (immersivePanel && immersivePanel.contains(target)) ||
       target.tagName === 'HTML' ||
       target.tagName === 'BODY'
     );
@@ -154,510 +205,478 @@ function wbCreateEditRemoveSection(ui, container, state) {
     delete target.dataset.webbenderOutlineBackup;
   }
 
-  function applyMoveTransform(target, x, y) {
-    const baseTransform = target.dataset.webbenderBaseTransform || '';
-    const translate = `translate(${x}px, ${y}px)`;
-    target.style.transform = baseTransform ? `${translate} ${baseTransform}` : translate;
-    target.dataset.webbenderMoveX = String(x);
-    target.dataset.webbenderMoveY = String(y);
+  function setSelectedElement(target) {
+    clearOutline(selectedElement);
+    selectedElement = isBookmarkletElement(target) ? null : target;
+    if (selectedElement) setOutline(selectedElement, SELECT_OUTLINE);
+    refreshOptions();
   }
 
-  const editSection = ui.create('div', {
-    style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  });
-  const editLabel = ui.create('label', {
-    textContent: 'Edit Text (Design Mode)',
-    style: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', flex: '1' },
-  });
-  const editToggle = ui.create('input', {
-    attrs: { type: 'checkbox' },
-    style: { cursor: 'pointer', width: '16px', height: '16px' },
-  });
-  editToggle.checked = document.designMode === 'on';
+  function markUnsaved(value) {
+    unsavedChanges = value;
+    if (saveBtn) {
+      saveBtn.style.background = unsavedChanges ? '#22c55e' : '#14532d';
+      saveBtn.style.color = unsavedChanges ? '#052e16' : '#86efac';
+    }
+  }
 
   function setEditMode(enabled) {
-    if (enabled && window._webbenderRemoveMode) {
-      window._webbenderToggleRemove(false);
-    }
-    if (enabled && window._webbenderMoveMode) {
-      window._webbenderToggleMove(false);
-    }
-    if (enabled && window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
-      window._webbenderToggleDraw(false);
-    }
     document.designMode = enabled ? 'on' : 'off';
     document.body.contentEditable = enabled ? 'true' : 'false';
-    editToggle.checked = enabled;
     settings.editMode = enabled;
     saveSettings();
   }
 
-  editToggle.onchange = (e) => setEditMode(e.target.checked);
-  editLabel.appendChild(editToggle);
-  editSection.appendChild(editLabel);
-
-  const moveSection = ui.create('div', {
-    style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  });
-  const moveLabel = ui.create('label', {
-    textContent: 'Grab & Move',
-    style: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', flex: '1' },
-  });
-  const moveToggle = ui.create('input', {
-    attrs: { type: 'checkbox' },
-    style: { cursor: 'pointer', width: '16px', height: '16px' },
-  });
-
-  const removeSection = ui.create('div', {
-    style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  });
-  const removeLabel = ui.create('label', {
-    textContent: 'Remove Elements',
-    style: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', flex: '1' },
-  });
-  const removeToggle = ui.create('input', {
-    attrs: { type: 'checkbox' },
-    style: { cursor: 'pointer', width: '16px', height: '16px' },
-  });
-
-  let moveHoverTarget = null;
-  let activeMoveTarget = null;
   window._webbenderMoveMode = false;
   window._webbenderRemoveMode = false;
   window._webbenderDrawMode = false;
-
-  function setMoveHoverTarget(target) {
-    if (moveHoverTarget === target) return;
-    clearOutline(moveHoverTarget);
-    moveHoverTarget = target;
-    if (moveHoverTarget) {
-      setOutline(moveHoverTarget, MOVE_OUTLINE);
-    }
-  }
-
-  const moveHoverHandler = (e) => {
-    if (activeMoveTarget || isBookmarkletElement(e.target)) return;
-    setMoveHoverTarget(e.target);
-  };
-  const moveLeaveHandler = (e) => {
-    if (activeMoveTarget || e.target !== moveHoverTarget) return;
-    setMoveHoverTarget(null);
-  };
-  const moveDownHandler = (e) => {
-    if (e.button !== 0 || isBookmarkletElement(e.target)) return;
-
-    const rect = e.target.getBoundingClientRect();
-    const moveX = parseFloat(e.target.dataset.webbenderMoveX || '0');
-    const moveY = parseFloat(e.target.dataset.webbenderMoveY || '0');
-
-    if (e.target.dataset.webbenderBaseTransform === undefined) {
-      e.target.dataset.webbenderBaseTransform = e.target.style.transform || '';
-    }
-
-    activeMoveTarget = {
-      target: e.target,
-      startX: e.clientX,
-      startY: e.clientY,
-      moveX,
-      moveY,
-      minDeltaX: -rect.right + 1,
-      maxDeltaX: window.innerWidth - rect.left - 1,
-      minDeltaY: -rect.bottom + 1,
-      maxDeltaY: window.innerHeight - rect.top - 1,
-    };
-
-    setMoveHoverTarget(e.target);
-    e.preventDefault();
-    e.stopPropagation();
-  };
-  const moveHandler = (e) => {
-    if (!activeMoveTarget) return;
-
-    const deltaX = Math.min(
-      Math.max(e.clientX - activeMoveTarget.startX, activeMoveTarget.minDeltaX),
-      activeMoveTarget.maxDeltaX
-    );
-    const deltaY = Math.min(
-      Math.max(e.clientY - activeMoveTarget.startY, activeMoveTarget.minDeltaY),
-      activeMoveTarget.maxDeltaY
-    );
-
-    applyMoveTransform(
-      activeMoveTarget.target,
-      activeMoveTarget.moveX + deltaX,
-      activeMoveTarget.moveY + deltaY
-    );
-
-    e.preventDefault();
-    e.stopPropagation();
-  };
-  const moveUpHandler = (e) => {
-    if (!activeMoveTarget) return;
-    setMoveHoverTarget(activeMoveTarget.target);
-    activeMoveTarget = null;
-    e.preventDefault();
-    e.stopPropagation();
-  };
-  const moveClickHandler = (e) => {
-    if (isBookmarkletElement(e.target)) return;
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const hoverHandler = (e) => {
-    if (isBookmarkletElement(e.target)) return;
-    setOutline(e.target, REMOVE_OUTLINE);
-  };
-  const leaveHandler = (e) => {
-    if (isBookmarkletElement(e.target)) return;
-    clearOutline(e.target);
-  };
-  const clickHandler = (e) => {
-    if (isBookmarkletElement(e.target)) return;
-    e.preventDefault();
-    e.stopPropagation();
-    clearOutline(e.target);
-    e.target.remove();
-  };
-
-  window._webbenderToggleMove = function (enabled) {
-    if (enabled && document.designMode === 'on') {
-      setEditMode(false);
-    }
-    if (enabled && window._webbenderRemoveMode) {
-      window._webbenderToggleRemove(false);
-    }
-    if (enabled && window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
-      window._webbenderToggleDraw(false);
-    }
-
-    window._webbenderMoveMode = enabled;
-    moveToggle.checked = enabled;
-    settings.moveMode = enabled;
+  window._webbenderToggleMove = () => {
+    window._webbenderMoveMode = false;
+    settings.moveMode = false;
     saveSettings();
-
-    if (enabled) {
-      document.addEventListener('mouseover', moveHoverHandler);
-      document.addEventListener('mouseout', moveLeaveHandler);
-      document.addEventListener('mousedown', moveDownHandler, true);
-      document.addEventListener('mousemove', moveHandler, true);
-      document.addEventListener('mouseup', moveUpHandler, true);
-      document.addEventListener('click', moveClickHandler, true);
-    } else {
-      document.removeEventListener('mouseover', moveHoverHandler);
-      document.removeEventListener('mouseout', moveLeaveHandler);
-      document.removeEventListener('mousedown', moveDownHandler, true);
-      document.removeEventListener('mousemove', moveHandler, true);
-      document.removeEventListener('mouseup', moveUpHandler, true);
-      document.removeEventListener('click', moveClickHandler, true);
-      setMoveHoverTarget(null);
-      activeMoveTarget = null;
-    }
   };
-
-  window._webbenderToggleRemove = function (enabled) {
-    if (enabled && document.designMode === 'on') {
-      setEditMode(false);
-    }
-    if (enabled && window._webbenderMoveMode) {
-      window._webbenderToggleMove(false);
-    }
-    if (enabled && window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
-      window._webbenderToggleDraw(false);
-    }
-
-    window._webbenderRemoveMode = enabled;
-    removeToggle.checked = enabled;
-    settings.removeMode = enabled;
+  window._webbenderToggleRemove = () => {
+    window._webbenderRemoveMode = false;
+    settings.removeMode = false;
     saveSettings();
+  };
+  window._webbenderToggleDraw = () => {
+    window._webbenderDrawMode = false;
+  };
 
-    if (enabled) {
-      document.addEventListener('mouseover', hoverHandler);
-      document.addEventListener('mouseout', leaveHandler);
-      document.addEventListener('click', clickHandler, true);
+  function createOperation(doAction, undoAction) {
+    doAction();
+    undoStack.push({ doAction, undoAction });
+    sessionStack.push({ doAction, undoAction });
+    redoStack.length = 0;
+    markUnsaved(true);
+  }
+
+  function undo() {
+    const op = undoStack.pop();
+    if (!op) return;
+    op.undoAction();
+    redoStack.push(op);
+    markUnsaved(sessionStack.length > 0 && undoStack.length > 0);
+  }
+
+  function redo() {
+    const op = redoStack.pop();
+    if (!op) return;
+    op.doAction();
+    undoStack.push(op);
+    markUnsaved(true);
+  }
+
+  function insertNodeAfter(target, node) {
+    if (target && target.parentNode) {
+      target.parentNode.insertBefore(node, target.nextSibling);
     } else {
-      document.removeEventListener('mouseover', hoverHandler);
-      document.removeEventListener('mouseout', leaveHandler);
-      document.removeEventListener('click', clickHandler, true);
-    }
-  };
-
-  moveToggle.onchange = (e) => window._webbenderToggleMove(e.target.checked);
-  moveLabel.appendChild(moveToggle);
-  moveSection.appendChild(moveLabel);
-
-  removeToggle.onchange = (e) => window._webbenderToggleRemove(e.target.checked);
-  removeLabel.appendChild(removeToggle);
-  removeSection.appendChild(removeLabel);
-
-  const immersiveSection = ui.create('div', {
-    style: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  });
-  const immersiveLabel = ui.create('span', {
-    textContent: 'Immersive Edit',
-    style: { color: '#a1a1aa', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase' },
-  });
-  const immersiveHint = ui.create('span', {
-    textContent: 'Tap Pick, then element tools. Draw mode supports undo/redo.',
-    style: { color: '#71717a', fontSize: '10px' },
-  });
-  const immersiveGrid = ui.create('div', {
-    style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' },
-  });
-
-  const immersiveButtonStyle = {
-    background: '#27272a',
-    color: '#f4f4f5',
-    border: '1px solid #3f3f46',
-    borderRadius: '6px',
-    padding: '6px',
-    fontSize: '10px',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  };
-
-  function createImmersiveButton(text, onClick) {
-    return ui.button(
-      text,
-      { ...immersiveButtonStyle },
-      {
-        mouseover: (e) => (e.target.style.background = '#3f3f46'),
-        mouseout: (e) => (e.target.style.background = '#27272a'),
-        click: onClick,
-      }
-    );
-  }
-
-  function getSelectionElement() {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return null;
-    const node = selection.anchorNode;
-    if (!node) return null;
-    return node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-  }
-
-  let selectedElement = null;
-  let copiedElement = null;
-  let pickModeEnabled = false;
-  let drawCanvas = null;
-  let drawCtx = null;
-  let currentStroke = null;
-  let drawStrokes = [];
-  let drawRedoStrokes = [];
-
-  function setSelectedElement(target) {
-    clearOutline(selectedElement);
-    selectedElement = isBookmarkletElement(target) ? null : target;
-    if (selectedElement) {
-      setOutline(selectedElement, SELECT_OUTLINE);
+      document.body.appendChild(node);
     }
   }
 
-  function getActiveElement() {
-    if (selectedElement && selectedElement.isConnected) return selectedElement;
-    const selectionElement = getSelectionElement();
-    return isBookmarkletElement(selectionElement) ? null : selectionElement;
-  }
-
-  function applyRoundedCorners(step) {
-    const target = getActiveElement();
+  function applyStyleWithUndo(target, prop, value) {
     if (!target) return;
-    const radius = parseFloat(window.getComputedStyle(target).borderRadius || '0') || 0;
-    const nextRadius = Math.max(0, radius + step);
-    target.style.borderRadius = `${nextRadius}px`;
+    const previous = target.style[prop] || '';
+    if (previous === value) return;
+    createOperation(
+      () => (target.style[prop] = value),
+      () => (target.style[prop] = previous)
+    );
   }
 
-  function execEditCommand(command, value) {
-    if (document.designMode !== 'on') {
-      setEditMode(true);
+  function refreshOptions() {
+    if (!optionsBody) return;
+    optionsBody.innerHTML = '';
+    if (!selectedElement) {
+      optionsBody.textContent = 'Pick an element to edit options.';
+      return;
     }
-    try {
-      document.execCommand(command, false, value);
-    } catch (e) {
-      // Ignore unsupported commands.
+
+    const elementTag = selectedElement.tagName.toLowerCase();
+    const info = ui.create('div', {
+      textContent: `Selected: <${elementTag}>`,
+      style: { color: '#a1a1aa', fontSize: '10px' },
+    });
+    optionsBody.appendChild(info);
+
+    const colorInput = ui.create('input', {
+      attrs: { type: 'color', value: '#2563eb', 'aria-label': 'Color picker' },
+      style: { width: '100%', height: '30px', border: 'none', background: 'transparent' },
+    });
+    colorInput.oninput = (e) => {
+      if (!selectedElement) return;
+      const next = e.target.value;
+      const prop = selectedElement.tagName === 'IMG' ? 'borderColor' : 'color';
+      applyStyleWithUndo(selectedElement, prop, next);
+    };
+    optionsBody.appendChild(colorInput);
+
+    if (selectedElement.tagName === 'IMG') {
+      const widthInput = ui.create('input', {
+        attrs: {
+          type: 'range',
+          min: '80',
+          max: '1200',
+          value: String(Math.round(selectedElement.getBoundingClientRect().width || 300)),
+          'aria-label': 'Image width',
+        },
+        style: { width: '100%' },
+      });
+      widthInput.onchange = (e) => {
+        const target = selectedElement;
+        if (!target) return;
+        const previous = target.style.width || '';
+        const next = `${e.target.value}px`;
+        createOperation(
+          () => (target.style.width = next),
+          () => (target.style.width = previous)
+        );
+      };
+      optionsBody.appendChild(widthInput);
+    } else {
+      const radiusBtn = ui.button(
+        'Rounded +',
+        {
+          background: '#27272a',
+          color: '#f4f4f5',
+          border: '1px solid #3f3f46',
+          borderRadius: '6px',
+          padding: '6px',
+          fontSize: '10px',
+          cursor: 'pointer',
+          width: '100%',
+        },
+        {
+          click: () => {
+            if (!selectedElement) return;
+            const radius =
+              parseFloat(window.getComputedStyle(selectedElement).borderRadius || '0') || 0;
+            applyStyleWithUndo(selectedElement, 'borderRadius', `${radius + 4}px`);
+          },
+        }
+      );
+      optionsBody.appendChild(radiusBtn);
     }
   }
 
-  function renderDrawCanvas() {
-    if (!drawCtx || !drawCanvas) return;
-    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-    drawCtx.lineCap = 'round';
-    drawCtx.lineJoin = 'round';
-    drawCtx.strokeStyle = '#f97316';
-    drawCtx.lineWidth = 3;
-    drawStrokes.forEach((stroke) => {
-      if (stroke.length === 0) return;
-      drawCtx.beginPath();
-      drawCtx.moveTo(stroke[0].x, stroke[0].y);
-      for (let i = 1; i < stroke.length; i++) {
-        drawCtx.lineTo(stroke[i].x, stroke[i].y);
-      }
-      drawCtx.stroke();
+  function setActiveTool(name) {
+    activeTool = name;
+    toolButtons.forEach((button, key) => {
+      button.style.background = key === name ? '#3f3f46' : '#27272a';
     });
   }
 
-  function ensureDrawCanvas() {
-    if (drawCanvas) return;
-    drawCanvas = ui.create('canvas', {
+  function onDocumentClick(e) {
+    if (isBookmarkletElement(e.target)) return;
+    if (activeTool === 'select') {
+      setSelectedElement(e.target);
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+  function onDocumentMouseDown(e) {
+    if (activeTool !== 'pan' || isBookmarkletElement(e.target) || e.button !== 0) return;
+    setSelectedElement(e.target);
+    const target = selectedElement;
+    if (!target) return;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startTransform = target.style.transform || '';
+    const baseX = parseFloat(target.dataset.webbenderPanX || '0');
+    const baseY = parseFloat(target.dataset.webbenderPanY || '0');
+    pointerDrag = { target, startX, startY, baseX, baseY, startTransform };
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function onDocumentMouseMove(e) {
+    if (!pointerDrag) return;
+    const dx = e.clientX - pointerDrag.startX;
+    const dy = e.clientY - pointerDrag.startY;
+    const x = pointerDrag.baseX + dx;
+    const y = pointerDrag.baseY + dy;
+    pointerDrag.target.dataset.webbenderPanX = String(x);
+    pointerDrag.target.dataset.webbenderPanY = String(y);
+    pointerDrag.target.style.transform = `translate(${x}px, ${y}px)`;
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function onDocumentMouseUp(e) {
+    if (!pointerDrag) return;
+    const drag = pointerDrag;
+    pointerDrag = null;
+    const finalTransform = drag.target.style.transform || '';
+    const finalX = drag.target.dataset.webbenderPanX || '0';
+    const finalY = drag.target.dataset.webbenderPanY || '0';
+    if (finalTransform !== drag.startTransform) {
+      createOperation(
+        () => {
+          drag.target.style.transform = finalTransform;
+          drag.target.dataset.webbenderPanX = finalX;
+          drag.target.dataset.webbenderPanY = finalY;
+        },
+        () => {
+          drag.target.style.transform = drag.startTransform;
+          drag.target.dataset.webbenderPanX = String(drag.baseX);
+          drag.target.dataset.webbenderPanY = String(drag.baseY);
+        }
+      );
+    }
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function closeImmersivePanel() {
+    if (!immersivePanel) return;
+    document.removeEventListener('click', onDocumentClick, true);
+    document.removeEventListener('mousedown', onDocumentMouseDown, true);
+    document.removeEventListener('mousemove', onDocumentMouseMove, true);
+    document.removeEventListener('mouseup', onDocumentMouseUp, true);
+    setSelectedElement(null);
+    immersivePanel.remove();
+    immersivePanel = null;
+    pointerDrag = null;
+    startBtn.textContent = 'Start Immersive Edit';
+  }
+
+  function discardUnsaved() {
+    for (let i = undoStack.length - 1; i >= 0; i--) {
+      undoStack[i].undoAction();
+    }
+    undoStack.length = 0;
+    redoStack.length = 0;
+    sessionStack.length = 0;
+    markUnsaved(false);
+  }
+
+  const toolButtons = new Map();
+  let saveBtn = null;
+  window._webbenderCloseImmersiveSheet = function () {
+    if (!immersivePanel) return true;
+    if (unsavedChanges) {
+      const confirmClose = confirm('Delete unsaved immersive edits?');
+      if (!confirmClose) return false;
+      discardUnsaved();
+    }
+    closeImmersivePanel();
+    return true;
+  };
+
+  function makeIconButton(icon, label, onClick) {
+    const btn = ui.create('button', {
+      textContent: icon,
+      attrs: { title: label, 'aria-label': label },
       style: {
-        position: 'fixed',
-        inset: '0',
-        zIndex: '2147483646',
-        cursor: 'crosshair',
+        background: '#27272a',
+        color: '#f4f4f5',
+        border: '1px solid #3f3f46',
+        borderRadius: '6px',
+        width: '34px',
+        height: '34px',
+        fontSize: '16px',
+        cursor: 'pointer',
       },
     });
-    drawCanvas.width = window.innerWidth;
-    drawCanvas.height = window.innerHeight;
-    drawCtx = drawCanvas.getContext('2d');
-
-    drawCanvas.onmousedown = (e) => {
-      currentStroke = [{ x: e.clientX, y: e.clientY }];
-      drawStrokes.push(currentStroke);
-      drawRedoStrokes = [];
-      renderDrawCanvas();
-      e.preventDefault();
-      e.stopPropagation();
-    };
-    drawCanvas.onmousemove = (e) => {
-      if (!currentStroke) return;
-      currentStroke.push({ x: e.clientX, y: e.clientY });
-      renderDrawCanvas();
-      e.preventDefault();
-      e.stopPropagation();
-    };
-    const stopDrawing = (e) => {
-      if (!currentStroke) return;
-      currentStroke = null;
-      renderDrawCanvas();
-      e.preventDefault();
-      e.stopPropagation();
-    };
-    drawCanvas.onmouseup = stopDrawing;
-    drawCanvas.onmouseleave = stopDrawing;
+    btn.onclick = onClick;
+    return btn;
   }
 
-  window._webbenderToggleDraw = function (enabled) {
-    if (enabled && document.designMode === 'on') {
-      setEditMode(false);
-    }
-    if (enabled && window._webbenderMoveMode) {
-      window._webbenderToggleMove(false);
-    }
-    if (enabled && window._webbenderRemoveMode) {
-      window._webbenderToggleRemove(false);
-    }
-    if (enabled) {
-      ensureDrawCanvas();
-      drawCanvas.width = window.innerWidth;
-      drawCanvas.height = window.innerHeight;
-      document.body.appendChild(drawCanvas);
-      renderDrawCanvas();
-    } else if (drawCanvas && drawCanvas.parentNode) {
-      drawCanvas.parentNode.removeChild(drawCanvas);
-      currentStroke = null;
-    }
-    window._webbenderDrawMode = enabled;
-    drawBtn.textContent = enabled ? 'Draw: On' : 'Draw';
-  };
-
-  const pickBtn = createImmersiveButton('Pick', () => {
-    if (pickModeEnabled) return;
-    pickModeEnabled = true;
-    pickBtn.textContent = 'Tap...';
-    const pickHandler = (e) => {
-      if (isBookmarkletElement(e.target)) return;
-      setSelectedElement(e.target);
-      pickModeEnabled = false;
-      pickBtn.textContent = 'Pick';
-      document.removeEventListener('click', pickHandler, true);
+  function makeDraggablePanel(panel, handle) {
+    let dragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+    handle.onmousedown = (e) => {
+      dragging = true;
+      panel.style.transform = 'none';
+      offsetX = e.clientX - panel.getBoundingClientRect().left;
+      offsetY = e.clientY - panel.getBoundingClientRect().top;
       e.preventDefault();
-      e.stopPropagation();
     };
-    document.addEventListener('click', pickHandler, true);
-  });
-  const boldBtn = createImmersiveButton('Bold', () => execEditCommand('bold'));
-  const italicBtn = createImmersiveButton('Italic', () => execEditCommand('italic'));
-  const underlineBtn = createImmersiveButton('Underline', () => execEditCommand('underline'));
-  const imageBtn = createImmersiveButton('Image', () => {
-    const url = prompt('Image URL:', 'https://');
-    if (url) execEditCommand('insertImage', url);
-  });
-  const buttonBtn = createImmersiveButton('Button', () => {
-    const label = prompt('Button text:', 'Button');
-    if (!label) return;
-    execEditCommand(
-      'insertHTML',
-      `<button style="padding:8px 12px;border-radius:8px;border:1px solid #555;background:#2563eb;color:#fff;">${label}</button>`
-    );
-  });
-  const roundPlusBtn = createImmersiveButton('Round +', () => applyRoundedCorners(4));
-  const roundMinusBtn = createImmersiveButton('Round -', () => applyRoundedCorners(-4));
-  const copyBtn = createImmersiveButton('Copy', () => {
-    const target = getActiveElement();
-    if (!target) return;
-    copiedElement = target.cloneNode(true);
-  });
-  const pasteBtn = createImmersiveButton('Paste', () => {
-    if (!copiedElement) return;
-    const target = getActiveElement();
-    const clone = copiedElement.cloneNode(true);
-    if (target && target.parentNode) {
-      target.parentNode.insertBefore(clone, target.nextSibling);
-      setSelectedElement(clone);
-    } else {
-      document.body.appendChild(clone);
-      setSelectedElement(clone);
-    }
-  });
-  const deleteBtn = createImmersiveButton('Delete', () => {
-    const target = getActiveElement();
-    if (!target) return;
-    setSelectedElement(null);
-    target.remove();
-  });
-  const undoBtn = createImmersiveButton('Undo', () => {
-    if (window._webbenderDrawMode && drawStrokes.length > 0) {
-      drawRedoStrokes.push(drawStrokes.pop());
-      renderDrawCanvas();
-      return;
-    }
-    execEditCommand('undo');
-  });
-  const redoBtn = createImmersiveButton('Redo', () => {
-    if (window._webbenderDrawMode && drawRedoStrokes.length > 0) {
-      drawStrokes.push(drawRedoStrokes.pop());
-      renderDrawCanvas();
-      return;
-    }
-    execEditCommand('redo');
-  });
-  const clearDrawBtn = createImmersiveButton('Clear Draw', () => {
-    drawStrokes = [];
-    drawRedoStrokes = [];
-    renderDrawCanvas();
-  });
-  const drawBtn = createImmersiveButton('Draw', () =>
-    window._webbenderToggleDraw(!window._webbenderDrawMode)
-  );
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging || panel !== immersivePanel) return;
+      panel.style.left = `${Math.max(8, Math.min(window.innerWidth - panel.offsetWidth - 8, e.clientX - offsetX))}px`;
+      panel.style.top = `${Math.max(8, Math.min(window.innerHeight - panel.offsetHeight - 8, e.clientY - offsetY))}px`;
+      panel.style.bottom = 'auto';
+    });
+    document.addEventListener('mouseup', () => {
+      dragging = false;
+    });
+  }
 
-  ui.append(immersiveGrid, [
-    pickBtn,
-    boldBtn,
-    italicBtn,
-    underlineBtn,
-    imageBtn,
-    buttonBtn,
-    roundPlusBtn,
-    roundMinusBtn,
-    copyBtn,
-    pasteBtn,
-    deleteBtn,
-    drawBtn,
-    undoBtn,
-    redoBtn,
-    clearDrawBtn,
-  ]);
-  ui.append(immersiveSection, [immersiveLabel, immersiveHint, immersiveGrid]);
+  function openImmersivePanel() {
+    if (immersivePanel) return;
+    immersivePanel = ui.create('div', {
+      attrs: { id: 'webbender-immersive-sheet' },
+      style: {
+        position: 'fixed',
+        left: '50%',
+        bottom: '16px',
+        transform: 'translateX(-50%)',
+        width: 'min(720px, calc(100vw - 24px))',
+        background: '#0f172a',
+        border: '1px solid #334155',
+        borderRadius: '12px',
+        padding: '10px',
+        zIndex: '2147483646',
+        color: '#f8fafc',
+        boxShadow: '0 10px 35px rgba(0,0,0,0.5)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+      },
+    });
+    const handle = ui.create('div', {
+      textContent: 'Immersive Actions',
+      style: {
+        cursor: 'move',
+        textAlign: 'center',
+        fontSize: '11px',
+        color: '#94a3b8',
+        borderBottom: '1px solid #1e293b',
+        paddingBottom: '6px',
+      },
+    });
+    const toolbar = ui.create('div', {
+      style: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(12, 34px)',
+        gap: '6px',
+        justifyContent: 'center',
+      },
+    });
+    optionsBody = ui.create('div', {
+      style: {
+        border: '1px solid #334155',
+        borderRadius: '8px',
+        padding: '8px',
+        minHeight: '44px',
+        fontSize: '11px',
+        color: '#cbd5e1',
+      },
+    });
+
+    const selectBtn = makeIconButton('🖱️', 'Select', () => setActiveTool('select'));
+    const panBtn = makeIconButton('✋', 'Pan', () => setActiveTool('pan'));
+    const textBtn = makeIconButton('T', 'Text', () => {
+      const textNode = ui.create('div', {
+        textContent: 'Editable text',
+        attrs: { contenteditable: 'true' },
+        style: { padding: '4px', border: '1px dashed #60a5fa', minHeight: '24px' },
+      });
+      const target = selectedElement;
+      createOperation(
+        () => insertNodeAfter(target, textNode),
+        () => textNode.remove()
+      );
+      setSelectedElement(textNode);
+      setActiveTool('select');
+    });
+    const shapeBtn = makeIconButton('⬜', 'Shapes', () => {
+      const shape = ui.create('div', {
+        style: {
+          width: '120px',
+          height: '80px',
+          background: '#38bdf8',
+          borderRadius: '8px',
+          border: '1px solid #0ea5e9',
+        },
+      });
+      const target = selectedElement;
+      createOperation(
+        () => insertNodeAfter(target, shape),
+        () => shape.remove()
+      );
+      setSelectedElement(shape);
+    });
+    const imageBtn = makeIconButton('🖼️', 'Image', () => {
+      const src = prompt('Image URL:', 'https://');
+      if (!src) return;
+      const image = ui.create('img', {
+        attrs: { src, alt: 'Immersive inserted image' },
+        style: { maxWidth: '320px', borderRadius: '8px', border: '1px solid #334155' },
+      });
+      const target = selectedElement;
+      createOperation(
+        () => insertNodeAfter(target, image),
+        () => image.remove()
+      );
+      setSelectedElement(image);
+    });
+    const duplicateBtn = makeIconButton('⧉', 'Duplicate', () => {
+      if (!selectedElement) return;
+      copiedElement = selectedElement.cloneNode(true);
+      const clone = copiedElement.cloneNode(true);
+      const target = selectedElement;
+      createOperation(
+        () => insertNodeAfter(target, clone),
+        () => clone.remove()
+      );
+      setSelectedElement(clone);
+    });
+    const deleteBtn = makeIconButton('🗑️', 'Delete', () => {
+      if (!selectedElement || !selectedElement.parentNode) return;
+      const node = selectedElement;
+      const parent = node.parentNode;
+      const next = node.nextSibling;
+      createOperation(
+        () => node.remove(),
+        () => parent.insertBefore(node, next)
+      );
+      setSelectedElement(null);
+    });
+    const colorBtn = makeIconButton('🎨', 'Color picker', () => {
+      setActiveTool('color');
+      refreshOptions();
+    });
+    const optionsBtn = makeIconButton('⚙️', 'Options', () => refreshOptions());
+    const undoBtn = makeIconButton('↶', 'Undo', () => undo());
+    const redoBtn = makeIconButton('↷', 'Redo', () => redo());
+    saveBtn = makeIconButton('✅', 'Save', () => {
+      undoStack.length = 0;
+      redoStack.length = 0;
+      sessionStack.length = 0;
+      markUnsaved(false);
+    });
+    const closeBtn = makeIconButton('❌', 'Close', () => window._webbenderCloseImmersiveSheet());
+    closeBtn.style.background = '#7f1d1d';
+    closeBtn.style.color = '#fecaca';
+
+    toolButtons.set('select', selectBtn);
+    toolButtons.set('pan', panBtn);
+    toolButtons.set('color', colorBtn);
+
+    ui.append(toolbar, [
+      undoBtn,
+      redoBtn,
+      selectBtn,
+      panBtn,
+      textBtn,
+      shapeBtn,
+      imageBtn,
+      duplicateBtn,
+      deleteBtn,
+      colorBtn,
+      optionsBtn,
+      saveBtn,
+      closeBtn,
+    ]);
+    ui.append(immersivePanel, [handle, toolbar, optionsBody]);
+    document.body.appendChild(immersivePanel);
+
+    document.addEventListener('click', onDocumentClick, true);
+    document.addEventListener('mousedown', onDocumentMouseDown, true);
+    document.addEventListener('mousemove', onDocumentMouseMove, true);
+    document.addEventListener('mouseup', onDocumentMouseUp, true);
+    setActiveTool('select');
+    refreshOptions();
+    markUnsaved(false);
+    makeDraggablePanel(immersivePanel, handle);
+    startBtn.textContent = 'Immersive Edit Running';
+  }
 
   return { editSection, moveSection, removeSection, immersiveSection, setEditMode };
 }
@@ -890,12 +909,15 @@ function wbCreateDialogsActions(ui, state, controls) {
       mouseover: () => (resetBtn.style.background = '#991b1b'),
       mouseout: () => (resetBtn.style.background = '#dc2626'),
       click: () => {
+        if (
+          typeof window._webbenderCloseImmersiveSheet === 'function' &&
+          !window._webbenderCloseImmersiveSheet()
+        ) {
+          return;
+        }
         setEditMode(false);
         window._webbenderToggleRemove(false);
         window._webbenderToggleMove(false);
-        if (window._webbenderDrawMode && typeof window._webbenderToggleDraw === 'function') {
-          window._webbenderToggleDraw(false);
-        }
         const fontStyle = document.getElementById('webbender-font-style');
         if (fontStyle) fontStyle.textContent = '';
         const themeStyle = document.getElementById('webbender-theme-style');
