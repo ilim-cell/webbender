@@ -33,8 +33,7 @@ The install code is self-contained, so strict CSP pages do not block it.
 
 1. **Click the bookmarklet** on any webpage to open the Webbender panel
 2. **Toggle features** using the checkboxes:
-   - Edit Text: Make webpage content editable
-   - Remove Elements: Click elements to remove them
+   - Start Immersive Edit: Opens a movable floating action sheet with icon tools for select, pan, text, shapes, image insertion, duplicate/delete, color picker, options, undo/redo, save, and close
 3. **Apply fonts**: Select from preset fonts or type a custom font name
 4. **Change theme**: Click a theme button to apply colors
 5. **Test dialogs**: Use dialog buttons to test alert/confirm/prompt boxes
