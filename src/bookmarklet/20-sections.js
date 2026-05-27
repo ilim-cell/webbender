@@ -575,9 +575,8 @@ function wbCreateEditRemoveSection(ui, container, state) {
         )
       );
 
-      const alignCurrent = (computed.textAlign || 'left').replace(/^[a-z]/, (match) =>
-        match.toUpperCase()
-      );
+      const alignCurrent =
+        { left: 'Left', center: 'Center', right: 'Right' }[computed.textAlign] || 'Left';
       typography.appendChild(
         createControlRow(
           'Alignment',
@@ -591,8 +590,10 @@ function wbCreateEditRemoveSection(ui, container, state) {
       const emphasisRow = ui.create('div', {
         style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' },
       });
+      const numericFontWeight = parseInt(computed.fontWeight || '400', 10);
       const isBold =
-        parseInt(computed.fontWeight || '400', 10) >= 600 || computed.fontWeight === 'bold';
+        computed.fontWeight === 'bold' ||
+        (!Number.isNaN(numericFontWeight) && numericFontWeight >= 700);
       const isItalic = computed.fontStyle === 'italic';
       const boldBtn = wbCreatePillButton(ui, 'Bold', isBold);
       boldBtn.onclick = () =>
@@ -622,6 +623,7 @@ function wbCreateEditRemoveSection(ui, container, state) {
       },
     });
     colorInput.oninput = (e) => {
+      if (!selectedElement) return;
       const next = e.target.value;
       const prop = selectedElement.tagName === 'IMG' ? 'borderColor' : 'color';
       applyStyleWithUndo(selectedElement, prop, next);
