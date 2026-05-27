@@ -131,7 +131,7 @@ function wbCreateHeader(ui, container) {
   });
 
   const closeBtn = ui.button(
-    '✕',
+    '',
     {
       cursor: 'pointer',
       color: '#71717a',
@@ -141,6 +141,9 @@ function wbCreateHeader(ui, container) {
       fontSize: '16px',
       padding: '0 4px',
       transition: 'color 0.2s',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     {
       mouseover: () => {
@@ -164,6 +167,9 @@ function wbCreateHeader(ui, container) {
       },
     }
   );
+  closeBtn.setAttribute('aria-label', 'Close panel');
+  closeBtn.setAttribute('title', 'Close panel');
+  closeBtn.appendChild(wbCreateMaterialIcon('close'));
 
   ui.append(header, [title, closeBtn]);
   return { header };
@@ -194,7 +200,7 @@ function wbCreateUpdateBanner(ui) {
 
   const updateText = ui.create('span', { style: { color: '#fde047' } });
   const updateDismiss = ui.button(
-    '✕',
+    '',
     {
       background: 'none',
       border: 'none',
@@ -202,9 +208,15 @@ function wbCreateUpdateBanner(ui) {
       cursor: 'pointer',
       padding: '0',
       fontSize: '12px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     { click: () => (updateBanner.style.display = 'none') }
   );
+  updateDismiss.setAttribute('aria-label', 'Dismiss update notice');
+  updateDismiss.setAttribute('title', 'Dismiss update notice');
+  updateDismiss.appendChild(wbCreateMaterialIcon('close'));
   const updateLink = ui.create('a', {
     textContent: 'Re-install from webbender.web.app →',
     attrs: { href: 'https://webbender.web.app', target: '_blank', rel: 'noreferrer' },
@@ -215,6 +227,92 @@ function wbCreateUpdateBanner(ui) {
   ui.append(updateBanner, [updateBannerRow, updateLink]);
 
   return { updateBanner, updateText };
+}
+
+function wbEnsureMaterialSymbols() {
+  if (document.getElementById('webbender-material-symbols')) return;
+  const link = document.createElement('link');
+  link.id = 'webbender-material-symbols';
+  link.rel = 'stylesheet';
+  link.href =
+    'https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0';
+  document.head.appendChild(link);
+}
+
+function wbCreateMaterialIcon(name) {
+  wbEnsureMaterialSymbols();
+  return wbUI().create('span', {
+    textContent: name,
+    attrs: { 'aria-hidden': 'true' },
+    style: {
+      fontFamily: '"Material Symbols Rounded"',
+      fontSize: '20px',
+      lineHeight: '1',
+      fontWeight: 'normal',
+      fontStyle: 'normal',
+      letterSpacing: 'normal',
+      textTransform: 'none',
+      display: 'inline-block',
+      whiteSpace: 'nowrap',
+      direction: 'ltr',
+      WebkitFontSmoothing: 'antialiased',
+      fontFeatureSettings: 'normal',
+      fontVariationSettings: '"FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24',
+    },
+  });
+}
+
+function wbCreateToolbarButton(ui, iconName, label, onClick) {
+  const btn = ui.create('button', {
+    attrs: { title: label, 'aria-label': label },
+    style: {
+      background: '#0f172a',
+      color: '#cbd5e1',
+      border: '1px solid #334155',
+      borderRadius: '18px',
+      width: '64px',
+      minHeight: '64px',
+      padding: '10px 8px',
+      fontSize: '11px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.18s ease',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '6px',
+      boxSizing: 'border-box',
+    },
+  });
+  btn.appendChild(wbCreateMaterialIcon(iconName));
+  btn.onclick = onClick;
+  return btn;
+}
+
+function wbStyleToolbarButton(btn, active) {
+  btn.style.background = active ? '#2563eb' : '#0f172a';
+  btn.style.borderColor = active ? '#60a5fa' : '#334155';
+  btn.style.color = active ? '#eff6ff' : '#cbd5e1';
+  btn.style.boxShadow = active ? '0 12px 24px rgba(37, 99, 235, 0.35)' : 'none';
+  btn.style.transform = active ? 'translateY(-1px)' : 'none';
+}
+
+function wbCreatePillButton(ui, label, active = false) {
+  return ui.create('button', {
+    textContent: label,
+    style: {
+      background: active ? '#2563eb' : '#0f172a',
+      color: active ? '#eff6ff' : '#cbd5e1',
+      border: `1px solid ${active ? '#60a5fa' : '#334155'}`,
+      borderRadius: '999px',
+      padding: '6px 12px',
+      fontSize: '11px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.18s ease',
+    },
+  });
 }
 
 function wbCreateEditRemoveSection(ui, container, state) {
@@ -376,85 +474,348 @@ function wbCreateEditRemoveSection(ui, container, state) {
     );
   }
 
+  function createFieldGroup(title, subtitle) {
+    const group = ui.create('div', {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        padding: '12px',
+        borderRadius: '16px',
+        background: '#0b1120',
+        border: '1px solid #1e293b',
+      },
+    });
+    const labelRow = ui.create('div', {
+      style: { display: 'flex', flexDirection: 'column', gap: '2px' },
+    });
+    labelRow.appendChild(
+      ui.create('span', {
+        textContent: title,
+        style: { color: '#e2e8f0', fontSize: '12px', fontWeight: '700' },
+      })
+    );
+    if (subtitle) {
+      labelRow.appendChild(
+        ui.create('span', {
+          textContent: subtitle,
+          style: { color: '#64748b', fontSize: '10px', lineHeight: '1.4' },
+        })
+      );
+    }
+    group.appendChild(labelRow);
+    return group;
+  }
+
+  function createControlRow(label, control, helperText) {
+    const row = ui.create('div', {
+      style: { display: 'flex', flexDirection: 'column', gap: '6px' },
+    });
+    row.appendChild(
+      ui.create('span', {
+        textContent: label,
+        style: {
+          color: '#cbd5e1',
+          fontSize: '10px',
+          fontWeight: '600',
+          textTransform: 'uppercase',
+        },
+      })
+    );
+    row.appendChild(control);
+    if (helperText) {
+      row.appendChild(
+        ui.create('span', {
+          textContent: helperText,
+          style: { color: '#64748b', fontSize: '10px', lineHeight: '1.4' },
+        })
+      );
+    }
+    return row;
+  }
+
+  function createSlider(value, onChange, options = {}) {
+    const slider = ui.create('input', {
+      attrs: {
+        type: 'range',
+        min: options.min || '0',
+        max: options.max || '100',
+        step: options.step || '1',
+        value: String(value),
+        'aria-label': options.label || 'Slider',
+      },
+      style: {
+        width: '100%',
+        accentColor: '#3b82f6',
+      },
+    });
+    slider.oninput = (e) => onChange(e.target.value);
+    return slider;
+  }
+
+  function createToggleGroup(labels, current, onChange) {
+    const group = ui.create('div', {
+      style: {
+        display: 'grid',
+        gridTemplateColumns: `repeat(${labels.length}, minmax(0, 1fr))`,
+        gap: '6px',
+      },
+    });
+    labels.forEach((label) => {
+      const button = wbCreatePillButton(ui, label, label === current);
+      button.onclick = () => onChange(label);
+      group.appendChild(button);
+    });
+    return group;
+  }
+
   function refreshOptions() {
     if (!optionsBody) return;
     optionsBody.innerHTML = '';
     if (!selectedElement) {
-      optionsBody.textContent = 'Pick an element to edit options.';
+      const emptyState = ui.create('div', {
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          padding: '16px',
+          alignItems: 'flex-start',
+        },
+      });
+      emptyState.appendChild(
+        ui.create('span', {
+          textContent: 'No element selected',
+          style: { color: '#e2e8f0', fontSize: '13px', fontWeight: '700' },
+        })
+      );
+      emptyState.appendChild(
+        ui.create('span', {
+          textContent: 'Choose Select, click an element, and edit formatting from here.',
+          style: { color: '#64748b', fontSize: '11px', lineHeight: '1.5' },
+        })
+      );
+      optionsBody.appendChild(emptyState);
       return;
     }
 
     const elementTag = selectedElement.tagName.toLowerCase();
-    const info = ui.create('div', {
-      textContent: `Selected: <${elementTag}>`,
-      style: { color: '#a1a1aa', fontSize: '10px' },
-    });
-    optionsBody.appendChild(info);
+    const computed = window.getComputedStyle(selectedElement);
+    const isTextElement =
+      selectedElement.isContentEditable ||
+      ['p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'a'].includes(elementTag) ||
+      (elementTag === 'div' && selectedElement.getAttribute('contenteditable') === 'true');
 
+    const header = createFieldGroup(`Selected <${elementTag}>`, 'Formatting controls');
+    const metaRow = ui.create('div', {
+      style: { display: 'flex', flexWrap: 'wrap', gap: '6px' },
+    });
+    metaRow.appendChild(
+      ui.create('span', {
+        textContent: selectedElement.isContentEditable ? 'Editable' : 'Static',
+        style: {
+          background: '#1d4ed8',
+          color: '#eff6ff',
+          borderRadius: '999px',
+          padding: '4px 10px',
+          fontSize: '10px',
+          fontWeight: '700',
+        },
+      })
+    );
+    metaRow.appendChild(
+      ui.create('span', {
+        textContent: selectedElement.tagName === 'IMG' ? 'Media' : 'Layout',
+        style: {
+          background: '#1e293b',
+          color: '#cbd5e1',
+          borderRadius: '999px',
+          padding: '4px 10px',
+          fontSize: '10px',
+          fontWeight: '600',
+        },
+      })
+    );
+    header.appendChild(metaRow);
+    optionsBody.appendChild(header);
+
+    if (isTextElement) {
+      const typography = createFieldGroup('Typography', 'Fine-tune the selected text block.');
+      typography.appendChild(
+        createControlRow(
+          'Font size',
+          createSlider(
+            parseFloat(computed.fontSize) || 16,
+            (next) => {
+              applyStyleWithUndo(selectedElement, 'fontSize', `${next}px`);
+            },
+            { min: '10', max: '72', label: 'Font size' }
+          )
+        )
+      );
+      typography.appendChild(
+        createControlRow(
+          'Line height',
+          createSlider(
+            parseFloat(computed.lineHeight) || 1.5,
+            (next) => {
+              applyStyleWithUndo(selectedElement, 'lineHeight', String(next));
+            },
+            { min: '1', max: '3', step: '0.1', label: 'Line height' }
+          )
+        )
+      );
+
+      const alignCurrent = (computed.textAlign || 'left').replace(/^[a-z]/, (match) =>
+        match.toUpperCase()
+      );
+      typography.appendChild(
+        createControlRow(
+          'Alignment',
+          createToggleGroup(['Left', 'Center', 'Right'], alignCurrent, (value) => {
+            applyStyleWithUndo(selectedElement, 'textAlign', value.toLowerCase());
+            refreshOptions();
+          })
+        )
+      );
+
+      const emphasisRow = ui.create('div', {
+        style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' },
+      });
+      const isBold =
+        parseInt(computed.fontWeight || '400', 10) >= 600 || computed.fontWeight === 'bold';
+      const isItalic = computed.fontStyle === 'italic';
+      const boldBtn = wbCreatePillButton(ui, 'Bold', isBold);
+      boldBtn.onclick = () =>
+        applyStyleWithUndo(selectedElement, 'fontWeight', isBold ? '400' : '700');
+      const italicBtn = wbCreatePillButton(ui, 'Italic', isItalic);
+      italicBtn.onclick = () =>
+        applyStyleWithUndo(selectedElement, 'fontStyle', isItalic ? 'normal' : 'italic');
+      emphasisRow.appendChild(boldBtn);
+      emphasisRow.appendChild(italicBtn);
+      typography.appendChild(createControlRow('Emphasis', emphasisRow));
+      optionsBody.appendChild(typography);
+    }
+
+    const appearance = createFieldGroup(
+      'Appearance',
+      'Use the blue picker and sliders for clean visual tweaks.'
+    );
     const colorInput = ui.create('input', {
       attrs: { type: 'color', value: '#2563eb', 'aria-label': 'Color picker' },
-      style: { width: '100%', height: '30px', border: 'none', background: 'transparent' },
+      style: {
+        width: '100%',
+        height: '40px',
+        border: '1px solid #334155',
+        borderRadius: '12px',
+        background: '#0f172a',
+        padding: '4px',
+      },
     });
     colorInput.oninput = (e) => {
-      if (!selectedElement) return;
       const next = e.target.value;
       const prop = selectedElement.tagName === 'IMG' ? 'borderColor' : 'color';
       applyStyleWithUndo(selectedElement, prop, next);
     };
-    optionsBody.appendChild(colorInput);
+    appearance.appendChild(
+      createControlRow('Accent color', colorInput, 'Applies to text, borders, and image outlines.')
+    );
+
+    const backgroundInput = ui.create('input', {
+      attrs: { type: 'color', value: '#0f172a', 'aria-label': 'Background color' },
+      style: {
+        width: '100%',
+        height: '40px',
+        border: '1px solid #334155',
+        borderRadius: '12px',
+        background: '#0f172a',
+        padding: '4px',
+      },
+    });
+    backgroundInput.oninput = (e) => {
+      applyStyleWithUndo(selectedElement, 'backgroundColor', e.target.value);
+    };
+    appearance.appendChild(createControlRow('Background', backgroundInput));
+
+    appearance.appendChild(
+      createControlRow(
+        'Opacity',
+        createSlider(
+          parseFloat(computed.opacity) || 1,
+          (next) => {
+            applyStyleWithUndo(selectedElement, 'opacity', String(next));
+          },
+          { min: '0.2', max: '1', step: '0.05', label: 'Opacity' }
+        )
+      )
+    );
+
+    const radiusValue = parseFloat(computed.borderRadius || '0') || 0;
+    appearance.appendChild(
+      createControlRow(
+        'Corner radius',
+        createSlider(
+          radiusValue,
+          (next) => {
+            applyStyleWithUndo(selectedElement, 'borderRadius', `${next}px`);
+          },
+          { min: '0', max: '48', label: 'Corner radius' }
+        )
+      )
+    );
+
+    if (!isTextElement) {
+      const widthValue = Math.round(selectedElement.getBoundingClientRect().width || 240);
+      appearance.appendChild(
+        createControlRow(
+          'Width',
+          createSlider(
+            widthValue,
+            (next) => {
+              applyStyleWithUndo(selectedElement, 'width', `${next}px`);
+            },
+            { min: '60', max: '1400', label: 'Width' }
+          )
+        )
+      );
+
+      const heightValue = Math.round(selectedElement.getBoundingClientRect().height || 160);
+      appearance.appendChild(
+        createControlRow(
+          'Height',
+          createSlider(
+            heightValue,
+            (next) => {
+              applyStyleWithUndo(selectedElement, 'height', `${next}px`);
+            },
+            { min: '40', max: '900', label: 'Height' }
+          )
+        )
+      );
+    }
 
     if (selectedElement.tagName === 'IMG') {
-      const widthInput = ui.create('input', {
-        attrs: {
-          type: 'range',
-          min: '80',
-          max: '1200',
-          value: String(Math.round(selectedElement.getBoundingClientRect().width || 300)),
-          'aria-label': 'Image width',
-        },
-        style: { width: '100%' },
-      });
-      widthInput.onchange = (e) => {
-        const target = selectedElement;
-        if (!target) return;
-        const previous = target.style.width || '';
-        const next = `${e.target.value}px`;
-        createOperation(
-          () => (target.style.width = next),
-          () => (target.style.width = previous)
-        );
-      };
-      optionsBody.appendChild(widthInput);
-    } else {
-      const radiusBtn = ui.button(
-        'Rounded +',
-        {
-          background: '#27272a',
-          color: '#f4f4f5',
-          border: '1px solid #3f3f46',
-          borderRadius: '6px',
-          padding: '6px',
-          fontSize: '10px',
-          cursor: 'pointer',
-          width: '100%',
-        },
-        {
-          click: () => {
-            if (!selectedElement) return;
-            const radius =
-              parseFloat(window.getComputedStyle(selectedElement).borderRadius || '0') || 0;
-            applyStyleWithUndo(selectedElement, 'borderRadius', `${radius + 4}px`);
-          },
-        }
+      const widthValue = Math.round(selectedElement.getBoundingClientRect().width || 300);
+      appearance.appendChild(
+        createControlRow(
+          'Image width',
+          createSlider(
+            widthValue,
+            (next) => {
+              applyStyleWithUndo(selectedElement, 'width', `${next}px`);
+            },
+            { min: '80', max: '1200', label: 'Image width' }
+          )
+        )
       );
-      optionsBody.appendChild(radiusBtn);
     }
+
+    optionsBody.appendChild(appearance);
   }
 
   function setActiveTool(name) {
     activeTool = name;
     toolButtons.forEach((button, key) => {
-      button.style.background = key === name ? '#3f3f46' : '#27272a';
+      wbStyleToolbarButton(button, key === name);
     });
   }
 
@@ -556,25 +917,6 @@ function wbCreateEditRemoveSection(ui, container, state) {
     return true;
   };
 
-  function makeIconButton(icon, label, onClick) {
-    const btn = ui.create('button', {
-      textContent: icon,
-      attrs: { title: label, 'aria-label': label },
-      style: {
-        background: '#27272a',
-        color: '#f4f4f5',
-        border: '1px solid #3f3f46',
-        borderRadius: '6px',
-        width: '34px',
-        height: '34px',
-        fontSize: '16px',
-        cursor: 'pointer',
-      },
-    });
-    btn.onclick = onClick;
-    return btn;
-  }
-
   function makeDraggablePanel(panel, handle) {
     let dragging = false;
     let offsetX = 0;
@@ -599,6 +941,7 @@ function wbCreateEditRemoveSection(ui, container, state) {
 
   function openImmersivePanel() {
     if (immersivePanel) return;
+    wbEnsureMaterialSymbols();
     immersivePanel = ui.create('div', {
       attrs: { id: 'webbender-immersive-sheet' },
       style: {
@@ -606,21 +949,22 @@ function wbCreateEditRemoveSection(ui, container, state) {
         left: '50%',
         bottom: '16px',
         transform: 'translateX(-50%)',
-        width: 'min(720px, calc(100vw - 24px))',
-        background: '#0f172a',
+        width: 'min(960px, calc(100vw - 24px))',
+        background: 'linear-gradient(180deg, #0b1120 0%, #0f172a 100%)',
         border: '1px solid #334155',
-        borderRadius: '12px',
-        padding: '10px',
+        borderRadius: '24px',
+        padding: '12px',
         zIndex: '2147483646',
         color: '#f8fafc',
         boxShadow: '0 10px 35px rgba(0,0,0,0.5)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
+        display: 'grid',
+        gridTemplateColumns: '88px minmax(0, 1fr)',
+        gap: '12px',
       },
     });
     const handle = ui.create('div', {
       textContent: 'Immersive Actions',
+      attrs: { 'aria-label': 'Drag immersive panel' },
       style: {
         cursor: 'move',
         textAlign: 'center',
@@ -628,30 +972,43 @@ function wbCreateEditRemoveSection(ui, container, state) {
         color: '#94a3b8',
         borderBottom: '1px solid #1e293b',
         paddingBottom: '6px',
+        gridColumn: '1 / -1',
       },
     });
     const toolbar = ui.create('div', {
       style: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(12, 34px)',
-        gap: '6px',
-        justifyContent: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '10px',
+        borderRadius: '20px',
+        background: '#0f172a',
+        border: '1px solid #1e293b',
+        minHeight: '100%',
+        boxSizing: 'border-box',
       },
     });
     optionsBody = ui.create('div', {
       style: {
-        border: '1px solid #334155',
-        borderRadius: '8px',
-        padding: '8px',
-        minHeight: '44px',
+        border: '1px solid #1e293b',
+        borderRadius: '20px',
+        padding: '12px',
+        minHeight: '320px',
         fontSize: '11px',
         color: '#cbd5e1',
+        background: '#0f172a',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        boxSizing: 'border-box',
+        overflowY: 'auto',
       },
     });
 
-    const selectBtn = makeIconButton('🖱️', 'Select', () => setActiveTool('select'));
-    const panBtn = makeIconButton('✋', 'Pan', () => setActiveTool('pan'));
-    const textBtn = makeIconButton('T', 'Text', () => {
+    const selectBtn = wbCreateToolbarButton(ui, 'near_me', 'Select', () => setActiveTool('select'));
+    const panBtn = wbCreateToolbarButton(ui, 'drag_pan', 'Pan', () => setActiveTool('pan'));
+    const textBtn = wbCreateToolbarButton(ui, 'text_fields', 'Text', () => {
       const textNode = ui.create('div', {
         textContent: 'Editable text',
         attrs: { contenteditable: 'true' },
@@ -665,7 +1022,7 @@ function wbCreateEditRemoveSection(ui, container, state) {
       setSelectedElement(textNode);
       setActiveTool('select');
     });
-    const shapeBtn = makeIconButton('⬜', 'Shapes', () => {
+    const shapeBtn = wbCreateToolbarButton(ui, 'square', 'Shapes', () => {
       const shape = ui.create('div', {
         style: {
           width: '120px',
@@ -682,7 +1039,7 @@ function wbCreateEditRemoveSection(ui, container, state) {
       );
       setSelectedElement(shape);
     });
-    const imageBtn = makeIconButton('🖼️', 'Image', () => {
+    const imageBtn = wbCreateToolbarButton(ui, 'image', 'Image', () => {
       const src = prompt('Image URL:', 'https://');
       if (!src) return;
       const image = ui.create('img', {
@@ -696,7 +1053,7 @@ function wbCreateEditRemoveSection(ui, container, state) {
       );
       setSelectedElement(image);
     });
-    const duplicateBtn = makeIconButton('⧉', 'Duplicate', () => {
+    const duplicateBtn = wbCreateToolbarButton(ui, 'content_copy', 'Duplicate', () => {
       if (!selectedElement) return;
       copiedElement = selectedElement.cloneNode(true);
       const clone = copiedElement.cloneNode(true);
@@ -707,7 +1064,7 @@ function wbCreateEditRemoveSection(ui, container, state) {
       );
       setSelectedElement(clone);
     });
-    const deleteBtn = makeIconButton('🗑️', 'Delete', () => {
+    const deleteBtn = wbCreateToolbarButton(ui, 'delete', 'Delete', () => {
       if (!selectedElement || !selectedElement.parentNode) return;
       const node = selectedElement;
       const parent = node.parentNode;
@@ -718,28 +1075,38 @@ function wbCreateEditRemoveSection(ui, container, state) {
       );
       setSelectedElement(null);
     });
-    const colorBtn = makeIconButton('🎨', 'Color picker', () => {
+    const colorBtn = wbCreateToolbarButton(ui, 'palette', 'Color picker', () => {
       setActiveTool('color');
       refreshOptions();
     });
-    const optionsBtn = makeIconButton('⚙️', 'Options', () => refreshOptions());
-    const undoBtn = makeIconButton('↶', 'Undo', () => undo());
-    const redoBtn = makeIconButton('↷', 'Redo', () => redo());
-    saveBtn = makeIconButton('✅', 'Save', () => {
+    const optionsBtn = wbCreateToolbarButton(ui, 'tune', 'Options', () => {
+      setActiveTool('options');
+      refreshOptions();
+    });
+    const undoBtn = wbCreateToolbarButton(ui, 'undo', 'Undo', () => undo());
+    const redoBtn = wbCreateToolbarButton(ui, 'redo', 'Redo', () => redo());
+    saveBtn = wbCreateToolbarButton(ui, 'save', 'Save', () => {
       undoStack.length = 0;
       redoStack.length = 0;
       sessionStack.length = 0;
       markUnsaved(false);
     });
-    const closeBtn = makeIconButton('❌', 'Close', () => window._webbenderCloseImmersiveSheet());
+    const closeBtn = wbCreateToolbarButton(ui, 'close', 'Close', () =>
+      window._webbenderCloseImmersiveSheet()
+    );
     closeBtn.style.background = '#7f1d1d';
     closeBtn.style.color = '#fecaca';
+    closeBtn.style.borderColor = '#ef4444';
 
     toolButtons.set('select', selectBtn);
     toolButtons.set('pan', panBtn);
     toolButtons.set('color', colorBtn);
+    toolButtons.set('options', optionsBtn);
 
-    ui.append(toolbar, [
+    const toolbarTop = ui.create('div', {
+      style: { display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' },
+    });
+    ui.append(toolbarTop, [
       undoBtn,
       redoBtn,
       selectBtn,
@@ -749,12 +1116,34 @@ function wbCreateEditRemoveSection(ui, container, state) {
       imageBtn,
       duplicateBtn,
       deleteBtn,
-      colorBtn,
-      optionsBtn,
-      saveBtn,
-      closeBtn,
     ]);
-    ui.append(immersivePanel, [handle, toolbar, optionsBody]);
+    const toolbarBottom = ui.create('div', {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        alignItems: 'center',
+        marginTop: 'auto',
+      },
+    });
+    ui.append(toolbarBottom, [colorBtn, optionsBtn, saveBtn, closeBtn]);
+    ui.append(toolbar, [toolbarTop, toolbarBottom]);
+
+    const formatPane = ui.create('div', {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        minWidth: '0',
+      },
+    });
+    const formatHeader = createFieldGroup(
+      'Formatting pane',
+      'Blue-highlighted controls stay close to the selected element.'
+    );
+    formatPane.appendChild(formatHeader);
+    formatPane.appendChild(optionsBody);
+    ui.append(immersivePanel, [handle, toolbar, formatPane]);
     document.body.appendChild(immersivePanel);
 
     document.addEventListener('click', onDocumentClick, true);

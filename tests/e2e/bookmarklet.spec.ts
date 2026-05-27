@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 async function getBookmarkletCode(page: Page) {
-  const bookmarklet = page.locator('#dragme');
+  const bookmarklet = page.locator('#drag-btn, #dragme');
   await expect(bookmarklet).toHaveAttribute('href', /^javascript:/);
   return bookmarklet.getAttribute('href');
 }
@@ -37,8 +37,15 @@ test.describe('Webbender E2E Tests', () => {
     await expect(sheet.getByRole('button', { name: 'Save' })).toBeVisible();
     await expect(sheet.getByRole('button', { name: 'Close' })).toBeVisible();
 
+    await expect(sheet.getByRole('button', { name: 'Select' })).toHaveCSS(
+      'background-color',
+      'rgb(37, 99, 235)'
+    );
+
     await sheet.getByRole('button', { name: 'Text' }).click();
     await expect(page.locator('text=Editable text')).toBeVisible();
+    await expect(sheet).toContainText('Formatting pane');
+    await expect(sheet).toContainText('Typography');
 
     await sheet.getByRole('button', { name: 'Save' }).click();
     await sheet.getByRole('button', { name: 'Close' }).click();
@@ -70,39 +77,49 @@ test.describe('Webbender E2E Tests', () => {
     // Simulate loading the bookmarklet
     const bookmarkletCode = await getBookmarkletCode(page);
     expect(bookmarkletCode).toContain('javascript:');
-    
+
     // Execute the bookmarklet in the page context
     await page.evaluate((code) => {
       // Extract just the JavaScript part
       const jsCode = code.substring('javascript:'.length);
       new Function(jsCode)();
     }, bookmarkletCode);
-    
+
     // Wait for panel to appear
     await page.waitForSelector('#webbender-ui', { timeout: 5000 });
-    
+
     // Verify panel is visible
     const panel = page.locator('#webbender-ui');
     await expect(panel).toBeVisible();
     await expect(panel).toContainText('Webbender');
   });
 
-  test('should have Edit Text toggle in bookmarklet panel', async ({ page }) => {
+  test('should show formatting controls in immersive panel', async ({ page }) => {
     await page.goto('/index.html');
     const bookmarkletCode = await getBookmarkletCode(page);
-    
+
     await page.evaluate((code) => {
       const jsCode = code.substring('javascript:'.length);
       new Function(jsCode)();
     }, bookmarkletCode);
-    
-    const editToggle = page.locator('input[type="checkbox"]').first();
-    await expect(editToggle).toBeVisible();
+
+    await page.getByRole('button', { name: 'Start Immersive Edit' }).click();
+    const sheet = page.locator('#webbender-immersive-sheet');
+    await expect(sheet).toBeVisible();
+
+    await sheet.getByRole('button', { name: 'Select' }).evaluate((button) => button.click());
+    await page.locator('h1').evaluate((element) => {
+      element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+
+    await expect(sheet).toContainText('Formatting pane');
+    await expect(sheet).toContainText('Typography');
+    await expect(sheet).toContainText('Accent color');
   });
 
   test('should hide and restore panel around dialog acknowledgements', async ({ page }) => {
     await page.goto('/index.html');
-    const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
+    const bookmarkletCode = await getBookmarkletCode(page);
 
     await page.evaluate((code) => {
       const jsCode = code.substring('javascript:'.length);
@@ -129,7 +146,8 @@ test.describe('Webbender E2E Tests', () => {
         displayDuringDialog.alert = document.getElementById('webbender-ui')?.style.display ?? null;
       };
       window.confirm = () => {
-        displayDuringDialog.confirm = document.getElementById('webbender-ui')?.style.display ?? null;
+        displayDuringDialog.confirm =
+          document.getElementById('webbender-ui')?.style.display ?? null;
         return true;
       };
 
@@ -176,10 +194,10 @@ test.describe('Webbender E2E Tests', () => {
       new Function(jsCode)();
     }, bookmarkletCode);
 
-    await page
-      .locator('label', { hasText: 'Grab & Move' })
-      .locator('input[type="checkbox"]')
-      .check();
+    const sheet = page.locator('#webbender-immersive-sheet');
+    await page.getByRole('button', { name: 'Start Immersive Edit' }).click();
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole('button', { name: 'Pan' }).click();
 
     const result = await page.evaluate(() => {
       const target = document.querySelector('h1');
@@ -262,13 +280,13 @@ test.describe('Webbender E2E Tests', () => {
         },
       });
     });
-    
+
     const copyBtn = page.locator('#copyBtn');
     await expect(copyBtn).toBeVisible();
-    
+
     // Click copy button
     await copyBtn.click();
-    
+
     // Verify button text changes
     await expect(copyBtn).toContainText('Copied');
   });
@@ -276,7 +294,7 @@ test.describe('Webbender E2E Tests', () => {
   test('bookmarklet code should be syntactically valid', async ({ page }) => {
     await page.goto('/index.html');
     const bookmarkletCode = await getBookmarkletCode(page);
-    
+
     const isValid = await page.evaluate((code) => {
       try {
         new Function(code.substring('javascript:'.length));
@@ -285,7 +303,7 @@ test.describe('Webbender E2E Tests', () => {
         return false;
       }
     }, bookmarkletCode);
-    
+
     expect(isValid).toBe(true);
   });
 
