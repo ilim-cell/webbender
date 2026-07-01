@@ -24,15 +24,15 @@ Webbender is a feature-rich bookmarklet for you to *bend* the web to your will, 
 
 Open the hosted [installer page](https://webbender.web.app), then either:
 
-1. Drag **“Drag Webbender to bookmarks”** to your bookmarks bar, or
-2. Click **“Copy bookmarklet”** and paste that value into a new bookmark URL.
+1. Drag **“Webbender”** to your bookmarks bar, or
+2. Click **“Webbender”** and paste that value into a new bookmark URL.
 
 This bookmarklet is now self-contained (no external `<script>` injection), so it runs on strict CSP sites.
 
 ### Option 2: Manual Installation from Local Build
 
 1. Run `npm run build`
-2. Copy the full contents of `dist/bookmarklet.js`
+2. Copy the full contents of `site/bookmarklet.js`
 3. Create a bookmark and paste it into the URL field
 
 ## 📖 Usage
