@@ -1,0 +1,114 @@
+name: Maintainer Issue Commands
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  handle-commands:
+    if: |
+      (github.event.comment.author_association == 'OWNER' || 
+       github.event.comment.author_association == 'MEMBER' || 
+       github.event.comment.author_association == 'COLLABORATOR') &&
+      (startsWith(github.event.comment.body, '/close ') || 
+       startsWith(github.event.comment.body, '/dup ') || 
+       startsWith(github.event.comment.body, '/reopen'))
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Process Slash Command
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          CURRENT_ISSUE: ${{ github.event.issue.number }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          # Clean up the input string to read the first line/command safely
+          CMD=$(echo "$COMMENT_BODY" | head -n 1 | xargs)
+
+          echo "Command recognized: $CMD"
+          echo "Adding 👀 reaction to indicate processing..."
+          
+          # 1. Add the eyes reaction to the maintainer's comment
+          REACTION_DATA=$(gh api \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
+            -f content="eyes")
+          
+          # Extract the reaction ID safely using raw output (-r)
+          REACTION_ID=$(echo "$REACTION_DATA" | jq -r '.id')
+
+          # Set up an exit trap to ensure the reaction is ALWAYS cleaned up,
+          # even if any of the triage commands fail or exit early.
+          cleanup() {
+            if [[ -n "$REACTION_ID" && "$REACTION_ID" != "null" ]]; then
+              echo "Cleaning up: Removing 👀 reaction..."
+              gh api \
+                -X DELETE \
+                -H "Accept: application/vnd.github+json" \
+                "/repos/$REPO/issues/comments/$COMMENT_ID/reactions/$REACTION_ID" || true
+            fi
+          }
+          trap cleanup EXIT
+
+          # 2. Execute the corresponding triage action based on command text
+          if [[ "$CMD" == "/close completed" ]]; then
+            echo "Closing issue as completed..."
+            gh issue close "$CURRENT_ISSUE" --repo "$REPO" --reason "completed"
+
+          elif [[ "$CMD" == "/close not planned" ]]; then
+            echo "Closing issue as not planned..."
+            gh issue close "$CURRENT_ISSUE" --repo "$REPO" --reason "not planned"
+
+          elif [[ "$CMD" == "/reopen" ]]; then
+            echo "Reopening issue..."
+            gh issue reopen "$CURRENT_ISSUE" --repo "$REPO"
+
+          elif [[ "$CMD" =~ ^/dup\  ]]; then
+            # Extract arguments right after the '/dup ' command
+            ARG=$(echo "$CMD" | sed -E 's/^\/dup[[:space:]]+//')
+            
+            TARGET_ISSUE=""
+
+            # Check if the argument starts with a number or #number (e.g., #123 or 123)
+            if [[ "$ARG" =~ ^#?[0-9]+ ]]; then
+              TARGET_ISSUE=$(echo "$ARG" | grep -oE '^#?[0-9]+' | sed 's/#//')
+              echo "Target identified as issue number: $TARGET_ISSUE"
+            else
+              # Otherwise, treat it as an exact title match (e.g., "Example: Example issue")
+              # Strip leading and trailing double quotes if present
+              TITLE=$(echo "$ARG" | sed -E 's/^"//; s/"$//')
+              echo "Searching for issue with exact title: $TITLE"
+              
+              # Query for issues with matching keywords, then filter for an exact title match using jq
+              TARGET_ISSUE=$(gh issue list --repo "$REPO" --state all --limit 100 --search "in:title \"$TITLE\"" --json number,title | jq -r --arg title "$TITLE" '.[] | select(.title == $title) | .number' | head -n 1)
+            fi
+
+            # If we couldn't resolve a valid issue ID, notify the user and exit
+            if [[ -z "$TARGET_ISSUE" || "$TARGET_ISSUE" == "null" ]]; then
+              echo "Error: Could not resolve target issue from input: $ARG"
+              gh issue comment "$CURRENT_ISSUE" \
+                --repo "$REPO" \
+                --body "⚠️ **Error:** Unable to resolve duplicate target from \"$ARG\". Please make sure the issue number is valid or that the title matches an existing issue exactly."
+              exit 1
+            fi
+            
+            # Verify if the resolved issue number actually exists
+            if ! gh issue view "$TARGET_ISSUE" --repo "$REPO" >/dev/null 2>&1; then
+              echo "Error: Target duplicate issue #$TARGET_ISSUE does not exist."
+              gh issue comment "$CURRENT_ISSUE" \
+                --repo "$REPO" \
+                --body "⚠️ **Error:** Unable to close as duplicate. Issue #$TARGET_ISSUE could not be found in this repository."
+              exit 1
+            fi
+            
+            # Close the current issue and link it to the duplicate target
+            gh issue close "$CURRENT_ISSUE" \
+              --repo "$REPO" \
+              --duplicate-of "$TARGET_ISSUE" \
+              --comment "Hi! We've identified this issue as a duplicate of #$TARGET_ISSUE that already exists on this Issue Tracker. This specific instance is being closed in favor of tracking the concern over on the referenced thread. Thanks for your report!"
+          fi
