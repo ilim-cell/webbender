@@ -3,7 +3,7 @@
 > A powerful bookmarklet to *bend* the web to your will
 
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Node](https://img.shields.io/badge/node-16+-brightgreen)
+![Node](https://img.shields.io/badge/node-24+-brightgreen)
 
 Webbender is a feature-rich bookmarklet for you to *bend* the web to your will, because the web needs people. Made by power users for everyone. Edit text, remove elements, change fonts, apply themes, and more—all without leaving your browser.
 
