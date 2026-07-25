@@ -75,7 +75,7 @@ jobs:
         run: npm ci
 
       - name: Build bookmarklet
-        run: SITE_INDEX_FILE=site/index.html npm run build
+        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
 
       - name: Verify syntax
         run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
@@ -203,7 +203,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: SITE_INDEX_FILE=site/index.html npm run build
+        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
 
       - name: Start server
         run: |
@@ -216,10 +216,10 @@ jobs:
         continue-on-error: true
         run: |
           npm install -g lighthouse
-          lighthouse http://localhost:8000/index.html --output=json --output=html --chrome-flags="--headless" 2>/dev/null > lighthouse-report.json || echo "Lighthouse completed"
+          lighthouse http://localhost:8000/index.html --output=json --output-path=./lighthouse-report.json --chrome-flags="--headless" || echo "Lighthouse completed"
 
       - name: Comment PR with results
-        if: always() && hashFiles('lighthouse-report.json') != ''
+        if: always() && success()
         uses: actions/github-script@v9
         continue-on-error: true
         with:
@@ -245,11 +245,17 @@ jobs:
             }
 
   build_and_preview:
+    name: PR Preview Deploy
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    needs: build
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
-      - run: npm ci && npm run build
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
