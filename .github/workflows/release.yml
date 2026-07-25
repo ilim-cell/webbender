@@ -33,7 +33,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
 
       - name: Semantic Release
         run: npx semantic-release
@@ -71,7 +71,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
 
       - name: Deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -104,7 +104,7 @@ jobs:
         run: npm run format
 
       - name: Build
-        run: npm run build
+        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
 
       - name: Verify syntax
         run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
