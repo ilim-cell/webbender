@@ -1,3 +1,9 @@
+## [1.3.0](https://github.com/ilim-cell/webbender/compare/v1.2.1...v1.3.0) (2026-07-25)
+
+### Features
+
+* implement core WebBender UI engine, persistence layer, and GitHub CI/CD workflows ([6b17a09](https://github.com/ilim-cell/webbender/commit/6b17a0968479d3c5aaddfb8e226cdd6e5dabab4b))
+
 ## [1.2.1](https://github.com/ilim-cell/webbender/compare/v1.2.0...v1.2.1) (2026-07-17)
 
 ## [1.2.0](https://github.com/ilim-cell/webbender/compare/v1.1.0...v1.2.0) (2026-05-19)
