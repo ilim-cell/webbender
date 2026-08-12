@@ -46,7 +46,10 @@ test('bookmarklet build script emits artifacts and CI uses pnpm', () => {
   assert.ok(minified.length <= 100000, 'bookmarklet artifact should stay within the CI size budget');
   assert.ok(runtimeCode.length > 0, 'runtime file should not be empty');
   assert.ok(siteBookmarklet.length < 1000, 'site bookmarklet should remain a small loader');
-  assert.ok(url.startsWith('javascript:'), 'bookmarklet URL should be a javascript URL');
+  const normalizedUrl = url.trim().toLowerCase();
+  assert.ok(normalizedUrl.startsWith('javascript:'), 'bookmarklet URL should be a javascript URL');
+  assert.ok(!normalizedUrl.startsWith('data:'), 'bookmarklet URL should not use a data URL scheme');
+  assert.ok(!normalizedUrl.startsWith('vbscript:'), 'bookmarklet URL should not use a vbscript URL scheme');
   assert.match(siteBookmarklet, /localhost:8000\/bookmarklet-runtime\.js/, 'bookmarklet loader should include a local runtime fallback for tests');
   assert.match(siteBookmarklet, /raw\.githubusercontent\.com\/ilim-cell\/webbender\/main\/site\/bookmarklet-runtime\.js/, 'bookmarklet loader should include a public runtime fallback');
   assert.match(siteBookmarklet, /bookmarklet-runtime\.js/, 'bookmarklet loader should point at the hosted runtime');
