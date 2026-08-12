@@ -175,7 +175,7 @@ jobs:
           "
 
       - name: Run Playwright tests
-        run: npx playwright test --project=chromium 2>&1 || echo "Tests completed"
+        run: npx playwright test --config config/playwright.config.ts --project=chromium 2>&1 || echo "Tests completed"
 
       - name: Upload test results
         if: always()
@@ -261,3 +261,4 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO }}
           projectId: webbender-pro
+          entryPoint: config

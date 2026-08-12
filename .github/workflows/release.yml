@@ -36,7 +36,7 @@ jobs:
         run: SITE_INDEX_FILE=site/index.html node scripts/build.js
 
       - name: Semantic Release
-        run: npx semantic-release
+        run: npx semantic-release --config config/.releaserc.json
         env:
           GITHUB_TOKEN: ${{ secrets.BYPASS_TOKEN }} # <-- Use PAT for publication
 
@@ -80,6 +80,7 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO }}
           projectId: webbender-pro
           channelId: live
+          entryPoint: config
         env:
           FIREBASE_CLI_PREVIEWS: hostingchannels
 
