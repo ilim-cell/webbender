@@ -46,8 +46,6 @@ Once installed, click the bookmarklet on any page to open the control panel. Fro
 - test alert, confirm, and prompt dialogs
 - check for newer versions
 
-> Changes made with Webbender are temporary. If you want to keep content, save it before reloading the page.
-
 ## Development
 
 ### Prerequisites
@@ -56,6 +54,7 @@ Once installed, click the bookmarklet on any page to open the control panel. Fro
 - pnpm
 
 ### Setup
+You'll need pnpm installed.
 
 ```bash
 git clone https://github.com/ilim-cell/webbender.git
