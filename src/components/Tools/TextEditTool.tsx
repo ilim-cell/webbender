@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function TextEditTool() {
   const [active, setActive] = useState(false);
-  
+
   const toggle = (forceState?: boolean) => {
     const nextState = forceState !== undefined ? forceState : !active;
     setActive(nextState);
@@ -19,7 +19,7 @@ export default function TextEditTool() {
   }, [active]);
 
   return (
-    <button 
+    <button
       className={`wb-tool-btn ${active ? 'active' : ''}`}
       onClick={() => toggle()}
       title="Edit Text"

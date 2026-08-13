@@ -11,12 +11,12 @@ interface DockProps {
 
 export default function Dock({ isMinimized, onMinimize }: DockProps) {
   const [position, setPosition] = useState({ x: 24, y: window.innerHeight - 100 });
-  
+
   useEffect(() => {
     const handleResize = () => {
-      setPosition(prev => ({
+      setPosition((prev) => ({
         x: Math.min(prev.x, window.innerWidth - 100),
-        y: Math.min(prev.y, window.innerHeight - 100)
+        y: Math.min(prev.y, window.innerHeight - 100),
       }));
     };
     window.addEventListener('resize', handleResize);
@@ -25,7 +25,7 @@ export default function Dock({ isMinimized, onMinimize }: DockProps) {
 
   if (isMinimized) {
     return (
-      <div 
+      <div
         className="wb-dock-badge"
         style={{ left: position.x, top: position.y }}
         onDoubleClick={onMinimize}
@@ -38,7 +38,7 @@ export default function Dock({ isMinimized, onMinimize }: DockProps) {
   return (
     <div className="wb-dock" style={{ left: position.x, top: position.y }}>
       <div className="wb-dock-drag-handle">
-         <span className="material-symbols-rounded">drag_indicator</span>
+        <span className="material-symbols-rounded">drag_indicator</span>
       </div>
       <div className="wb-toolbar">
         <SelectTool />
@@ -48,7 +48,11 @@ export default function Dock({ isMinimized, onMinimize }: DockProps) {
         <button className="wb-tool-btn" onClick={onMinimize} title="Minimize">
           <span className="material-symbols-rounded">minimize</span>
         </button>
-        <button className="wb-tool-btn wb-tool-close" onClick={() => document.getElementById('webbender-ui')?.remove()} title="Close">
+        <button
+          className="wb-tool-btn wb-tool-close"
+          onClick={() => document.getElementById('webbender-ui')?.remove()}
+          title="Close"
+        >
           <span className="material-symbols-rounded">close</span>
         </button>
       </div>

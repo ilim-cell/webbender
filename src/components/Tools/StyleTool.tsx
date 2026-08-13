@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function StyleTool() {
   const [active, setActive] = useState(false);
-  
+
   const toggle = () => {
     const nextState = !active;
     setActive(nextState);
@@ -16,7 +16,7 @@ export default function StyleTool() {
   };
 
   return (
-    <button 
+    <button
       className={`wb-tool-btn ${active ? 'active' : ''}`}
       onClick={toggle}
       title="Edit Styles"

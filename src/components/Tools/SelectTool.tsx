@@ -20,11 +20,11 @@ export default function SelectTool() {
     // tests look for ToggleBold too in the same test
     (window as any)._webbenderToggleBold = () => {
       const targets = (window as any)._webbenderSelectionTargets || [];
-      targets.forEach((t: any) => t.style.fontWeight = 'bold');
+      targets.forEach((t: any) => (t.style.fontWeight = 'bold'));
     };
     (window as any)._webbenderToggleItalic = () => {
       const targets = (window as any)._webbenderSelectionTargets || [];
-      targets.forEach((t: any) => t.style.fontStyle = 'italic');
+      targets.forEach((t: any) => (t.style.fontStyle = 'italic'));
     };
     return () => {
       delete (window as any)._webbenderToggleSelect;

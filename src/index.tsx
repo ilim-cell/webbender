@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-const hostId = "webbender-ui";
+const hostId = 'webbender-ui';
 
 function init() {
   let hostNode = document.getElementById(hostId);
@@ -14,15 +14,15 @@ function init() {
 
   hostNode = document.createElement('div');
   hostNode.id = hostId;
-  
+
   // Make sure it doesn't inherit page styles and stays above everything
   hostNode.style.position = 'fixed';
   hostNode.style.zIndex = '2147483647';
-  
+
   document.body.appendChild(hostNode);
 
   const shadowRoot = hostNode.attachShadow({ mode: 'open' });
-  
+
   // Add Material Symbols font to shadow DOM
   const styleEl = document.createElement('style');
   styleEl.textContent = `@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
@@ -56,7 +56,7 @@ function init() {
     displayDuringDialog: { alert: null, confirm: null, prompt: null },
     finalDisplay: null,
     ready: false,
-    cleanup: () => {}
+    cleanup: () => {},
   };
 
   const root = createRoot(rootElement);
