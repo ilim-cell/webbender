@@ -1,40 +1,31 @@
-# Webbender - Release Checklist
+# Release checklist
 
-## Before Release
+Use this checklist before shipping a new version of Webbender.
 
-- [ ] Update version number in `package.json`
-- [ ] Update version number in `src/webbender.js` (if applicable)
-- [ ] Run `npm run format` to ensure code is formatted
-- [ ] Run `npm run build` to generate dist files
-- [ ] Test the bookmarklet in at least 2 browsers (Chrome, Firefox, Safari)
-- [ ] Update docs/CHANGELOG.md with new features/fixes
-- [ ] Commit all changes
+## Before release
 
-## Release Steps
+- [ ] Update the version in package.json if needed
+- [ ] Run npm run format
+- [ ] Run npm run build
+- [ ] Run npm run test
+- [ ] Review the changelog and update docs/CHANGELOG.md if needed
+- [ ] Confirm the hosted installer still works locally or in CI
 
-1. Push all changes to `main` branch
-2. Create and push a git tag:
+## Release steps
+
+1. Push the intended changes to main.
+2. Create a release tag:
+
    ```bash
    git tag v1.x.x
    git push origin v1.x.x
    ```
-3. GitHub Actions will automatically:
-   - Build the bookmarklet
-   - Create a GitHub Release
-   - Deploy to GitHub Pages
-   - Notify CDN for cache invalidation
 
-## After Release
+3. Let CI publish the release and deploy the hosted assets.
 
-- [ ] Verify the GitHub Release was created
-- [ ] Check GitHub Pages deployment
-- [ ] Test the loader bookmarklet fetches the new version
-- [ ] Announce the update (Twitter, etc. if applicable)
+## After release
 
-## Auto-Update Notification
-
-Users will see an update notification the next time they:
-1. Use the bookmarklet
-2. After 24 hours since last update check
-
-The update checker is non-blocking and runs silently in the background.
+- [ ] Verify the GitHub release exists
+- [ ] Confirm the Firebase deployment completed
+- [ ] Test the installer page and bookmarklet flow
+- [ ] Check that any wiki documentation changes were published

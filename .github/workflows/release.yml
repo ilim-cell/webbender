@@ -27,16 +27,18 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-          cache: 'npm'
+
+      - name: Enable pnpm
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: SITE_INDEX_FILE=site/index.html node scripts/build.js
 
       - name: Semantic Release
-        run: npx semantic-release
+        run: npx semantic-release --config config/.releaserc.json
         env:
           GITHUB_TOKEN: ${{ secrets.BYPASS_TOKEN }} # <-- Use PAT for publication
 
@@ -65,10 +67,12 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-          cache: 'npm'
+
+      - name: Enable pnpm
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: SITE_INDEX_FILE=site/index.html node scripts/build.js
@@ -80,6 +84,7 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO }}
           projectId: webbender-pro
           channelId: live
+          entryPoint: config
         env:
           FIREBASE_CLI_PREVIEWS: hostingchannels
 
@@ -95,13 +100,15 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-          cache: 'npm'
+
+      - name: Enable pnpm
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Auto-fix formatting
-        run: npm run format
+        run: pnpm run format
 
       - name: Build
         run: SITE_INDEX_FILE=site/index.html node scripts/build.js
@@ -110,7 +117,7 @@ jobs:
         run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
 
       - name: Security audit
-        run: npm audit --audit-level=moderate || true
+        run: pnpm audit --audit-level=moderate || true
 
       - name: Generate report
         run: |
@@ -118,7 +125,7 @@ jobs:
             echo "# Nightly CI Report"
             echo "**Date**: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
             echo "**Node**: $(node -v)"
-            echo "**NPM**: $(npm -v)"
+            echo "**pnpm**: $(pnpm -v)"
             echo ""
             echo "## Artifacts"
             ls -lh dist/ | awk 'NR>1 {print "- `" $9 "`: " $5}'

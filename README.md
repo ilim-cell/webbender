@@ -1,56 +1,78 @@
 # Webbender
 
-> A powerful bookmarklet to *bend* the web to your will
+> A polished, browser-based toolkit for inspecting and modifying webpages in place.
 
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Node](https://img.shields.io/badge/node-24+-brightgreen)
 
-Webbender is a feature-rich bookmarklet for you to *bend* the web to your will, because the web needs people. Made by power users for everyone. Edit text, remove elements, change fonts, apply themes, and more—all without leaving your browser.
+Webbender is a lightweight bookmarklet that lets you interact with any webpage in a controlled, temporary way. It is designed for quick inspection, layout adjustments, content editing, and UI experimentation without requiring a browser extension or local development environment.
 
-## Quick Features
+## Why Webbender
 
-- **Edit Text** - Enable design mode to edit any text on any page
-- **Remove Elements** - Click to delete unwanted page elements
-- **Font Override** - Apply custom or system fonts to any website
-- **Item Move** - Click and drag to reposition objects around the page
-- **Color Themes** - Dark, Light, Sepia, or create custom themes
-- **Dialog Helpers** - Test alert, confirm, and prompt boxes
-- **Persistent Settings** - Your preferences are saved locally
-- **Auto-Update** - Built-in update checker with notifications
+Webbender helps you:
 
-## Quick Install
+- edit text directly on a live page
+- remove unwanted elements quickly
+- override fonts and visual styling
+- switch between themes for contrast or presentation
+- test dialogs and other browser interactions
+- keep your preferences local to the current site
 
-### Option 1: CSP-Unblocked Install (Recommended)
+## Installation
 
-Open the hosted [installer page](https://webbender.web.app), then either:
+### Recommended: hosted installer
 
-1. Drag **“Webbender”** to your bookmarks bar, or
-2. Click **“Webbender”** and paste that value into a new bookmark URL.
+Open the hosted installer at https://webbender.web.app and add the bookmarklet to your browser bar.
 
-This bookmarklet is now self-contained (no external `<script>` injection), so it runs on strict CSP sites.
+### Manual install from source
 
-### Option 2: Manual Installation from Local Build
+```bash
+git clone https://github.com/ilim-cell/webbender.git
+cd webbender
+pnpm install
+pnpm run build:bookmarklet
+```
 
-1. Run `npm run build`
-2. Copy the full contents of `site/bookmarklet.js`
-3. Create a bookmark and paste it into the URL field
+Then copy the generated bookmarklet code from the build output and paste it into a new bookmark URL.
 
 ## Usage
 
-Click the bookmarklet to open the Webbender panel and:
+Once installed, click the bookmarklet on any page to open the control panel. From there you can:
 
-- **Toggle Edit Mode** - Make webpage content editable
-- **Toggle Remove Mode** - Click elements to remove them
-- **Select Fonts** - Choose from 5 presets or type custom font names
-- **Apply Themes** - Switch color schemes instantly
-- **Test Dialogs** - Experiment with alert/confirm/prompt boxes
-- **Check Updates** - See if newer versions are available
-- **Reset** - Restore all settings to defaults
+- toggle edit mode
+- remove elements from the page
+- apply custom or preset fonts
+- switch themes
+- test alert, confirm, and prompt dialogs
+- check for newer versions
 
 ## Development
 
+### Prerequisites
+
+- Node.js 20+
+- pnpm
+
 ### Setup
 You'll need pnpm installed.
+
+*If using Node.js 24 or earlier*
+
+``` bash
+corepack enable
+```
+
+*Starting with Node 25, corepack is being decoupled from the main Node.js distribution, so you must either install Corepack and enable it manually or install pnpm directly*
+
+``` bash
+# Using Corepack
+npm install -g corepack
+corepack enable
+# Or install pnpm directly
+npm install -g pnpm
+```
+
+Then run the following commands:
 
 ```bash
 git clone https://github.com/ilim-cell/webbender.git 
@@ -59,35 +81,34 @@ pnpm run build:bookmarklet
 pnpm run dev # Start website
 ```
 
-### Commands
+### Common commands
 
 ```bash
-npm run build           # Minify and generate bookmarklet
-npm run format          # Format code with Prettier
-npm run format:check    # Check formatting
-npm run watch          # Auto-rebuild on changes
+pnpm run build
+pnpm run build:bookmarklet
+pnpm run format
+pnpm run format:check
+pnpm run watch
+pnpm run test
 ```
 
-### Project Structure
+## Project structure
 
-```
-src/
-└── webbender.js       # Main bookmarklet source
-
-dist/
-├── webbender.js       # Minified payload
-├── bookmarklet.js     # Self-contained javascript: bookmarklet
-├── loader.js          # Legacy loader output
-└── version.json       # Version info for update checks
+```text
+src/                # bookmarklet source files
+site/               # installer page and generated bookmarklet assets
+scripts/            # build helpers
+tests/              # Playwright smoke tests
+docs/               # repository and wiki documentation
 ```
 
-## How Updates Work
+## Documentation
 
-1. **Source of Truth**: `src/webbender.js` is maintained as clean, readable code
-2. **Automated Building**: `scripts/build.js` minifies and generates bookmarklet versions
-3. **CI/CD Pipeline**: GitHub Actions automatically deploys on new releases
-4. **Install Flow**: `site/index.html` loads `site/bookmarklet.js` at runtime and builds the `javascript:` install code dynamically
-5. **Notifications**: Runtime version checks use `https://webbender.web.app/version.json` and show reinstall prompts
+- [Quick start](docs/QUICKSTART.md)
+- [Development guide](docs/DEVELOPMENT.md)
+- [CI/CD overview](docs/CI_CD.md)
+- [Release checklist](docs/RELEASE_CHECKLIST.md)
+- [Wiki home](docs/wiki/Home.md)
 
 ## Customization
 
@@ -126,13 +147,8 @@ Repository secret required for Firebase deploy:
 - [GitHub Releases](https://github.com/ilim-cell/webbender/releases) - Version history
 
 ## Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Run `npm run format` before committing
-4. Submit a pull request
+Contributions are welcome. Please open a pull request with a clear description of your changes and keep the scope focused.
 
 ---
 
-Made with ❤️ by ilim-cell | [GitHub](https://github.com/ilim-cell/webbender)
+Made with care by ilim-cell (and a couple of great other people)

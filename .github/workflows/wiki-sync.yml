@@ -1,0 +1,46 @@
+name: Wiki Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/wiki/**'
+      - '.github/workflows/wiki-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Clone wiki repository
+        env:
+          WIKI_REPO: https://github.com/${{ github.repository }}.wiki.git
+        run: |
+          rm -rf /tmp/webbender-wiki
+          git clone --depth 1 "$WIKI_REPO" /tmp/webbender-wiki
+
+      - name: Sync docs into wiki
+        run: |
+          rsync -av --delete docs/wiki/ /tmp/webbender-wiki/
+          cd /tmp/webbender-wiki
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "docs: sync wiki content from repository"
+            git push https://x-access-token:${{ secrets.WIKI_PUSH_TOKEN || secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git HEAD:main
+          else
+            echo "No wiki changes to publish"
+          fi
