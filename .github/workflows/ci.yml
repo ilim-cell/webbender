@@ -17,17 +17,26 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-          cache: 'pnpm'
+
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

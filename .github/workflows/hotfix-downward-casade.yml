@@ -25,10 +25,10 @@ jobs:
         run: |
           # Fetch explicitly so Git absolutely knows about origin/beta
           git fetch origin beta || true
-          
+
           # Force create/reset local beta branch to match origin/beta, or create fresh if it doesn't exist
           git checkout -B beta origin/beta || git checkout -b beta
-          
+
           # 💡 ATOMIC RETRY LOOP
           for i in {1..5}; do
             git fetch origin beta
@@ -49,10 +49,10 @@ jobs:
         run: |
           # Fetch explicitly so Git absolutely knows about origin/dev
           git fetch origin dev || true
-          
+
           # Force create/reset local dev branch to match origin/dev, or create fresh if it doesn't exist
           git checkout -B dev origin/dev || git checkout -b dev
-          
+
           # 💡 ATOMIC RETRY LOOP
           for i in {1..5}; do
             git fetch origin dev

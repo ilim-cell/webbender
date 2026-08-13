@@ -19,16 +19,26 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
+
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -70,22 +80,32 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
 
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build bookmarklet
-        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
+        run: pnpm run build
 
       - name: Verify syntax
         run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
@@ -105,16 +125,26 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
+
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -146,16 +176,26 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
+
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -167,7 +207,7 @@ jobs:
         run: |
           if [ ! -d "dist" ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
             echo "⚠️ Staged build artifact not found or expired. Rebuilding locally..."
-            SITE_INDEX_FILE=site/index.html pnpm run build
+            pnpm run build
           else
             echo "✓ Valid build artifact detected from previous job tree."
           fi
@@ -213,22 +253,32 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
 
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
+      - name: Build bookmarklet
+        run: pnpm run build
 
       - name: Start server
         run: |
@@ -277,19 +327,28 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v6
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build
-        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
+        run: pnpm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
