@@ -11,7 +11,27 @@ const RUNTIME_URLS = [
   'https://webbender-pro.web.app/bookmarklet-runtime.js',
 ];
 
-const loader = `javascript:(()=>{let s=document.getElementById('wb-run'),i=0,u=${JSON.stringify(RUNTIME_URLS)};if(s)s.remove();(function l(){if(i>=u.length)return console.error('Webbender: failed to load runtime');s=document.createElement('script');s.id='wb-run';s.src=u[i++];s.onerror=()=>{s.remove();l()};s.onload=()=>{s._wbLoaded=!0};document.head.appendChild(s);setTimeout(()=>{if(!s._wbLoaded&&!document.getElementById('webbender-ui')){s.remove();l()}},8000)})()})()`;
+const JS_UNSAFE_CHAR_MAP = {
+  '<': '\\u003C',
+  '>': '\\u003E',
+  '/': '\\u002F',
+  '\\': '\\\\',
+  '\b': '\\b',
+  '\f': '\\f',
+  '\n': '\\n',
+  '\r': '\\r',
+  '\t': '\\t',
+  '\0': '\\0',
+  '\u2028': '\\u2028',
+  '\u2029': '\\u2029',
+};
+
+function escapeUnsafeJsChars(str) {
+  return str.replace(/[<>\/\\\b\f\n\r\t\0\u2028\u2029]/g, (ch) => JS_UNSAFE_CHAR_MAP[ch]);
+}
+
+const serializedRuntimeUrls = escapeUnsafeJsChars(JSON.stringify(RUNTIME_URLS));
+const loader = `javascript:(()=>{let s=document.getElementById('wb-run'),i=0,u=${serializedRuntimeUrls};if(s)s.remove();(function l(){if(i>=u.length)return console.error('Webbender: failed to load runtime');s=document.createElement('script');s.id='wb-run';s.src=u[i++];s.onerror=()=>{s.remove();l()};s.onload=()=>{s._wbLoaded=!0};document.head.appendChild(s);setTimeout(()=>{if(!s._wbLoaded&&!document.getElementById('webbender-ui')){s.remove();l()}},8000)})()})()`;
 
 if (!fs.existsSync(DIST_DIR)) {
   fs.mkdirSync(DIST_DIR, { recursive: true });
