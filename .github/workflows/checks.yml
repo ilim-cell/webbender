@@ -24,8 +24,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -72,14 +85,27 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build bookmarklet
-        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
+        run: pnpm run build
 
       - name: Verify syntax
         run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
@@ -104,8 +130,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -142,8 +181,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -206,14 +258,27 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
+        run: pnpm run build
 
       - name: Start server
         run: |
@@ -266,12 +331,26 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build
-        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
+        run: pnpm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
