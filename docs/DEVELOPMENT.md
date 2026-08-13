@@ -1,164 +1,75 @@
-# Webbender
+# Development guide
 
-A powerful, lightweight bookmarklet to bend the web to your will. Edit text, remove elements, change fonts, apply themes, and more!
+This document captures the day-to-day workflow for working on Webbender.
 
-## Features
+## Prerequisites
 
-- **Edit Mode**: Turn on design mode to edit any text on any webpage
-- **Remove Elements**: Click to remove unwanted elements from the page
-- **Font Override**: Apply custom fonts to any website (supports system and custom fonts)
-- **Color Themes**: Switch between Dark, Light, Sepia, or apply custom themes
-- **Dialog Helpers**: Test alert, confirm, and prompt dialogs
-- **Settings Persistence**: Your settings are saved locally per-site
-- **Auto-Update**: Built-in update checker with notification system
+- Node.js 20+ (the CI workflow uses Node 24)
+- pnpm
 
-## Installation
-
-### Quick Install (Recommended - CSP Unblocked)
-
-Use the hosted installer at [https://webbender.web.app](https://webbender.web.app):
-
-1. Drag **“Drag Webbender to bookmarks”** to your bookmarks bar, or
-2. Click **“Copy bookmarklet”** and paste into a bookmark URL field.
-
-The install code is self-contained, so strict CSP pages do not block it.
-
-### Manual Install (Local Build)
-
-1. Run `npm run build`
-2. Copy `dist/bookmarklet.js`
-3. Create a bookmark and paste the copied value as the URL
-
-## Usage
-
-1. **Click the bookmarklet** on any webpage to open the Webbender panel
-2. **Toggle features** using the checkboxes:
-   - Edit Text: Make webpage content editable
-   - Remove Elements: Click elements to remove them
-3. **Apply fonts**: Select from preset fonts or type a custom font name
-4. **Change theme**: Click a theme button to apply colors
-5. **Test dialogs**: Use dialog buttons to test alert/confirm/prompt boxes
-6. **Check for updates**: Click "Check Updates" to see if a newer version is available
-
-## Development
-
-### Prerequisites
-
-- Node.js 16 or later
-- npm
-
-### Setup
+## Setup
 
 ```bash
-npm install
+git clone https://github.com/ilim-cell/webbender.git
+cd webbender
+pnpm install
+pnpm run build:bookmarklet
+pnpm run dev
 ```
 
-### Available Commands
+## Core commands
 
 ```bash
-npm run build          # Build the bookmarklet
-npm run format         # Format code with Prettier
-npm run format:check   # Check if code needs formatting
-npm run watch          # Watch for changes and rebuild
+pnpm run build           # build the site bundle
+pnpm run build:bookmarklet
+pnpm run watch           # rebuild on file changes
+pnpm run format          # format source files
+pnpm run format:check    # validate formatting
+pnpm run test            # run the end-to-end suite
+pnpm run test:e2e:ui     # open the interactive Playwright runner
 ```
 
-### Project Structure
+## Project structure
 
-```
-webbender/
-├── src/
-│   └── webbender.js       # Main bookmarklet source
-├── dist/                  # Compiled/minified output
-├── scripts/build.js       # Build script
-├── package.json           # Dependencies and scripts
-├── .prettierrc            # Code formatting config
-└── .github/workflows/     # CI/CD pipeline
-    └── build.yml          # Automated builds on release
+```text
+src/                    # bookmarklet source files
+site/                   # installer page and generated bookmarklet assets
+scripts/                # build helpers
+tests/                  # Playwright smoke tests
+.github/workflows/      # CI, release, and wiki publishing automation
+docs/                   # documentation source for the repo and wiki
 ```
 
-## How It Works
+## Build pipeline
 
-1. **Source of Truth**: Edit section files in `src/bookmarklet/`
-2. **Stitching**: `scripts/build.js` stitches section files into `src/webbender.js`
-3. **Building**: `scripts/build.js` minifies the source and generates:
-   - `dist/webbender.js` - Minified bookmarklet code
-   - `dist/webbender.min.js` - CDN-hosted version
-   - `dist/version.json` - Version info for update checks
-3. **Deployment**: GitHub Actions automatically builds and deploys on new releases
-4. **Install Output**: `dist/bookmarklet.js` is a self-contained bookmarklet that avoids CSP script injection blocks
+The build flow is driven by the scripts in package.json and the helper in scripts/build.js.
 
-## Update Notification Mechanism
+1. Source files in src are compiled into the browser-ready bundle.
+2. The installer page in site uses the generated assets to create the install URL.
+3. CI validates formatting, builds the artifact, and runs Playwright tests.
 
-- Runtime checks fetch `https://webbender.web.app/version.json` with `cache: no-store`
-- If a newer version exists, the UI shows an update notice with a reinstall link
-- No external script payload is injected during bookmarklet execution
+## Testing
 
-## Code Formatting
-
-This project uses [Prettier](https://prettier.io/) for consistent code formatting.
+The repository includes browser-based tests under tests/e2e. Run them locally with:
 
 ```bash
-# Format all files
-npm run format
-
-# Check if formatting is needed
-npm run format:check
+pnpm run test
 ```
 
-Configuration is in `.prettierrc`.
+If a test fails, inspect the generated Playwright report in the repository root or the test-results directory.
 
-## Customization
+## Release workflow
 
-### Extending Features
+Releases are handled by the GitHub workflow in .github/workflows/release.yml. The normal release flow is:
 
-To add new features:
+1. Bump the version in package.json.
+2. Update the changelog if needed.
+3. Push the changes to main.
+4. Tag and push the release tag.
+5. Let CI publish the release and deploy the hosted assets.
 
-1. Edit `src/bookmarklet/*.js`
-2. Run `npm run format` to format code
-3. Run `npm run build` to generate the bookmarklet
-4. Test in browser
+## Wiki publishing
 
-### Building Your Own Version
+The source markdown for the GitHub wiki lives in docs/wiki. Any change pushed to main will be published automatically by the workflow in .github/workflows/wiki-sync.yml.
 
-1. Fork this repository
-2. Make your changes in `src/bookmarklet/`
-3. Update the version in `package.json`
-4. Push to trigger GitHub Actions
-5. New versions will auto-deploy to GitHub Pages
-
-## Browser Compatibility
-
-- Chrome/Chromium 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-
-## Warnings
-
-⚠️ **Changes made with this bookmarklet are temporary** and will not be saved after you reload the page.
-
-**Important**: For any changes you want to keep, use Ctrl+S to save the modified webpage before reloading.
-
-## License
-
-MIT © ilim-cell
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run `npm run format` before committing
-5. Submit a pull request
-
-## Support
-
-- 📋 [Issues](https://github.com/ilim-cell/webbender/issues)
-- 💬 [Discussions](https://github.com/ilim-cell/webbender/discussions)
-- 📖 [Documentation](https://github.com/ilim-cell/webbender/wiki)
-
----
-
-Made with ❤️ by ilim-cell
+If you want to publish from a private repository or use an alternate token, add a repository secret named WIKI_PUSH_TOKEN.

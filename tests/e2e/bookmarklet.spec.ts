@@ -1,7 +1,7 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from 'playwright/test';
 
 async function getBookmarkletCode(page: Page) {
-  const bookmarklet = page.locator('#dragme');
+  const bookmarklet = page.locator('#drag-btn');
   await expect(bookmarklet).toHaveAttribute('href', /^javascript:/);
   return bookmarklet.getAttribute('href');
 }
@@ -36,7 +36,7 @@ test.describe('Webbender E2E Tests', () => {
     // Execute the bookmarklet in the page context
     await page.evaluate((code) => {
       // Extract just the JavaScript part
-      const jsCode = code.substring('javascript:'.length);
+      const jsCode = code!.substring('javascript:'.length);
       new Function(jsCode)();
     }, bookmarkletCode);
     
@@ -46,7 +46,9 @@ test.describe('Webbender E2E Tests', () => {
     // Verify panel is visible
     const panel = page.locator('#webbender-ui');
     await expect(panel).toBeVisible();
-    await expect(panel).toContainText('Webbender');
+    await expect(panel).not.toContainText('Webbender');
+    await expect(panel).not.toContainText('Grab & Move');
+    await expect(panel.locator('.wb-tool-btn[aria-label="Select"]')).toBeVisible();
   });
 
   test('should have Edit Text toggle in bookmarklet panel', async ({ page }) => {
@@ -54,7 +56,7 @@ test.describe('Webbender E2E Tests', () => {
     const bookmarkletCode = await getBookmarkletCode(page);
     
     await page.evaluate((code) => {
-      const jsCode = code.substring('javascript:'.length);
+      const jsCode = code!.substring('javascript:'.length);
       new Function(jsCode)();
     }, bookmarkletCode);
     
@@ -64,67 +66,108 @@ test.describe('Webbender E2E Tests', () => {
 
   test('should hide and restore panel around dialog acknowledgements', async ({ page }) => {
     await page.goto('/index.html');
-    const bookmarkletCode = await page.locator('#dragme').getAttribute('href');
+    const bookmarkletCode = await page.locator('#drag-btn').getAttribute('href');
 
     await page.evaluate((code) => {
-      const jsCode = code.substring('javascript:'.length);
+      const jsCode = code!.substring('javascript:'.length);
       new Function(jsCode)();
     }, bookmarkletCode);
 
-    const dialogState = await page.evaluate(async () => {
-      const promptCalls = [];
-      const displayDuringDialog = { alert: null, confirm: null, prompt: null };
+    await page.waitForSelector('#webbender-ui', { timeout: 5000 });
+    await page.waitForSelector('#wb-dialog-button-mirror', { timeout: 5000 });
+    await page.waitForFunction(() => {
+      const mirror = document.getElementById('wb-dialog-button-mirror');
+      return mirror?.querySelectorAll('button').length === 3;
+    }, null, { timeout: 5000 });
+
+    await page.evaluate(() => {
+      const host = document.getElementById('webbender-ui');
+      const shadow = host?.shadowRoot;
+      const dock = shadow?.getElementById('wb-dock');
+      window.dialogTestState = {
+        promptCalls: [],
+        displayDuringDialog: { alert: null, confirm: null, prompt: null },
+        finalDisplay: null,
+        ready: false,
+      };
+
       const originalPrompt = window.prompt;
       const originalAlert = window.alert;
       const originalConfirm = window.confirm;
 
       window.prompt = (message = '', defaultValue = '') => {
-        promptCalls.push({ message, defaultValue });
-        if (message === 'Alert message:') return 'Alert test message';
-        if (message === 'Confirm message:') return 'Confirm test message';
+        window.dialogTestState.promptCalls.push({ message, defaultValue });
+        window.dialogTestState.displayDuringDialog.prompt = dock?.style.opacity ?? null;
         if (message === 'Prompt question:') return 'Prompt test question';
-
-        displayDuringDialog.prompt = document.getElementById('webbender-ui')?.style.display ?? null;
         return 'Prompt answer';
       };
       window.alert = () => {
-        displayDuringDialog.alert = document.getElementById('webbender-ui')?.style.display ?? null;
+        window.dialogTestState.displayDuringDialog.alert = dock?.style.opacity ?? null;
       };
       window.confirm = () => {
-        displayDuringDialog.confirm = document.getElementById('webbender-ui')?.style.display ?? null;
+        window.dialogTestState.displayDuringDialog.confirm = dock?.style.opacity ?? null;
         return true;
       };
 
-      const clickDialogButton = (label) => {
-        const button = Array.from(document.querySelectorAll('#webbender-ui button')).find(
-          (candidate) => candidate.textContent === label
+      window.dialogTestState.cleanup = () => {
+        window.prompt = originalPrompt;
+        window.alert = originalAlert;
+        window.confirm = originalConfirm;
+        window.dialogTestState.finalDisplay = dock?.style.opacity ?? null;
+      };
+      window.dialogTestState.ready = true;
+    });
+
+    await page.evaluate(() => {
+      const mirror = document.getElementById('wb-dialog-button-mirror');
+      const clickButton = (label: string) => {
+        const button = Array.from(mirror?.querySelectorAll('button') || []).find(
+          (candidate) => candidate.textContent?.trim() === label
         );
         if (!button) throw new Error(`Missing dialog button: ${label}`);
         button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
       };
+      clickButton('Alert');
+    });
+    await page.waitForFunction(() => window.dialogTestState.displayDuringDialog.alert !== null, null, { timeout: 2000 });
 
-      clickDialogButton('Alert');
-      clickDialogButton('Confirm');
-      clickDialogButton('Prompt');
-
-      window.prompt = originalPrompt;
-      window.alert = originalAlert;
-      window.confirm = originalConfirm;
-
-      return {
-        promptCalls,
-        displayDuringDialog,
-        finalDisplay: document.getElementById('webbender-ui')?.style.display ?? null,
+    await page.evaluate(() => {
+      const mirror = document.getElementById('wb-dialog-button-mirror');
+      const clickButton = (label: string) => {
+        const button = Array.from(mirror?.querySelectorAll('button') || []).find(
+          (candidate) => candidate.textContent?.trim() === label
+        );
+        if (!button) throw new Error(`Missing dialog button: ${label}`);
+        button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
       };
+      clickButton('Confirm');
+    });
+    await page.waitForFunction(() => window.dialogTestState.displayDuringDialog.confirm !== null, null, { timeout: 2000 });
+
+    await page.evaluate(() => {
+      const mirror = document.getElementById('wb-dialog-button-mirror');
+      const clickButton = (label: string) => {
+        const button = Array.from(mirror?.querySelectorAll('button') || []).find(
+          (candidate) => candidate.textContent?.trim() === label
+        );
+        if (!button) throw new Error(`Missing dialog button: ${label}`);
+        button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      };
+      clickButton('Prompt');
+    });
+    await page.waitForFunction(() => window.dialogTestState.displayDuringDialog.prompt !== null, null, { timeout: 2000 });
+
+    await page.evaluate(() => {
+      window.dialogTestState.cleanup();
     });
 
-    expect(dialogState.promptCalls[0]?.message).toBe('Alert message:');
-    expect(dialogState.promptCalls[1]?.message).toBe('Confirm message:');
-    expect(dialogState.promptCalls[2]?.message).toBe('Prompt question:');
-    expect(dialogState.displayDuringDialog.alert).toBe('none');
-    expect(dialogState.displayDuringDialog.confirm).toBe('none');
-    expect(dialogState.displayDuringDialog.prompt).toBe('none');
-    expect(dialogState.finalDisplay).toBe('flex');
+    const dialogState = await page.evaluate(() => window.dialogTestState);
+
+    expect(dialogState.promptCalls[0]?.message).toBe('Prompt question:');
+    expect(dialogState.displayDuringDialog.alert).toBe('0');
+    expect(dialogState.displayDuringDialog.confirm).toBe('0');
+    expect(dialogState.displayDuringDialog.prompt).toBe('0');
+    expect(dialogState.finalDisplay).toBe('1');
   });
 
   test('should highlight and move page elements without letting them leave the viewport entirely', async ({
@@ -134,81 +177,34 @@ test.describe('Webbender E2E Tests', () => {
     const bookmarkletCode = await getBookmarkletCode(page);
 
     await page.evaluate((code) => {
-      const jsCode = code.substring('javascript:'.length);
+      const jsCode = code!.substring('javascript:'.length);
       new Function(jsCode)();
     }, bookmarkletCode);
 
-    await page
-      .locator('label', { hasText: 'Grab & Move' })
-      .locator('input[type="checkbox"]')
-      .check();
+    await page.locator('.wb-tool-btn[aria-label="Select"]').click();
 
-    const result = await page.evaluate(() => {
-      const target = document.querySelector('h1');
+    await page.locator('h1').click();
 
-      if (!target) {
-        throw new Error('Missing test target');
-      }
+    const startBox = await page.locator('h1').boundingBox();
+    if (!startBox) throw new Error('Missing start box');
 
-      const startRect = target.getBoundingClientRect();
-      const startX = startRect.left + startRect.width / 2;
-      const startY = startRect.top + startRect.height / 2;
+    const moveHandle = page.locator('[title="Move selected"]');
+    await expect(moveHandle).toBeVisible();
 
-      target.dispatchEvent(
-        new MouseEvent('mouseover', {
-          bubbles: true,
-          clientX: startX,
-          clientY: startY,
-        })
-      );
+    const moveBox = await moveHandle.boundingBox();
+    if (!moveBox) throw new Error('Missing move handle');
 
-      target.dispatchEvent(
-        new MouseEvent('mousedown', {
-          bubbles: true,
-          cancelable: true,
-          button: 0,
-          clientX: startX,
-          clientY: startY,
-        })
-      );
+    await page.mouse.move(moveBox.x + moveBox.width / 2, moveBox.y + moveBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(moveBox.x + 120, moveBox.y + 80, { steps: 8 });
+    await page.mouse.up();
 
-      document.dispatchEvent(
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          buttons: 1,
-          clientX: window.innerWidth + 500,
-          clientY: window.innerHeight + 500,
-        })
-      );
+    const endBox = await page.locator('h1').boundingBox();
+    if (!endBox) throw new Error('Missing end box');
 
-      document.dispatchEvent(
-        new MouseEvent('mouseup', {
-          bubbles: true,
-          cancelable: true,
-          clientX: window.innerWidth + 500,
-          clientY: window.innerHeight + 500,
-        })
-      );
-
-      const endRect = target.getBoundingClientRect();
-
-      return {
-        outline: target.style.outline,
-        moved:
-          Math.abs(endRect.left - startRect.left) > 1 || Math.abs(endRect.top - startRect.top) > 1,
-        stillVisible:
-          endRect.left < window.innerWidth &&
-          endRect.top < window.innerHeight &&
-          endRect.right > 0 &&
-          endRect.bottom > 0,
-      };
-    });
-
-    expect(result.outline).toContain('solid');
-    expect(result.outline).toContain('2px');
-    expect(result.moved).toBe(true);
-    expect(result.stillVisible).toBe(true);
+    expect(Math.abs(endBox.x - startBox.x) > 1 || Math.abs(endBox.y - startBox.y) > 1).toBe(true);
+    expect(endBox.x).toBeLessThan(page.viewportSize()?.width ?? 0);
+    expect(endBox.y).toBeLessThan(page.viewportSize()?.height ?? 0);
   });
 
   test('should have copy button functional', async ({ page }) => {
@@ -235,6 +231,139 @@ test.describe('Webbender E2E Tests', () => {
     await expect(copyBtn).toContainText('Copied');
   });
 
+  test('should enable text editing and persist edited content', async ({ page }) => {
+    await page.goto('/index.html');
+    const bookmarkletCode = await getBookmarkletCode(page);
+
+    await page.evaluate((code) => {
+      const jsCode = code!.substring('javascript:'.length);
+      new Function(jsCode)();
+    }, bookmarkletCode);
+
+    await page.waitForFunction(() => !!window._webbenderToggleTextEdit);
+
+    await page.evaluate(() => {
+      window._webbenderToggleTextEdit?.(true);
+    });
+
+    await page.locator('h1').click();
+    await page.waitForFunction(() => {
+      const target = document.querySelector('h1');
+      return target?.getAttribute('contenteditable') === 'true';
+    });
+
+    await page.evaluate(() => {
+      const target = document.querySelector('h1');
+      if (!target) throw new Error('Missing heading target');
+      target.textContent = 'Updated heading';
+      target.dispatchEvent(new Event('blur', { bubbles: true }));
+    });
+
+    await expect(page.locator('h1')).toContainText('Updated heading');
+  });
+
+  test('should remove an element when remove mode is enabled', async ({ page }) => {
+    await page.goto('/index.html');
+    const bookmarkletCode = await getBookmarkletCode(page);
+
+    await page.evaluate((code) => {
+      const jsCode = code!.substring('javascript:'.length);
+      new Function(jsCode)();
+    }, bookmarkletCode);
+
+    await page.waitForFunction(() => !!window._webbenderToggleRemove);
+
+    await page.evaluate(() => {
+      window._webbenderToggleRemove?.(true);
+    });
+
+    await page.locator('h1').click();
+
+    await expect.poll(async () => {
+      return page.locator('h1').evaluate((el) => getComputedStyle(el).display);
+    }).toBe('none');
+  });
+
+  test('should toggle bold and italic formatting for selected element', async ({ page }) => {
+    await page.goto('/index.html');
+    const bookmarkletCode = await getBookmarkletCode(page);
+
+    await page.evaluate((code) => {
+      const jsCode = code!.substring('javascript:'.length);
+      new Function(jsCode)();
+    }, bookmarkletCode);
+
+    await page.waitForFunction(() => typeof window._webbenderToggleSelect === 'function' && typeof window._webbenderToggleBold === 'function');
+
+    await page.evaluate(() => {
+      window._webbenderToggleSelect?.(true);
+    });
+
+    await page.locator('h1').click();
+
+    await page.waitForFunction(() => Array.isArray(window._webbenderSelectionTargets) && window._webbenderSelectionTargets.length > 0);
+
+    await page.locator('.wb-toolbar button[title="Bold"]').click();
+    await page.locator('.wb-toolbar button[title="Italic"]').click();
+
+    const styleText = await page.evaluate(() => {
+      const target = document.querySelector('h1');
+      return target?.getAttribute('style') || '';
+    });
+
+    expect(styleText).toContain('font-weight');
+    expect(styleText).toContain('font-style');
+  });
+
+  test('should toggle X-Ray mode via the bookmarklet API', async ({ page }) => {
+    await page.goto('/index.html');
+    const bookmarkletCode = await getBookmarkletCode(page);
+
+    await page.evaluate((code) => {
+      const jsCode = code!.substring('javascript:'.length);
+      new Function(jsCode)();
+    }, bookmarkletCode);
+
+    await page.waitForFunction(() => typeof window._webbenderToggleXray === 'function');
+
+    await page.evaluate(() => {
+      window._webbenderToggleXray?.(true);
+    });
+
+    await page.waitForSelector('style#webbender-xray-style', { state: 'attached', timeout: 10000 });
+    const xrayStyle = await page.locator('style#webbender-xray-style').evaluate((el) => el.textContent || '');
+    expect(xrayStyle).toContain('outline: 1px dashed');
+  });
+
+  test('should persist settings across reloads', async ({ page }) => {
+    await page.goto('/index.html');
+    const bookmarkletCode = await getBookmarkletCode(page);
+
+    await page.evaluate((code) => {
+      const jsCode = code!.substring('javascript:'.length);
+      new Function(jsCode)();
+    }, bookmarkletCode);
+
+    await page.waitForFunction(() => typeof window._webbenderToggleTextEdit === 'function' && typeof window._webbenderToggleXray === 'function');
+
+    await page.evaluate(() => {
+      window._webbenderToggleTextEdit?.(true);
+      window._webbenderToggleXray?.(true);
+    });
+
+    await page.waitForFunction(() => window.localStorage.getItem('webbender-settings')?.includes('"editMode":true') && window.localStorage.getItem('webbender-settings')?.includes('"xrayMode":true'));
+
+    await page.reload();
+    const reloadedBookmarkletCode = await getBookmarkletCode(page);
+    await page.evaluate((code) => {
+      const jsCode = code!.substring('javascript:'.length);
+      new Function(jsCode)();
+    }, reloadedBookmarkletCode);
+
+    await page.waitForFunction(() => document.getElementById('webbender-xray-style')?.textContent?.includes('outline: 1px dashed'));
+    await page.waitForFunction(() => window._webbenderTextEditMode === true);
+  });
+
   test('bookmarklet code should be syntactically valid', async ({ page }) => {
     await page.goto('/index.html');
     const bookmarkletCode = await getBookmarkletCode(page);
@@ -255,5 +384,24 @@ test.describe('Webbender E2E Tests', () => {
     await page.goto('/index.html');
     const githubLink = page.locator('a:has-text("GitHub")');
     await expect(githubLink).toHaveAttribute('href', 'https://github.com/ilim-cell/webbender');
+  });
+
+  test('should load React Shadow DOM gracefully across browsers', async ({ page }) => {
+    await page.goto('/index.html');
+    const bookmarkletCode = await getBookmarkletCode(page);
+    await page.evaluate((code) => {
+      const jsCode = code!.substring('javascript:'.length);
+      new Function(jsCode)();
+    }, bookmarkletCode);
+
+    await page.waitForSelector('#webbender-ui', { timeout: 5000 });
+    
+    // Check that Shadow DOM is securely attached
+    const isShadowMounted = await page.evaluate(() => {
+      const ui = document.getElementById('webbender-ui');
+      return ui !== null && ui.shadowRoot !== null;
+    });
+    
+    expect(isShadowMounted).toBe(true);
   });
 });

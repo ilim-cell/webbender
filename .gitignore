@@ -1,16 +1,42 @@
 node_modules/
-dist/
-playwright-report/
-test-results/
+
+# Build output
+/dist
+
+# Playwright artifacts
+/playwright-report
+/test-results
+
+# Logs & temp files
 *.log
 npm-debug.log*
 .DS_Store
+*.url
+/tmp-*
+
+# Environment files
+*.env
 .env
 .env.local
+
+# Firebase and custom agents
 .firebase/
 .agents/
 .claude/
+
+# Misc project files
 skills-lock.json
 rulesets/
-playwright-report/
-test-results/
+
+# Large debug/temporary scripts
+debug-inject.js
+diff.txt
+test-out.txt
+tmp-debug-output.txt
+tmp-inspect.js
+tmp-served-index.html
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
