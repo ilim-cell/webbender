@@ -2141,7 +2141,9 @@ javascript: (function () {
       document.querySelectorAll('[data-wb-orig-text]').forEach((el) => {
         const sel = getUniqueSelector(el);
         const val = el.getAttribute('data-wb-mod-text') || el.innerHTML;
-        js += `document.querySelector('${sel}').innerHTML = \`${val.replace(/`/g, '\\`').trim()}\`;\n`;
+        const safeSelector = JSON.stringify(sel);
+        const safeValue = JSON.stringify(String(val).trim());
+        js += `document.querySelector(${safeSelector}).innerHTML = ${safeValue};\n`;
       });
       return { css, js };
     }
