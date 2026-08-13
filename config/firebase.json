@@ -2,7 +2,7 @@
   "hosting": [
     {
       "target": "sitePrimary",
-      "public": "site",
+      "public": "../site",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "headers": [
         {
@@ -17,7 +17,7 @@
     },
     {
       "target": "sitePublic",
-      "public": "site",
+      "public": "../site",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "headers": [
         {

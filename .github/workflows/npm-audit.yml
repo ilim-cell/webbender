@@ -16,21 +16,24 @@ jobs:
   npm-audit:
     runs-on: ubuntu-latest
     permissions:
-      contents: write       # To push branches and create PRs
-      issues: write         # To create issues
-      pull-requests: write  # To create PRs
+      contents: write
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-
-      - name: Enable pnpm
-        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -90,7 +93,8 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title,
-                body: `npm audit detected:\n- **${critical} critical**\n- **${high} high** vulnerability(ies)\n\n\`\`\`json\n${audit}\n\`\`\``,
+                body: `npm audit detected:\n- **${critical} critical**\n- **${high} high** vulnerability(ies)\n\n\`\`\`json\n${audit}\n\`\`\`
+`,
                 labels: ['security', 'automated']
               });
             } else {
