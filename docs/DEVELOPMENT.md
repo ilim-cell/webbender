@@ -42,7 +42,7 @@ docs/                   # documentation source for the repo and wiki
 
 ## Build pipeline
 
-The build flow is driven by the scripts in package.json and the helper in scripts/build.js.
+The build flow is driven by the scripts in package.json.
 
 1. Source files in src are compiled into the browser-ready bundle.
 2. The installer page in site uses the generated assets to create the install URL.
