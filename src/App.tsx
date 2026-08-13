@@ -6,10 +6,7 @@ export default function App() {
 
   return (
     <>
-      <Dock 
-        isMinimized={isMinimized} 
-        onMinimize={() => setIsMinimized(!isMinimized)} 
-      />
+      <Dock isMinimized={isMinimized} onMinimize={() => setIsMinimized(!isMinimized)} />
     </>
   );
 }

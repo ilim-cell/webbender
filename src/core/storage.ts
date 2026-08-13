@@ -1,5 +1,5 @@
 export function initDB() {
-  console.log("Initializing IndexedDB...");
+  console.log('Initializing IndexedDB...');
   // TODO: Port over actual IndexedDB init logic from original webbender.js
 }
 

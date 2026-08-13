@@ -24,10 +24,10 @@ export function toggleXRay(active: boolean) {
 
 export function highlightElement(el: HTMLElement | null) {
   // Removes old highlight and adds to new element
-  document.querySelectorAll('.wb-highlight').forEach(node => {
+  document.querySelectorAll('.wb-highlight').forEach((node) => {
     node.classList.remove('wb-highlight');
   });
-  
+
   if (el) {
     el.classList.add('wb-highlight');
   }

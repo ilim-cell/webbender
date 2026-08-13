@@ -11,12 +11,12 @@ export function pushHistoryState(target: any, type: string, oldVal: any, newVal:
 
 export function executeUndo() {
   if (historyIndex < 0) return;
-  console.log("Undoing action...");
+  console.log('Undoing action...');
   historyIndex--;
 }
 
 export function executeRedo() {
   if (historyIndex >= historyStack.length - 1) return;
   historyIndex++;
-  console.log("Redoing action...");
+  console.log('Redoing action...');
 }
