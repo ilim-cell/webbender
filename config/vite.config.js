@@ -6,8 +6,8 @@ export default defineConfig({
   root: resolve(__dirname, '../site'),
 
   build: {
-    // Tells Vite to output the bundle to /dist back in the true project root
+    // Keep the generated bookmarklet runtime artifact alongside the site bundle.
     outDir: resolve(__dirname, '../dist'),
-    emptyOutDir: true,
+    emptyOutDir: false,
   },
 });

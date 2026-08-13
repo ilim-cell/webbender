@@ -108,7 +108,7 @@ jobs:
         run: pnpm run build
 
       - name: Verify syntax
-        run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
+        run: node -e "new Function(require('fs').readFileSync('dist/bookmarklet-runtime.js','utf8')); console.log('✓ Syntax OK')"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
@@ -228,7 +228,7 @@ jobs:
         run: |
           node -e "
             const fs = require('fs');
-            const code = fs.readFileSync('dist/webbender.min.js', 'utf8');
+            const code = fs.readFileSync('dist/bookmarklet-runtime.js', 'utf8');
             if (!code.includes('webbender-ui')) throw new Error('Missing webbender-ui');
             if (!code.includes('designMode')) throw new Error('Missing designMode');
             console.log('✓ Bookmarklet structure valid');

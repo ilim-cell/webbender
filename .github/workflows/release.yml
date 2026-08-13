@@ -151,7 +151,7 @@ jobs:
         run: pnpm run build
 
       - name: Verify syntax
-        run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
+        run: node -e "new Function(require('fs').readFileSync('dist/bookmarklet-runtime.js','utf8')); console.log('✓ Syntax OK')"
 
       - name: Security audit
         run: pnpm audit --audit-level=moderate || true

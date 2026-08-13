@@ -2547,8 +2547,17 @@ javascript: (function () {
     if (!state) return;
     const host = document.createElement('div');
     host.id = hostId;
-    host.style.position = 'relative';
+    host.style.position = 'fixed';
+    host.style.top = state.settings.panelY || '20px';
+    host.style.right = state.settings.panelRight || '20px';
+    host.style.left = state.settings.panelLeft || 'auto';
+    host.style.width = '320px';
+    host.style.minHeight = '120px';
+    host.style.height = 'auto';
     host.style.zIndex = '2147483647';
+    host.style.pointerEvents = 'auto';
+    host.style.display = 'block';
+    host.style.overflow = 'visible';
     document.body.appendChild(host);
     const shadow = host.attachShadow({ mode: 'open' });
     const ui = wbUI(shadow);

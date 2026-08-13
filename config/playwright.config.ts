@@ -35,7 +35,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'cd site && python -m http.server 8000',
+    command: 'node ../scripts/serve-static.js',
     url: 'http://localhost:8000',
     reuseExistingServer: !process.env.CI,
   },
