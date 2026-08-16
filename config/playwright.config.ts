@@ -9,9 +9,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
+  outputDir: '../.temp/test-results',
   reporter: [
-    ['html', { outputFolder: '../playwright-report' }],
-    ['json', { outputFile: '../playwright-report/results.json' }],
+    ['html', { outputFolder: '../.temp/playwright-report' }],
+    ['json', { outputFile: '../.temp/playwright-report/results.json' }],
   ],
   use: {
     baseURL: 'http://localhost:8000',

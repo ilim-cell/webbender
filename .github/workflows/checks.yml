@@ -30,18 +30,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify code formatting
+        run: pnpm run format:check
+        id: format_check
+        continue-on-error: true
+
       - name: Auto-fix code formatting
+        if: steps.format_check.outcome != 'success'
         run: pnpm run format
 
       - name: Commit and push formatting fixes
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        if: steps.format_check.outcome != 'success' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
           if ! git diff --quiet; then
             if ! git check-ref-format --branch "$HEAD_REF" >/dev/null 2>&1; then
               echo "Unsafe branch name detected; skipping auto-push."
-              exit 0
+              exit 1
             fi
             VALIDATED_HEAD_REF="$HEAD_REF"
             git config user.name "github-actions[bot]"
@@ -49,16 +55,20 @@ jobs:
             git add -A
             git commit -m "style: auto-format source code"
             if ! git pull --rebase origin "$VALIDATED_HEAD_REF"; then
-              echo "Could not rebase onto latest branch state; skipping auto-push."
-              exit 0
+              echo "Could not rebase onto latest branch state; please pull and rebase locally."
+              exit 1
             fi
             if ! git push origin "HEAD:$VALIDATED_HEAD_REF"; then
-              echo "Auto-push failed due to concurrent updates; please rerun or push locally."
-              exit 0
+              echo "Auto-push failed; please run 'pnpm run format' and push locally."
+              exit 1
             fi
-          else
-            echo "No formatting fixes to commit."
           fi
+
+      - name: Enforce format compliance
+        if: steps.format_check.outcome != 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository)
+        run: |
+          echo "❌ Code style issues detected. Please run 'pnpm run format' locally and push the changes."
+          exit 1
 
   build:
     name: Build & Validate
@@ -79,10 +89,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build bookmarklet
-        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
+        run: SITE_INDEX_FILE=site/index.html pnpm run build
 
       - name: Verify syntax
-        run: node -e "new Function(require('fs').readFileSync('dist/webbender.min.js','utf8')); console.log('✓ Syntax OK')"
+        run: node -e "new Function(require('fs').readFileSync('dist/bookmarklet-runtime.js','utf8')); console.log('✓ Syntax OK')"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
@@ -176,7 +186,7 @@ jobs:
         run: |
           node -e "
             const fs = require('fs');
-            const code = fs.readFileSync('dist/webbender.min.js', 'utf8');
+            const code = fs.readFileSync('dist/bookmarklet-runtime.js', 'utf8');
             if (!code.includes('webbender-ui')) throw new Error('Missing webbender-ui');
             if (!code.includes('designMode')) throw new Error('Missing designMode');
             console.log('✓ Bookmarklet structure valid');
@@ -190,7 +200,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-${{ github.sha }}
-          path: playwright-report/
+          path: .temp/playwright-report/
           retention-days: 7
 
   lighthouse:
@@ -213,7 +223,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
+        run: SITE_INDEX_FILE=site/index.html pnpm run build
 
       - name: Start server
         run: |
@@ -225,8 +235,9 @@ jobs:
       - name: Run Lighthouse
         continue-on-error: true
         run: |
+          mkdir -p .temp
           pnpm add -g lighthouse
-          lighthouse http://localhost:8000/index.html --output=json --output-path=./lighthouse-report.json --chrome-flags="--headless" || echo "Lighthouse completed"
+          lighthouse http://localhost:8000/index.html --output=json --output-path=./.temp/lighthouse-report.json --chrome-flags="--headless" || echo "Lighthouse completed"
 
       - name: Comment PR with results
         if: always() && success()
@@ -235,12 +246,12 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            if (!fs.existsSync('lighthouse-report.json')) {
+            if (!fs.existsSync('.temp/lighthouse-report.json')) {
               console.log('No lighthouse report found');
               return;
             }
             try {
-              const report = JSON.parse(fs.readFileSync('lighthouse-report.json', 'utf8'));
+              const report = JSON.parse(fs.readFileSync('.temp/lighthouse-report.json', 'utf8'));
               const scores = report.categories;
               const scoreColor = (score) => score >= 0.9 ? '🟢' : score >= 0.5 ? '🟡' : '🔴';
               const comment = `## 📊 Lighthouse Results\n| Metric | Score |\n|--------|-------|\n| ${scoreColor(scores.performance.score)} Performance | ${Math.round(scores.performance.score * 100)} |\n| ${scoreColor(scores.accessibility.score)} Accessibility | ${Math.round(scores.accessibility.score * 100)} |\n| ${scoreColor(scores['best-practices'].score)} Best Practices | ${Math.round(scores['best-practices'].score * 100)} |\n| ${scoreColor(scores.seo.score)} SEO | ${Math.round(scores.seo.score * 100)} |`;
@@ -271,7 +282,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build
-        run: SITE_INDEX_FILE=site/index.html node scripts/build.js
+        run: SITE_INDEX_FILE=site/index.html pnpm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

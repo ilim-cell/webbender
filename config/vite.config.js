@@ -8,6 +8,6 @@ export default defineConfig({
   build: {
     // Tells Vite to output the bundle to /dist back in the true project root
     outDir: resolve(__dirname, '../dist'),
-    emptyOutDir: true,
+    emptyOutDir: false,
   },
 });

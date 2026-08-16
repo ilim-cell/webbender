@@ -1,41 +1,33 @@
+# Dependencies
 node_modules/
 
 # Build output
 /dist
 
-# Playwright artifacts
+# Temporary directory & test artifacts
+/.temp
 /playwright-report
 /test-results
 
 # Logs & temp files
 *.log
-npm-debug.log*
 .DS_Store
-*.url
-/tmp-*
 
 # Environment files
 *.env
 .env
 .env.local
 
-# Firebase and custom agents
+# Firebase and agents
 .firebase/
 .agents/
 .claude/
 
-# Misc project files
+# Misc
 skills-lock.json
 rulesets/
 
-# Large debug/temporary scripts
-debug-inject.js
-diff.txt
-test-out.txt
-tmp-debug-output.txt
-tmp-inspect.js
-tmp-served-index.html
-
+# VSCode configuration
 .vscode/*
 !.vscode/extensions.json
 !.vscode/launch.json

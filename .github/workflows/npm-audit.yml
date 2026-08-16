@@ -27,10 +27,13 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: '24' # In Node 25, the corepack tool will be decoupled, so when bumping make sure to replace the action below
 
       - name: Enable pnpm
         run: corepack enable
+
+      # - name: Enable pnpm
+      #  run: npm install corepack
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -48,15 +51,17 @@ jobs:
         continue-on-error: true
 
       - name: Run pnpm audit and save report
-        run: pnpm audit --audit-level=low --json > audit-results.json
+        run: |
+          mkdir -p .temp
+          pnpm audit --audit-level=low --json > .temp/audit-results.json
         continue-on-error: true
 
       - name: Parse audit results and set outputs
         id: audit
         run: |
-          if [ -f audit-results.json ]; then
-            HIGH=$(jq '.metadata.vulnerabilities.high' audit-results.json)
-            CRITICAL=$(jq '.metadata.vulnerabilities.critical' audit-results.json)
+          if [ -f .temp/audit-results.json ]; then
+            HIGH=$(jq '.metadata.vulnerabilities.high' .temp/audit-results.json)
+            CRITICAL=$(jq '.metadata.vulnerabilities.critical' .temp/audit-results.json)
           else
             HIGH=0
             CRITICAL=0
@@ -84,7 +89,7 @@ jobs:
               const fs = require('fs');
               let audit = '';
               try {
-                audit = fs.readFileSync('audit-results.json', 'utf-8').slice(0, 6000);
+                audit = fs.readFileSync('.temp/audit-results.json', 'utf-8').slice(0, 6000);
               } catch (e) { audit = 'No audit-results.json'; }
               await github.rest.issues.create({
                 owner: context.repo.owner,
