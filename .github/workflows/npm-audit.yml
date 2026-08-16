@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       run_force_fix:
-        description: 'Run npm audit fix with --force?'
+        description: 'Run pnpm update to attempt vulnerability fixes?'
         required: false
         default: 'false'
 
@@ -27,34 +27,41 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: '24' # In Node 25, the corepack tool will be decoupled, so when bumping make sure to replace the action below
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      # - name: Enable pnpm
+      #  run: npm install corepack
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
         continue-on-error: true
 
-      - name: Run npm audit fix (optionally with --force)
+      - name: Run pnpm audit fix (update vulnerable packages)
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.run_force_fix }}" = "true" ]; then
-            echo "Running npm audit fix --force"
-            npm audit fix --force
+            echo "Running pnpm update (force)"
+            pnpm update --latest
           else
-            echo "Running npm audit fix"
-            npm audit fix
+            echo "Running pnpm update"
+            pnpm update
           fi
         continue-on-error: true
 
-      - name: Run npm audit and save report
-        run: npm audit --audit-level=low --json > audit-results.json
+      - name: Run pnpm audit and save report
+        run: |
+          mkdir -p .temp
+          pnpm audit --audit-level=low --json > .temp/audit-results.json
         continue-on-error: true
 
       - name: Parse audit results and set outputs
         id: audit
         run: |
-          if [ -f audit-results.json ]; then
-            HIGH=$(jq '.metadata.vulnerabilities.high' audit-results.json)
-            CRITICAL=$(jq '.metadata.vulnerabilities.critical' audit-results.json)
+          if [ -f .temp/audit-results.json ]; then
+            HIGH=$(jq '.metadata.vulnerabilities.high' .temp/audit-results.json)
+            CRITICAL=$(jq '.metadata.vulnerabilities.critical' .temp/audit-results.json)
           else
             HIGH=0
             CRITICAL=0
@@ -82,7 +89,7 @@ jobs:
               const fs = require('fs');
               let audit = '';
               try {
-                audit = fs.readFileSync('audit-results.json', 'utf-8').slice(0, 6000);
+                audit = fs.readFileSync('.temp/audit-results.json', 'utf-8').slice(0, 6000);
               } catch (e) { audit = 'No audit-results.json'; }
               await github.rest.issues.create({
                 owner: context.repo.owner,
@@ -99,11 +106,11 @@ jobs:
         if: steps.audit.outputs.high != '0' || steps.audit.outputs.critical != '0'
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "chore: npm audit fix for high/critical vulnerabilities"
+          commit-message: "chore: pnpm audit fix for high/critical vulnerabilities"
           branch: audit-fix/${{ github.run_id }}
-          title: "chore: npm audit fix for high/critical vulnerabilities"
+          title: "chore: pnpm audit fix for high/critical vulnerabilities"
           body: |
-            This PR applies `npm audit fix` in an attempt to resolve high/critical vulnerabilities.
+            This PR applies `pnpm update` in an attempt to resolve high/critical vulnerabilities.
             See audit summary in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
           labels: security, automated
           delete-branch: true
