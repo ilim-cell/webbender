@@ -47,7 +47,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm run build
+        run: SITE_INDEX_FILE=site/index.html pnpm run build
 
       - name: Semantic Release
         run: npx semantic-release --config config/.releaserc.json
@@ -62,7 +62,7 @@ jobs:
           echo "Purging CDN for v${VERSION}..."
           curl -s -X POST https://api.jsdelivr.com/v1/purge \
             -H 'Content-Type: application/json' \
-            -d "{\"path\": \"/gh/ilim-cell/webbender@${VERSION}/dist/webbender.min.js\"}" \
+            -d "{\"path\": \"/gh/ilim-cell/webbender@${VERSION}/dist/bookmarklet-runtime.js\"}" \
             || echo "CDN purge sent"
 
   production-deploy:
@@ -99,7 +99,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm run build
+        run: SITE_INDEX_FILE=site/index.html pnpm run build
 
       - name: Deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -148,7 +148,7 @@ jobs:
         run: pnpm run format
 
       - name: Build
-        run: pnpm run build
+        run: SITE_INDEX_FILE=site/index.html pnpm run build
 
       - name: Verify syntax
         run: node -e "new Function(require('fs').readFileSync('dist/bookmarklet-runtime.js','utf8')); console.log('✓ Syntax OK')"
@@ -158,6 +158,7 @@ jobs:
 
       - name: Generate report
         run: |
+          mkdir -p .temp
           {
             echo "# Nightly CI Report"
             echo "**Date**: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
@@ -169,11 +170,12 @@ jobs:
             echo ""
             echo "## Status"
             echo "✅ Checks completed"
-          } > nightly-report.md
+          } > .temp/nightly-report.md
 
       - name: Upload report
         uses: actions/upload-artifact@v7
         with:
           name: nightly-report-${{ github.run_id }}
-          path: nightly-report.md
+          path: .temp/nightly-report.md
           retention-days: 30
+
