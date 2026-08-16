@@ -7,18 +7,18 @@
 
 Webbender is a feature-rich bookmarklet for you to *bend* the web to your will, because the web needs people. Made by power users for everyone. Edit text, remove elements, change fonts, apply themes, and more—all without leaving your browser.
 
-## ✨ Quick Features
+## Quick Features
 
-- 📝 **Edit Text** - Enable design mode to edit any text on any page
-- 🗑️ **Remove Elements** - Click to delete unwanted page elements
-- 🎨 **Font Override** - Apply custom or system fonts to any website
-- ↗️ **Item Move** - Click and drag to reposition objects around the page
-- 🌈 **Color Themes** - Dark, Light, Sepia, or create custom themes
-- 💬 **Dialog Helpers** - Test alert, confirm, and prompt boxes
-- 💾 **Persistent Settings** - Your preferences are saved locally
-- 🔄 **Auto-Update** - Built-in update checker with notifications
+- **Edit Text** - Enable design mode to edit any text on any page
+- **Remove Elements** - Click to delete unwanted page elements
+- **Font Override** - Apply custom or system fonts to any website
+- **Item Move** - Click and drag to reposition objects around the page
+- **Color Themes** - Dark, Light, Sepia, or create custom themes
+- **Dialog Helpers** - Test alert, confirm, and prompt boxes
+- **Persistent Settings** - Your preferences are saved locally
+- **Auto-Update** - Built-in update checker with notifications
 
-## 🚀 Quick Install
+## Quick Install
 
 ### Option 1: CSP-Unblocked Install (Recommended)
 
@@ -35,7 +35,7 @@ This bookmarklet is now self-contained (no external `<script>` injection), so it
 2. Copy the full contents of `site/bookmarklet.js`
 3. Create a bookmark and paste it into the URL field
 
-## 📖 Usage
+## Usage
 
 Click the bookmarklet to open the Webbender panel and:
 
@@ -47,13 +47,16 @@ Click the bookmarklet to open the Webbender panel and:
 - **Check Updates** - See if newer versions are available
 - **Reset** - Restore all settings to defaults
 
-## 🛠️ Development
+## Development
 
 ### Setup
+You'll need pnpm installed.
 
 ```bash
-npm install
-npm run build
+git clone https://github.com/ilim-cell/webbender.git 
+pnpm install
+pnpm run build:bookmarklet
+pnpm run dev # Start website
 ```
 
 ### Commands
@@ -78,7 +81,7 @@ dist/
 └── version.json       # Version info for update checks
 ```
 
-## 🔄 How Updates Work
+## How Updates Work
 
 1. **Source of Truth**: `src/webbender.js` is maintained as clean, readable code
 2. **Automated Building**: `scripts/build.js` minifies and generates bookmarklet versions
@@ -86,11 +89,7 @@ dist/
 4. **Install Flow**: `site/index.html` loads `site/bookmarklet.js` at runtime and builds the `javascript:` install code dynamically
 5. **Notifications**: Runtime version checks use `https://webbender.web.app/version.json` and show reinstall prompts
 
-## ⚠️ Important
-
-> Changes made with this bookmarklet **will NOT persist** after page reload. Save important edits with **Ctrl+S** before refreshing.
-
-## 🔧 Customization
+## Customization
 
 Want to modify Webbender?
 
@@ -99,13 +98,13 @@ Want to modify Webbender?
 3. Test in your browser
 4. Share your improvements via pull request!
 
-## 🌐 Browser Support
+## Browser Support
 
 | Chrome | Firefox | Safari | Edge |
 |--------|---------|--------|------|
 | 90+    | 88+     | 14+    | 90+  |
 
-## 📝 Code Quality
+## Code Quality
 
 This project uses:
 - **Prettier** for consistent formatting
@@ -119,14 +118,14 @@ Firebase Hosting CI/CD is configured via:
 Repository secret required for Firebase deploy:
 - `FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO`
 
-## 📋 Additional Resources
+## Additional Resources
 
 - [Development Guide](./docs/DEVELOPMENT.md) - Extend and customize Webbender
 - [Release Checklist](./docs/RELEASE_CHECKLIST.md) - For maintainers
 - [Wiki](https://github.com/ilim-cell/webbender/wiki) - Usage and customization docs
 - [GitHub Releases](https://github.com/ilim-cell/webbender/releases) - Version history
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please:
 1. Fork the repository
