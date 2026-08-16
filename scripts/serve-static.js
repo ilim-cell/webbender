@@ -17,26 +17,48 @@ const TYPES = {
   '.ico': 'image/x-icon',
 };
 
-function resolveAssetPath(requestPath) {
-  const safeRequest = requestPath.replace(/^\/+/, '').replace(/^\.\//, '').replace(/\\/g, '/');
-  const candidatePaths = [
-    path.join(siteRoot, safeRequest || 'index.html'),
-    path.join(distRoot, safeRequest || 'index.html'),
-  ];
-
-  for (const candidate of candidatePaths) {
-    const normalized = path.normalize(candidate);
-    if (fs.existsSync(normalized) && fs.statSync(normalized).isFile()) {
-      return normalized;
-    }
+function resolveWithinRoot(root, requestPath) {
+  const rawPath = (requestPath || '').split('?')[0].split('#')[0];
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(rawPath);
+  } catch (_) {
+    return null;
   }
 
-  return path.join(siteRoot, safeRequest || 'index.html');
+  const relativeRequest = decodedPath.replace(/^\/+/, '').replace(/\\/g, '/');
+  const resolvedPath = path.resolve(root, relativeRequest || 'index.html');
+  const relativeToRoot = path.relative(root, resolvedPath);
+
+  if (relativeToRoot.startsWith('..') || path.isAbsolute(relativeToRoot)) {
+    return null;
+  }
+
+  if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isFile()) {
+    return resolvedPath;
+  }
+
+  return null;
+}
+
+function resolveAssetPath(requestPath) {
+  return (
+    resolveWithinRoot(siteRoot, requestPath) ||
+    resolveWithinRoot(distRoot, requestPath) ||
+    resolveWithinRoot(siteRoot, '/index.html') ||
+    resolveWithinRoot(distRoot, '/index.html')
+  );
 }
 
 const server = http.createServer((req, res) => {
   const requestPath = req.url === '/' ? '/index.html' : req.url.split('?')[0];
   const filePath = resolveAssetPath(requestPath);
+
+  if (!filePath) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('Not found');
+    return;
+  }
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
