@@ -2,9 +2,9 @@ name: Node.js Audit
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
     inputs:
       run_force_fix:
@@ -16,9 +16,9 @@ jobs:
   npm-audit:
     runs-on: ubuntu-latest
     permissions:
-      contents: write       # To push branches and create PRs
-      issues: write         # To create issues
-      pull-requests: write  # To create PRs
+      contents: write
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -27,13 +27,23 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24' # In Node 25, the corepack tool will be decoupled, so when bumping make sure to replace the action below
+          node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
 
-      # - name: Enable pnpm
-      #  run: npm install corepack
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -66,49 +76,64 @@ jobs:
             HIGH=0
             CRITICAL=0
           fi
-          echo "high=$HIGH" >> $GITHUB_OUTPUT
-          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> "$GITHUB_OUTPUT"
+          echo "critical=$CRITICAL" >> "$GITHUB_OUTPUT"
 
       - name: Create Issue for high/critical vulnerabilities
-        if: steps.audit.outputs.high != '0' || steps.audit.outputs.critical != '0'
+        if: ${{ steps.audit.outputs.high != '0' || steps.audit.outputs.critical != '0' }}
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const high = Number("${{ steps.audit.outputs.high }}");
-            const critical = Number("${{ steps.audit.outputs.critical }}");
+            const high = Number('${{ steps.audit.outputs.high }}');
+            const critical = Number('${{ steps.audit.outputs.critical }}');
             const title = `Security Alert: ${critical > 0 ? `${critical} critical ` : ''}${high > 0 ? `${high} high ` : ''}vulnerabilities detected by npm audit`;
+
+            const fs = require('fs');
+            let audit = '';
+            try {
+              audit = fs.readFileSync('.temp/audit-results.json', 'utf8').slice(0, 6000);
+            } catch (error) {
+              audit = 'No audit-results.json';
+            }
+
+            const issueBody = [
+              'npm audit detected:',
+              `- **${critical} critical**`,
+              `- **${high} high** vulnerability(ies)`,
+              '',
+              '```json',
+              audit,
+              '```'
+            ].join('\n');
+
             const issues = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
               labels: 'security, automated'
             });
+
             const exists = issues.find(issue => issue.title.includes('Security Alert') && issue.state === 'open');
             if (!exists) {
-              const fs = require('fs');
-              let audit = '';
-              try {
-                audit = fs.readFileSync('.temp/audit-results.json', 'utf-8').slice(0, 6000);
-              } catch (e) { audit = 'No audit-results.json'; }
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title,
-                body: `npm audit detected:\n- **${critical} critical**\n- **${high} high** vulnerability(ies)\n\n\`\`\`json\n${audit}\n\`\`\``,
+                body: issueBody,
                 labels: ['security', 'automated']
               });
             } else {
-              console.log("Security alert issue already exists, not creating a new one.");
+              console.log('Security alert issue already exists; skipping duplicate.');
             }
 
       - name: Create Pull Request for patched audit results
-        if: steps.audit.outputs.high != '0' || steps.audit.outputs.critical != '0'
+        if: ${{ steps.audit.outputs.high != '0' || steps.audit.outputs.critical != '0' }}
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "chore: pnpm audit fix for high/critical vulnerabilities"
+          commit-message: 'chore: pnpm audit fix for high/critical vulnerabilities'
           branch: audit-fix/${{ github.run_id }}
-          title: "chore: pnpm audit fix for high/critical vulnerabilities"
+          title: 'chore: pnpm audit fix for high/critical vulnerabilities'
           body: |
             This PR applies `pnpm update` in an attempt to resolve high/critical vulnerabilities.
             See audit summary in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
@@ -116,7 +141,8 @@ jobs:
           delete-branch: true
 
       - name: Fail if unresolved high or critical vulnerabilities remain
-        if: steps.audit.outputs.high != '0' || steps.audit.outputs.critical != '0'
+        if: ${{ steps.audit.outputs.high != '0' || steps.audit.outputs.critical != '0' }}
         run: |
           echo "High or critical vulnerabilities remain. Please address these issues."
           exit 1
+

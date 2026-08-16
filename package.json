@@ -5,17 +5,19 @@
   "author": "ilim-cell",
   "license": "MIT",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "build:legacy": "cross-env SITE_INDEX_FILE=site/index.html node scripts/build.js",
-    "watch": "cross-env SITE_INDEX_FILE=site/index.html node scripts/build.js --watch",
-    "format": "prettier --write \"src/**/*.js\"",
-    "format:check": "prettier --check \"src/**/*.js\"",
+    "dev": "vite -c config/vite.config.js",
+    "build": "pnpm run build:bookmarklet && vite build -c config/vite.config.js",
+    "preview": "vite preview -c config/vite.config.js",
+    "build:bookmarklet": "vite build -c config/vite.bookmarklet.config.ts && node scripts/generate-loader.js",
+    "watch": "vite build -c config/vite.bookmarklet.config.ts --watch",
+    "format": "prettier --write \"src/**/*.{js,ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{js,ts,tsx}\"",
     "test": "pnpm run test:e2e",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
+    "test:e2e": "playwright test --config config/playwright.config.ts",
+    "test:e2e:cross": "playwright test --config config/playwright.config.ts --reporter=list",
+    "test:e2e:ui": "playwright test --config config/playwright.config.ts --ui",
+    "test:e2e:install-browsers": "node scripts/ensure-playwright-browsers.js",
+    "test:e2e:debug": "playwright test --config config/playwright.config.ts --debug",
     "prepublishOnly": "pnpm run format && pnpm run build"
   },
   "keywords": [
@@ -27,19 +29,50 @@
     "@axe-core/cli": "^4.8.0",
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.1",
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "^1.62.1",
     "@semantic-release/changelog": "^6.0.0",
     "@semantic-release/git": "^10.0.0",
     "@semantic-release/github": "^12.0.8",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
     "commitlint": "^21.0.1",
     "cross-env": "^7.0.3",
     "husky": "^9.1.7",
     "prettier": "^3.0.0",
     "semantic-release": "^25.0.3",
     "terser": "^5.47.1",
+    "typescript": "^7.0.2",
     "vite": "^8.0.14"
   },
   "engines": {
     "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "playwright": "^1.62.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "useTabs": false,
+    "trailingComma": "es5",
+    "bracketSpacing": true,
+    "arrowParens": "always",
+    "printWidth": 100
+  },
+  "commitlint": {
+    "extends": ["@commitlint/config-conventional"],
+    "rules": {
+      "type-enum": [
+        2,
+        "always",
+        ["feat", "fix", "docs", "style", "refactor", "perf", "test", "chore", "ci", "revert"]
+      ],
+      "subject-case": [2, "never", ["start-case", "pascal-case", "upper-case"]],
+      "subject-full-stop": [2, "never", "."]
+    }
   }
 }

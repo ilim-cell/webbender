@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webbender | Bookmarklet</title>
+    <title>Webbender</title>
     <!-- Material Symbols Rounded -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -40,8 +40,8 @@
                         darkCyan: '#00d2e0'
                     },
                     fontFamily: {
-                        sans: ['"SF Pro Text"', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
-                        display: ['"SF Pro Display"', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif']
+                        sans: ['Inter', '"SF Pro Text"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                        display: ['Inter', '"SF Pro Display"', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif']
                     }
                 }
             }
@@ -75,53 +75,94 @@
             </button>
 
             <!-- Github Link -->
-            <a href="https://github.com/ilim-cell/webbender" target="_blank" class="opacity-80 hover:opacity-100 transition transform hover:scale-105">
+            <a href="https://github.com/ilim-cell/webbender" target="_blank" class="opacity-80 hover:opacity-100 transition transform hover:scale-105 flex items-center gap-2 text-lightText dark:text-darkText font-semibold">
                 <img src="https://u.cubeupload.com/Wafflez_Wif_Syrup/GitHubInvertocatWhit.png" alt="GitHub" class="h-8 w-auto object-contain dark:invert-0 invert" onerror="this.style.display='none'">
+                <span>GitHub</span>
             </a>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <main class="max-w-4xl mx-auto mt-16 px-6 text-center">
-        <!-- 5xl/7xl (> 20px) uses SF Pro Display -->
-        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-lightText dark:text-darkText font-display">
-            Edit, restyle, and test changes to any page
-        </h1>
-        
-        <!-- text-lg (18px < 20px) uses SF Pro Text. md:text-xl (20px >= 20px) uses SF Pro Display -->
-        <p class="text-lg md:text-xl md:font-display text-lightMuted dark:text-darkMuted mb-12 max-w-2xl mx-auto leading-relaxed">
-            Webbender is the fastest way to ship pages from idea to code. Effortlessly change layouts, explore with colours, and edit the page, as easy as if it was a Word document. All free and open source.
-        </p>
-
-        <!-- Preview Button -->
-        <div class="flex justify-center mb-16">
-            <button id="preview-btn" class="px-8 py-4 bg-transparent border-2 border-lightGreen dark:border-darkGreen text-lightGreen dark:text-darkGreen hover:bg-lightGreen/10 dark:hover:bg-darkGreen/10 font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm transform hover:scale-[1.02]">
-                <span class="material-symbols-rounded">play_arrow</span>
-                <span>Try Webbender</span>
-            </button>
+    <main class="max-w-6xl mx-auto mt-8 px-6">
+        <div class="rounded-[32px] border border-lightBorder/80 dark:border-darkBorder/80 bg-gradient-to-br from-white/90 via-lightCard to-lightBg/80 dark:from-darkCard dark:via-darkCard dark:to-darkBg/70 p-8 md:p-12 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+            <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+                <div class="max-w-2xl">
+                    <div class="inline-flex items-center gap-2 rounded-full border border-lightBorder/70 dark:border-darkBorder/70 bg-lightBg/70 dark:bg-darkBg/70 px-3 py-1 text-sm font-semibold text-lightBlue dark:text-darkBlue mb-6">
+                        <span class="material-symbols-rounded text-base">bolt</span>
+                        Fast browser-side design editing
+                    </div>
+                    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-lightText dark:text-darkText font-display">
+                        Webbender: build, test, and ship page ideas instantly.
+                    </h1>
+                    <p class="text-lg md:text-xl md:font-display text-lightMuted dark:text-darkMuted leading-relaxed">
+                        Webbender gives designers and developers a lightweight, modular workspace for editing text, reorganizing UI, testing dialogs, and previewing changes on any page.
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="preview-btn" class="px-6 py-3 bg-lightBlue dark:bg-darkBlue text-white font-semibold rounded-2xl shadow-lg shadow-lightBlue/20 transition hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                        <span class="material-symbols-rounded">play_arrow</span>
+                        <span>Try Webbender</span>
+                    </button>
+                    <a href="#docs" class="px-6 py-3 border border-lightBorder dark:border-darkBorder rounded-2xl text-lightText dark:text-darkText font-semibold hover:bg-lightBg/70 dark:hover:bg-darkBg/70 flex items-center justify-center gap-2">
+                        <span class="material-symbols-rounded">menu_book</span>
+                        <span>Explore docs</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </main>
 
     <!-- Installation Section -->
-    <section class="max-w-2xl mx-auto px-6 mb-24">
-        <div class="bg-lightCard dark:bg-darkCard rounded-2xl border border-lightBorder dark:border-darkBorder p-8 shadow-sm text-center">
-            <!-- text-2xl (24px >= 20px) uses SF Pro Display -->
+    <section class="max-w-5xl mx-auto mt-16 px-6 mb-24">
+        <div class="bg-lightCard dark:bg-darkCard rounded-[28px] border border-lightBorder dark:border-darkBorder p-8 shadow-[0_18px_60px_rgba(15,23,42,0.12)] text-center">
             <h2 class="text-2xl font-bold mb-4 font-display text-lightText dark:text-darkText">Quick Install</h2>
+            <div class="flex items-center justify-center gap-3 mb-6" role="tablist" aria-label="Install options">
+                <button type="button" class="px-4 py-2 rounded-full border border-lightBorder dark:border-darkBorder bg-lightBg dark:bg-darkBg text-lightText dark:text-darkText font-semibold transition" data-tab="description" aria-selected="true">Description</button>
+                <button type="button" class="px-4 py-2 rounded-full border border-lightBorder dark:border-darkBorder bg-transparent text-lightMuted dark:text-darkMuted font-semibold transition" data-tab="install" aria-selected="false">Install</button>
+            </div>
 
-            <!-- Dynamic Drag / Copy Action Element -->
-            <div class="flex flex-col items-center gap-4">
-                <a id="drag-btn" href="#" draggable="true" class="group relative px-10 py-4 bg-lightBlue dark:bg-darkBlue hover:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-3 border border-white/10 select-none cursor-grab active:cursor-grabbing w-full sm:w-auto">
+            <div class="flex flex-col items-center gap-4" data-panel="description">
+                <p class="text-lightMuted dark:text-darkMuted text-sm leading-relaxed max-w-2xl">Webbender lets you edit, restyle, and test changes directly in the browser with a lightweight bookmarklet that stays modular and fast.</p>
+            </div>
+
+            <div class="flex flex-col items-center gap-4" data-panel="install">
+                <a id="drag-btn" href="#" draggable="true" class="group relative px-10 py-4 bg-lightBlue dark:bg-darkBlue hover:bg-blue-600 dark:hover:bg-blue-500 text-white font-bold rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-3 border border-white/10 select-none cursor-grab active:cursor-grabbing w-full sm:w-auto">
                     <span class="material-symbols-rounded">bookmark</span>
                     <span></span>
                 </a>
+                <button id="copyBtn" type="button" class="px-4 py-2 rounded-full border border-lightBorder dark:border-darkBorder bg-lightCard dark:bg-darkCard text-lightText dark:text-darkText font-semibold">Copy</button>
             </div>
-            <!-- Label about drag and drop to bookmarks or click to copy -->
-            <p class="text-lightMuted dark:text-darkMuted text-sm mt-4">Drag the button above to your bookmarks bar. If the bar is hidden, press Ctrl+Shift+B to show it, or click the button to manually copy the bookmarklet code.</p>
+            <p class="text-lightMuted dark:text-darkMuted text-sm mt-4">Drag the button to your bookmarks bar, or click it to copy the bookmarklet code directly.</p>
+        </div>
+    </section>
+
+    <!-- About & Docs -->
+    <section id="docs" class="max-w-6xl mx-auto px-6 mb-24">
+        <div class="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-6">
+            <div class="rounded-[28px] border border-lightBorder dark:border-darkBorder bg-lightCard dark:bg-darkCard p-8 shadow-[0_18px_60px_rgba(15,23,42,0.12)]">
+                <div class="flex items-center gap-2 text-lightBlue dark:text-darkBlue font-semibold mb-4">
+                    <span class="material-symbols-rounded">info</span>
+                    About Webbender
+                </div>
+                <h3 class="text-2xl font-bold font-display mb-3">A focused browser-side playground for rapid UI exploration.</h3>
+                <p class="text-lightMuted dark:text-darkMuted leading-relaxed">Webbender is designed for quick iteration on live pages without needing a full local dev setup. Use it to test ideas, refine layouts, and collect reusable snippets for future implementation.</p>
+            </div>
+            <div class="rounded-[28px] border border-lightBorder dark:border-darkBorder bg-lightCard dark:bg-darkCard p-8 shadow-[0_18px_60px_rgba(15,23,42,0.12)]">
+                <div class="flex items-center gap-2 text-lightPurple dark:text-darkPurple font-semibold mb-4">
+                    <span class="material-symbols-rounded">search</span>
+                    Searchable docs
+                </div>
+                <div class="space-y-3 text-sm text-lightMuted dark:text-darkMuted">
+                    <div class="rounded-2xl border border-lightBorder/70 dark:border-darkBorder/70 p-3">Select an element, then use the dock to edit, move, remove, rotate, or resize it.</div>
+                    <div class="rounded-2xl border border-lightBorder/70 dark:border-darkBorder/70 p-3">Double click editable text to change it in place, then use the dock for quick formatting.</div>
+                    <div class="rounded-2xl border border-lightBorder/70 dark:border-darkBorder/70 p-3">Use the dialog helpers to simulate alerts, confirmations, and prompts while validating layouts.</div>
+                </div>
+            </div>
         </div>
     </section>
 
     <!-- Features Grid -->
-    <section class="max-w-6xl mx-auto mt-24 px-6">
+    <section class="max-w-6xl mx-auto px-6">
         <h2 class="text-3xl font-bold text-center mb-12 font-display">What you can do</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
@@ -153,7 +194,7 @@
                 <div class="w-12 h-12 bg-lightBg dark:bg-darkBg rounded-xl flex items-center justify-center mb-4 text-lightGreen dark:text-darkGreen group-hover:scale-110 transition-transform">
                     <span class="material-symbols-rounded">drag_pan</span>
                 </div>
-                <h3 class="text-xl font-bold mb-2 font-display">Grab & Move</h3>
+                <h3 class="text-xl font-bold mb-2 font-display">Move & Reposition</h3>
                 <p class="text-lightMuted dark:text-darkMuted text-sm leading-relaxed">Click and drag to reposition objects freely around the page for rapid layout experiments.</p>
             </div>
 
@@ -187,6 +228,45 @@
         document.addEventListener('DOMContentLoaded', () => {
             let activeBookmarkletCode = "";
             const dragBtn = document.getElementById('drag-btn');
+            const copyBtn = document.getElementById('copyBtn');
+
+            function setActiveTab(tabName) {
+                document.querySelectorAll('[data-tab]').forEach((tab) => {
+                    const isActive = tab.getAttribute('data-tab') === tabName;
+                    tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    tab.classList.toggle('bg-lightBg', isActive);
+                    tab.classList.toggle('dark:bg-darkBg', isActive);
+                    tab.classList.toggle('text-lightText', isActive);
+                    tab.classList.toggle('dark:text-darkText', isActive);
+                    tab.classList.toggle('bg-transparent', !isActive);
+                    tab.classList.toggle('text-lightMuted', !isActive);
+                    tab.classList.toggle('dark:text-darkMuted', !isActive);
+                });
+                document.querySelectorAll('[data-panel]').forEach((panel) => {
+                    panel.style.display = panel.getAttribute('data-panel') === tabName ? 'flex' : 'none';
+                });
+            }
+
+            function copyBookmarkletCode() {
+                if (!activeBookmarkletCode) return;
+                const textArea = document.createElement("textarea");
+                textArea.value = activeBookmarkletCode;
+                textArea.style.position = "fixed";
+                textArea.style.opacity = "0";
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast();
+                    if (copyBtn) {
+                        copyBtn.textContent = 'Copied';
+                        window.setTimeout(() => { if (copyBtn) copyBtn.textContent = 'Copy'; }, 1800);
+                    }
+                } catch (err) {
+                    console.error('Failed to copy', err);
+                }
+                document.body.removeChild(textArea);
+            }
 
             function setBookmarkletCode(source) {
                 const trimmed = source.trim();
@@ -234,21 +314,18 @@
             dragBtn.addEventListener('click', (e) => {
                 if (e.defaultPrevented || !activeBookmarkletCode) return;
                 e.preventDefault();
-
-                const textArea = document.createElement("textarea");
-                textArea.value = activeBookmarkletCode;
-                textArea.style.position = "fixed";
-                textArea.style.opacity = "0";
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    showToast();
-                } catch (err) {
-                    console.error('Failed to copy', err);
-                }
-                document.body.removeChild(textArea);
+                copyBookmarkletCode();
             });
+
+            copyBtn?.addEventListener('click', (e) => {
+                e.preventDefault();
+                copyBookmarkletCode();
+            });
+
+            document.querySelectorAll('[data-tab]').forEach((tab) => {
+                tab.addEventListener('click', () => setActiveTab(tab.getAttribute('data-tab')));
+            });
+            setActiveTab('description');
 
             // Set drag data using the raw unencoded string
             dragBtn.addEventListener('dragstart', (e) => {
@@ -265,13 +342,10 @@
                     return;
                 }
                 try {
-                    // String is already unencoded, so we can just inject it
                     const codeToRun = activeBookmarkletCode.replace(/^javascript:/i, '');
-                    const script = document.createElement('script');
-                    script.text = codeToRun;
-                    document.head.appendChild(script);
+                    new Function(codeToRun)();
                 } catch (e) {
-                    console.error("Preview failed:", e);
+                    console.error('Preview failed:', e);
                     showErrorToast();
                 }
             });

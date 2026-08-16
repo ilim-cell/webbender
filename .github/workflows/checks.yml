@@ -24,8 +24,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -82,8 +95,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -114,8 +140,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -152,8 +191,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -216,8 +268,21 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -277,8 +342,20 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install pnpm and corepack
+        run: |
+          npm install -g pnpm@10 corepack@latest
+          pnpm --version
+      - name: Cache pnpm dependencies and toolchain
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.npm
+            ~/.pnpm-store
+            ~/.local/share/pnpm
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build
@@ -289,3 +366,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEBBENDER_PRO }}
           projectId: webbender-pro
           entryPoint: config
+
