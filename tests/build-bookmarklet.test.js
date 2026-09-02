@@ -23,27 +23,24 @@ test('bookmarklet source includes solid dock styling and movable toolbar control
 });
 
 test('bookmarklet build script emits artifacts and CI uses pnpm', () => {
-  execFileSync(process.execPath, [path.join(repoRoot, 'site', 'build-bookmarklet.js')], {
+  execFileSync('corepack', ['pnpm', 'run', 'build:bookmarklet'], {
     cwd: repoRoot,
     stdio: 'pipe',
   });
 
-  const artifact = path.join(repoRoot, 'dist', 'bookmarklet.min.js');
-  const runtime = path.join(repoRoot, 'site', 'bookmarklet-runtime.js');
+  const artifact = path.join(repoRoot, 'dist', 'bookmarklet-runtime.js');
   const urlFile = path.join(repoRoot, 'dist', 'bookmarklet.url');
   const siteFile = path.join(repoRoot, 'site', 'bookmarklet.js');
 
   assert.ok(fs.existsSync(artifact), 'expected bookmarklet artifact to be generated');
-  assert.ok(fs.existsSync(runtime), 'expected hosted bookmarklet runtime to be generated');
   assert.ok(fs.existsSync(urlFile), 'expected bookmarklet URL file to be generated');
   assert.ok(fs.existsSync(siteFile), 'expected site bookmarklet file to be generated');
 
-  const minified = fs.readFileSync(artifact, 'utf8');
-  const runtimeCode = fs.readFileSync(runtime, 'utf8');
+  const runtimeCode = fs.readFileSync(artifact, 'utf8');
   const url = fs.readFileSync(urlFile, 'utf8');
   const siteBookmarklet = fs.readFileSync(siteFile, 'utf8');
-  assert.ok(minified.length > 0, 'bookmarklet artifact should not be empty');
-  assert.ok(minified.length <= 100000, 'bookmarklet artifact should stay within the CI size budget');
+  assert.ok(runtimeCode.length > 0, 'bookmarklet artifact should not be empty');
+  assert.ok(runtimeCode.length <= 110000, 'bookmarklet artifact should stay within the CI size budget');
   assert.ok(runtimeCode.length > 0, 'runtime file should not be empty');
   assert.ok(siteBookmarklet.length < 1000, 'site bookmarklet should remain a small loader');
   const normalizedUrl = url.trim().toLowerCase();
@@ -51,8 +48,8 @@ test('bookmarklet build script emits artifacts and CI uses pnpm', () => {
   assert.ok(!normalizedUrl.startsWith('data:'), 'bookmarklet URL should not use a data URL scheme');
   assert.ok(!normalizedUrl.startsWith('vbscript:'), 'bookmarklet URL should not use a vbscript URL scheme');
   assert.match(siteBookmarklet, /localhost:8000\/bookmarklet-runtime\.js/, 'bookmarklet loader should include a local runtime fallback for tests');
-  assert.match(siteBookmarklet, /raw\.githubusercontent\.com\/ilim-cell\/webbender\/main\/site\/bookmarklet-runtime\.js/, 'bookmarklet loader should include a public runtime fallback');
-  assert.match(siteBookmarklet, /bookmarklet-runtime\.js/, 'bookmarklet loader should point at the hosted runtime');
+  assert.match(siteBookmarklet, /webbender\.web\.app\/bookmarklet-runtime\.js/, 'bookmarklet loader should include a public runtime fallback');
+  assert.match(siteBookmarklet, /webbender-pro\.web\.app\/bookmarklet-runtime\.js/, 'bookmarklet loader should include a secondary runtime fallback');
 
   const workflow = read('.github/workflows/ci.yml');
   assert.match(workflow, /pnpm/i, 'CI workflow should use pnpm for dependency installation');

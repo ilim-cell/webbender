@@ -283,7 +283,8 @@ javascript: (function () {
           ? 'scale(0.85) translateY(-10px)'
           : 'scale(1) translateY(0)',
         pointerEvents: state.settings.isMinimized ? 'none' : 'auto',
-        transition: 'opacity 0.22s ease, transform 0.22s ease',
+        transition:
+          'opacity 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)',
       },
     });
   }
@@ -511,7 +512,7 @@ javascript: (function () {
         style: { display: 'flex', flexDirection: 'column', gap: '2px', minWidth: '0' },
       }),
       o = ui.create('span', {
-        textContent: 'Webbender Editor',
+        textContent: 'Editor Panel',
         style: { fontWeight: '700', fontSize: '14px', color: '#fafafa' },
       }),
       sub = ui.create('span', {
@@ -791,7 +792,7 @@ javascript: (function () {
         style: modeCardStyle,
       }),
       m = ui.create('label', {
-        textContent: 'Grab & Move',
+        textContent: 'Move Elements',
         style: {
           cursor: 'pointer',
           display: 'flex',
@@ -1233,6 +1234,7 @@ javascript: (function () {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          gap: '8px',
           marginTop: '4px',
         },
       }),
@@ -1252,6 +1254,22 @@ javascript: (function () {
       selInp = ui.create('input', {
         attrs: { type: 'checkbox' },
         style: { cursor: 'pointer', width: '16px', height: '16px' },
+      }),
+      selectModeBtn = ui.create('button', {
+        textContent: 'Select',
+        attrs: { class: 'wb-tool-btn', 'aria-label': 'Select', 'data-tooltip': 'Toggle selector mode' },
+        style: {
+          background: '#27272a',
+          border: '1px solid #3f3f46',
+          color: '#f4f4f5',
+          borderRadius: '6px',
+          padding: '4px 8px',
+          fontSize: '11px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          flexShrink: '0',
+          transition: 'background 0.15s ease, border-color 0.15s ease',
+        },
       }),
       targetView = ui.create('div', {
         textContent: 'Target: [None Selected]',
@@ -1317,6 +1335,7 @@ javascript: (function () {
     ui.append(selActionRow, [selectSameBtn, selectClearBtn]);
     selLabel.appendChild(selInp);
     selRow.appendChild(selLabel);
+    selRow.appendChild(selectModeBtn);
     selectionBody.appendChild(selRow);
     selectionBody.appendChild(selActionRow);
     selectionBody.appendChild(targetView);
@@ -1884,6 +1903,7 @@ javascript: (function () {
 
         /* Viewport Grab Handle Overlay to translate element alignments */
         const grabHandle = ui.create('div', {
+          attrs: { title: 'Move selected' },
           style: {
             position: 'absolute',
             top: '-22px',
@@ -2115,6 +2135,9 @@ javascript: (function () {
     window._webbenderToggleSelect = function (e) {
       window._webbenderSelectMode = e;
       selInp.checked = e;
+      selectModeBtn.classList.toggle('active', !!e);
+      selectModeBtn.style.background = e ? '#0066ff' : '#27272a';
+      selectModeBtn.style.borderColor = e ? '#2563eb' : '#3f3f46';
       o.selectMode = e;
       r();
       if (e) {
@@ -2135,6 +2158,7 @@ javascript: (function () {
       }
     };
     selInp.onchange = (e) => window._webbenderToggleSelect(e.target.checked);
+    selectModeBtn.onclick = () => window._webbenderToggleSelect(!window._webbenderSelectMode);
 
     window.addEventListener('resize', updateOverlay);
     window.addEventListener('scroll', updateOverlay);
@@ -2611,8 +2635,8 @@ javascript: (function () {
   function wbCreateAutosaveBanner(ui, container, savedData, onRestore, onDiscard) {
     const banner = ui.create('div', {
       style: {
-        background: '#1e3a8a',
-        color: '#eff6ff',
+        background: '#0f172a',
+        color: '#f8fafc',
         padding: '10px',
         borderRadius: '8px',
         display: 'flex',
@@ -2623,6 +2647,7 @@ javascript: (function () {
         transition: 'transform 0.2s ease, opacity 0.2s ease',
       },
     });
+    banner.style.cssText += ';background: #0f172a; color: #f8fafc;';
     const title = ui.create('span', {
       textContent: 'Autosave Detected',
       style: {
@@ -2769,6 +2794,9 @@ javascript: (function () {
     const internalIconStyle = document.createElement('style');
     shadow.appendChild(internalIconStyle);
     await loadMaterialSymbols(internalIconStyle);
+    const internalUiStyle = document.createElement('style');
+    internalUiStyle.textContent = `.wb-tool-btn.active { background: #0066ff !important; border-color: #2563eb !important; }`;
+    shadow.appendChild(internalUiStyle);
 
     const autosaveBackup = await getAsset('autosave_' + location.href);
     const container = wbCreateContainer(ui, 'wb-panel-root', state);
