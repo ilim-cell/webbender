@@ -174,12 +174,23 @@ javascript: (function () {
         return e;
       },
       button(iconName, textFallback, t, n = {}) {
-        const o = this.create('button', { style: t });
+        const o = this.create('button', { style: t, attrs: n.attrs });
         const iconSpan = this.create('span', {
           textContent: iconName,
           attrs: { class: 'material-symbols-rounded' },
+          style: n.iconStyle,
         });
         o.appendChild(iconSpan);
+        if (n.label) {
+          const labelSpan = this.create('span', {
+            textContent: n.label,
+            style: n.labelStyle || { fontSize: '10px', fontWeight: '600', lineHeight: '1.2' },
+          });
+          o.appendChild(labelSpan);
+        }
+        const ariaLabel = n.ariaLabel || n.title || n.label || textFallback || iconName;
+        o.setAttribute('aria-label', ariaLabel);
+        o.title = n.title || ariaLabel;
         if (n.click) o.onclick = n.click;
         return o;
       },
@@ -254,15 +265,15 @@ javascript: (function () {
         width: '320px',
         backgroundColor: '#18181b',
         color: '#f4f4f5',
-        padding: '14px',
+        padding: '12px',
         borderRadius: '12px',
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+        boxShadow: '0 8px 20px -8px rgba(0, 0, 0, 0.55)',
         zIndex: '2147483647',
         fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif',
         fontSize: '13px',
         userSelect: 'none',
         boxSizing: 'border-box',
-        border: '1px solid #27272a',
+        border: '1px solid #303036',
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
@@ -272,7 +283,8 @@ javascript: (function () {
           ? 'scale(0.85) translateY(-10px)'
           : 'scale(1) translateY(0)',
         pointerEvents: state.settings.isMinimized ? 'none' : 'auto',
-        transition: 'opacity 0.22s ease, transform 0.22s ease',
+        transition:
+          'opacity 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)',
       },
     });
   }
@@ -490,36 +502,63 @@ javascript: (function () {
         style: {
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           borderBottom: '1px solid #27272a',
-          paddingBottom: '6px',
+          paddingBottom: '8px',
+          gap: '10px',
         },
       }),
-      o = ui.create('span', {
-        textContent: 'Webbender',
-        style: { fontWeight: '700', fontSize: '14px' },
+      headingWrap = ui.create('div', {
+        style: { display: 'flex', flexDirection: 'column', gap: '2px', minWidth: '0' },
       }),
-      actions = ui.create('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } }),
+      o = ui.create('span', {
+        textContent: 'Editor Panel',
+        style: { fontWeight: '700', fontSize: '14px', color: '#fafafa' },
+      }),
+      sub = ui.create('span', {
+        textContent: 'Select tools, then click on the page to edit.',
+        style: { fontSize: '11px', color: '#a1a1aa', lineHeight: '1.3' },
+      }),
+      actions = ui.create('div', {
+        style: { display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', maxWidth: '180px' },
+      }),
       btnSt = {
-        background: 'none',
-        border: 'none',
-        color: '#71717a',
+        background: '#27272a',
+        border: '1px solid #3f3f46',
+        color: '#e4e4e7',
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
-        padding: '2px',
-        transition: 'color 0.15s ease',
+        gap: '4px',
+        padding: '5px 7px',
+        borderRadius: '7px',
+        fontSize: '10px',
+        fontWeight: '600',
+        lineHeight: '1.2',
+        transition: 'background 0.15s ease, border-color 0.15s ease',
       },
       /* Preview Mode Switch */
       previewBtn = ui.button('visibility', '👁', btnSt, {
+        label: 'Preview',
+        title: 'Toggle preview mode',
         click: () => {
           previewActive = !previewActive;
           togglePreviewMode(previewActive);
         },
       }),
-      undoBtn = ui.button('undo', '↩', btnSt, { click: () => executeUndo() }),
-      redoBtn = ui.button('redo', '↪', btnSt, { click: () => executeRedo() }),
+      undoBtn = ui.button('undo', '↩', btnSt, {
+        label: 'Undo',
+        title: 'Undo last change',
+        click: () => executeUndo(),
+      }),
+      redoBtn = ui.button('redo', '↪', btnSt, {
+        label: 'Redo',
+        title: 'Redo last undone change',
+        click: () => executeRedo(),
+      }),
       minBtn = ui.button('minimize', '−', btnSt, {
+        label: 'Min',
+        title: 'Minimize panel',
         click: () => {
           state.settings.isMinimized = true;
           state.saveSettings();
@@ -532,6 +571,8 @@ javascript: (function () {
         },
       }),
       closeBtn = ui.button('close', '✕', btnSt, {
+        label: 'Close',
+        title: 'Close Webbender',
         click: () => {
           window._webbenderToggleRemove(false);
           window._webbenderToggleMove(false);
@@ -585,13 +626,21 @@ javascript: (function () {
     }
 
     ui.append(actions, [previewBtn, undoBtn, redoBtn, minBtn, closeBtn]);
-    ui.append(n, [o, actions]);
+    ui.append(headingWrap, [o, sub]);
+    ui.append(n, [headingWrap, actions]);
     return { header: n };
   }
 
   function wbCreateTabs(ui, container, state) {
     const row = ui.create('div', {
-        style: { display: 'flex', background: '#27272a', borderRadius: '8px', padding: '2px' },
+        style: {
+          display: 'flex',
+          background: '#232327',
+          borderRadius: '8px',
+          padding: '2px',
+          border: '1px solid #303036',
+          gap: '2px',
+        },
       }),
       views = {
         edit: ui.create('div', {
@@ -650,7 +699,7 @@ javascript: (function () {
           background: 'transparent',
           border: 'none',
           color: '#a1a1aa',
-          padding: '6px 0',
+          padding: '7px 0',
           borderRadius: '6px',
           fontSize: '12px',
           fontWeight: '600',
@@ -694,8 +743,28 @@ javascript: (function () {
         delete e.dataset.webbenderOutlineBackup);
     }
 
+    const modeHint = ui.create('div', {
+      textContent: 'Tip: enable one mode at a time, then click elements on the page.',
+      style: {
+        fontSize: '11px',
+        color: '#a1a1aa',
+        lineHeight: '1.35',
+        padding: '0 2px',
+      },
+    });
+
+    const modeCardStyle = {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '6px',
+      background: '#1f1f23',
+      border: '1px solid #27272a',
+      borderRadius: '8px',
+      padding: '8px',
+    };
+
     const s = ui.create('div', {
-        style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+        style: modeCardStyle,
       }),
       c = ui.create('label', {
         textContent: 'Edit Text',
@@ -703,27 +772,41 @@ javascript: (function () {
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          flex: '1',
+          justifyContent: 'space-between',
+          gap: '10px',
           color: '#86efac',
           fontWeight: '600',
+          fontSize: '12px',
         },
       }),
       l = ui.create('input', {
         attrs: { type: 'checkbox' },
-        style: { cursor: 'pointer', width: '16px', height: '16px' },
+        style: { cursor: 'pointer', width: '18px', height: '18px', accentColor: '#22c55e', flexShrink: '0' },
       });
+    const editHelp = ui.create('div', {
+      textContent: 'Click text nodes directly to edit inline.',
+      style: { fontSize: '11px', color: '#a1a1aa' },
+    });
     const u = ui.create('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } }),
       uTop = ui.create('div', {
-        style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+        style: modeCardStyle,
       }),
       m = ui.create('label', {
         textContent: 'Move Elements',
-        style: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', flex: '1' },
+        style: {
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '10px',
+          color: '#bfdbfe',
+          fontWeight: '600',
+          fontSize: '12px',
+        },
       }),
       b = ui.create('input', {
         attrs: { type: 'checkbox' },
-        style: { cursor: 'pointer', width: '16px', height: '16px' },
+        style: { cursor: 'pointer', width: '18px', height: '18px', accentColor: '#2563eb', flexShrink: '0' },
       }),
       snapCtrl = ui.create('label', {
         textContent: 'Snap to Grid (20px)',
@@ -731,13 +814,20 @@ javascript: (function () {
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          gap: '4px',
+          justifyContent: 'space-between',
+          gap: '10px',
           fontSize: '11px',
-          color: '#a1a1aa',
-          marginLeft: '24px',
+          color: '#cbd5e1',
         },
       }),
-      snapInp = ui.create('input', { attrs: { type: 'checkbox' }, style: { cursor: 'pointer' } });
+      snapInp = ui.create('input', {
+        attrs: { type: 'checkbox' },
+        style: { cursor: 'pointer', width: '16px', height: '16px', accentColor: '#2563eb', flexShrink: '0' },
+      });
+    const moveHelp = ui.create('div', {
+      textContent: 'Drag selected elements directly in the viewport.',
+      style: { fontSize: '11px', color: '#a1a1aa' },
+    });
 
     snapInp.checked = o.snapMode;
     snapInp.onchange = (e) => {
@@ -745,13 +835,14 @@ javascript: (function () {
       r();
     };
     snapCtrl.appendChild(snapInp);
-    uTop.appendChild(m);
     m.appendChild(b);
+    uTop.appendChild(m);
+    uTop.appendChild(moveHelp);
     u.appendChild(uTop);
     u.appendChild(snapCtrl);
 
     const g = ui.create('div', {
-        style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+        style: modeCardStyle,
       }),
       f = ui.create('label', {
         textContent: 'Zapper (Remove Elements)',
@@ -759,15 +850,21 @@ javascript: (function () {
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          flex: '1',
+          justifyContent: 'space-between',
+          gap: '10px',
           color: '#fca5a5',
+          fontWeight: '600',
+          fontSize: '12px',
         },
       }),
       w = ui.create('input', {
         attrs: { type: 'checkbox' },
-        style: { cursor: 'pointer', width: '16px', height: '16px' },
+        style: { cursor: 'pointer', width: '18px', height: '18px', accentColor: '#ef4444', flexShrink: '0' },
       });
+    const removeHelp = ui.create('div', {
+      textContent: 'Click an element once to hide it from the page.',
+      style: { fontSize: '11px', color: '#a1a1aa' },
+    });
 
     let textHoverElement = null;
     let editingActiveElement = null;
@@ -1010,11 +1107,13 @@ javascript: (function () {
     l.onchange = (e) => window._webbenderToggleTextEdit(e.target.checked);
     c.appendChild(l);
     s.appendChild(c);
+    s.appendChild(editHelp);
     b.onchange = (e) => window._webbenderToggleMove(e.target.checked);
     w.onchange = (e) => window._webbenderToggleRemove(e.target.checked);
     f.appendChild(w);
     g.appendChild(f);
-    return { editSection: s, moveSection: u, removeSection: g };
+    g.appendChild(removeHelp);
+    return { editSection: ui.append(ui.create('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } }), [modeHint, s]), moveSection: u, removeSection: g };
   }
 
   function wbCreateFormattingSection(ui, hostElement, state, triggerTabSwitch, shadow) {
@@ -1041,6 +1140,38 @@ javascript: (function () {
     }
 
     let targetElements = [];
+    const selectionDependentControls = [];
+    const disabledReason = 'Select an element in Selector Mode to enable this control.';
+    let selectionHelpText = null;
+
+    function registerSelectionControl(control) {
+      if (!control) return control;
+      if (!control.dataset.webbenderEnabledTitle) {
+        control.dataset.webbenderEnabledTitle =
+          control.title || control.getAttribute('aria-label') || 'Control';
+      }
+      selectionDependentControls.push(control);
+      return control;
+    }
+
+    function updateSelectionControlStates() {
+      const enabled = targetElements.length > 0;
+      selectionDependentControls.forEach((control) => {
+        control.disabled = !enabled;
+        control.style.opacity = '1';
+        control.style.cursor = enabled ? 'pointer' : 'not-allowed';
+        control.style.background = enabled ? '#27272a' : '#1f2937';
+        control.style.borderColor = enabled ? '#3f3f46' : '#374151';
+        control.style.color = enabled ? '#f4f4f5' : '#9ca3af';
+        control.title = enabled ? control.dataset.webbenderEnabledTitle : disabledReason;
+      });
+      if (selectionHelpText) {
+        selectionHelpText.textContent = enabled
+          ? `Selection active: ${targetElements.length} element${targetElements.length > 1 ? 's' : ''}.`
+          : disabledReason;
+        selectionHelpText.style.color = enabled ? '#86efac' : '#a1a1aa';
+      }
+    }
 
     function applyStyleToSelection(prop, value) {
       targetElements.forEach((el) => {
@@ -1103,6 +1234,7 @@ javascript: (function () {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          gap: '8px',
           marginTop: '4px',
         },
       }),
@@ -1122,6 +1254,22 @@ javascript: (function () {
       selInp = ui.create('input', {
         attrs: { type: 'checkbox' },
         style: { cursor: 'pointer', width: '16px', height: '16px' },
+      }),
+      selectModeBtn = ui.create('button', {
+        textContent: 'Select',
+        attrs: { class: 'wb-tool-btn', 'aria-label': 'Select', 'data-tooltip': 'Toggle selector mode' },
+        style: {
+          background: '#27272a',
+          border: '1px solid #3f3f46',
+          color: '#f4f4f5',
+          borderRadius: '6px',
+          padding: '4px 8px',
+          fontSize: '11px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          flexShrink: '0',
+          transition: 'background 0.15s ease, border-color 0.15s ease',
+        },
       }),
       targetView = ui.create('div', {
         textContent: 'Target: [None Selected]',
@@ -1154,10 +1302,13 @@ javascript: (function () {
       cursor: 'pointer',
     };
 
-    const selectSameBtn = ui.create('button', {
+    const selectSameBtn = registerSelectionControl(
+      ui.create('button', {
       textContent: 'Select Same Tag',
       style: btnStyleSub,
-    });
+      attrs: { title: 'Select elements matching the same tag as the current target' },
+      })
+    );
     selectSameBtn.onclick = () => {
       if (targetElements.length > 0) {
         const primary = targetElements[targetElements.length - 1];
@@ -1172,16 +1323,19 @@ javascript: (function () {
     const selectClearBtn = ui.create('button', {
       textContent: 'Clear Selection',
       style: btnStyleSub,
+      attrs: { title: 'Clear selected elements' },
     });
     selectClearBtn.onclick = () => {
       targetElements = [];
       updateOverlay();
       targetView.textContent = 'Target: [None Selected]';
+      updateSelectionControlStates();
     };
 
     ui.append(selActionRow, [selectSameBtn, selectClearBtn]);
     selLabel.appendChild(selInp);
     selRow.appendChild(selLabel);
+    selRow.appendChild(selectModeBtn);
     selectionBody.appendChild(selRow);
     selectionBody.appendChild(selActionRow);
     selectionBody.appendChild(targetView);
@@ -1288,10 +1442,34 @@ javascript: (function () {
       triggerAutosave();
     }
 
-    const backStepBtn = ui.create('button', { textContent: 'Backward', style: actionBtnStyle }),
-      backDropdown = ui.create('button', { textContent: '▾', style: menuIndicatorStyle }),
-      frontStepBtn = ui.create('button', { textContent: 'Forward', style: actionBtnStyle }),
-      frontDropdown = ui.create('button', { textContent: '▾', style: menuIndicatorStyle });
+    const backStepBtn = registerSelectionControl(
+        ui.create('button', {
+          textContent: 'Backward',
+          style: actionBtnStyle,
+          attrs: { title: 'Send selection backward' },
+        })
+      ),
+      backDropdown = registerSelectionControl(
+        ui.create('button', {
+          textContent: '▾',
+          style: menuIndicatorStyle,
+          attrs: { title: 'More backward actions' },
+        })
+      ),
+      frontStepBtn = registerSelectionControl(
+        ui.create('button', {
+          textContent: 'Forward',
+          style: actionBtnStyle,
+          attrs: { title: 'Bring selection forward' },
+        })
+      ),
+      frontDropdown = registerSelectionControl(
+        ui.create('button', {
+          textContent: '▾',
+          style: menuIndicatorStyle,
+          attrs: { title: 'More forward actions' },
+        })
+      );
 
     backStepBtn.onclick = () => stepZIndex(-1);
     frontStepBtn.onclick = () => stepZIndex(1);
@@ -1370,6 +1548,10 @@ javascript: (function () {
       'Typography Formatting',
       '#22c55e'
     );
+    selectionHelpText = ui.create('div', {
+      textContent: disabledReason,
+      style: { fontSize: '11px', color: '#a1a1aa', marginTop: '2px', lineHeight: '1.3' },
+    });
     const decoRow = ui.create('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } }),
       alignRow = ui.create('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } });
 
@@ -1378,17 +1560,29 @@ javascript: (function () {
       background: '#27272a',
       border: '1px solid #3f3f46',
       color: '#f4f4f5',
-      padding: '6px 0',
-      borderRadius: '4px',
+      padding: '6px 5px',
+      borderRadius: '6px',
       cursor: 'pointer',
       transition: 'background 0.15s ease',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
+      minHeight: '44px',
+      gap: '2px',
     };
-    const bBtn = ui.button('format_bold', 'B', globalBtnStyle),
-      iBtn = ui.button('format_italic', 'I', globalBtnStyle),
-      uBtn = ui.button('format_underlined', 'U', globalBtnStyle);
+    const bBtn = registerSelectionControl(
+        ui.button('format_bold', 'B', globalBtnStyle, { label: 'Bold', title: 'Bold text' })
+      ),
+      iBtn = registerSelectionControl(
+        ui.button('format_italic', 'I', globalBtnStyle, { label: 'Italic', title: 'Italic text' })
+      ),
+      uBtn = registerSelectionControl(
+        ui.button('format_underlined', 'U', globalBtnStyle, {
+          label: 'Underline',
+          title: 'Underline text',
+        })
+      );
 
     bBtn.onclick = () => {
       if (targetElements.length > 0) {
@@ -1416,10 +1610,30 @@ javascript: (function () {
 
     ui.append(decoRow, [bBtn, iBtn, uBtn]);
 
-    const alignLeft = ui.button('format_align_left', 'Left', globalBtnStyle),
-      alignCenter = ui.button('format_align_center', 'Center', globalBtnStyle),
-      alignRight = ui.button('format_align_right', 'Right', globalBtnStyle),
-      alignJustify = ui.button('format_align_justify', 'Justify', globalBtnStyle);
+    const alignLeft = registerSelectionControl(
+        ui.button('format_align_left', 'Left', globalBtnStyle, {
+          label: 'Left',
+          title: 'Align left',
+        })
+      ),
+      alignCenter = registerSelectionControl(
+        ui.button('format_align_center', 'Center', globalBtnStyle, {
+          label: 'Center',
+          title: 'Align center',
+        })
+      ),
+      alignRight = registerSelectionControl(
+        ui.button('format_align_right', 'Right', globalBtnStyle, {
+          label: 'Right',
+          title: 'Align right',
+        })
+      ),
+      alignJustify = registerSelectionControl(
+        ui.button('format_align_justify', 'Justify', globalBtnStyle, {
+          label: 'Justify',
+          title: 'Justify text',
+        })
+      );
 
     alignLeft.onclick = () => applyStyleToSelection('textAlign', 'left');
     alignCenter.onclick = () => applyStyleToSelection('textAlign', 'center');
@@ -1438,12 +1652,13 @@ javascript: (function () {
       }),
       sizeLbl = ui.create('span', {
         textContent: 'Size: 16px',
-        style: { fontSize: '11px', width: '65px', color: '#a1a1aa' },
+        style: { fontSize: '11px', width: '72px', color: '#d4d4d8' },
       }),
       sizeInp = ui.create('input', {
         attrs: { type: 'range', min: '8', max: '72', value: '16' },
         style: { flex: '1', cursor: 'pointer' },
       });
+    registerSelectionControl(sizeInp);
     ui.append(sizeRow, [sizeLbl, sizeInp]);
 
     const fOverRow = ui.create('div', {
@@ -1496,7 +1711,9 @@ javascript: (function () {
     };
     fOverRow.appendChild(fOverSelect);
     fOverRow.appendChild(customFontInp);
-    ui.append(textBody, [decoRow, alignRow, sizeRow, fOverRow]);
+    registerSelectionControl(fOverSelect);
+    registerSelectionControl(customFontInp);
+    ui.append(textBody, [selectionHelpText, decoRow, alignRow, sizeRow, fOverRow]);
 
     const { card: colorCard, body: colorBody } = createSectionCard(
       'palette',
@@ -1561,6 +1778,8 @@ javascript: (function () {
     colorWrap.appendChild(colorLbl);
     bgWrap.appendChild(bgInp);
     bgWrap.appendChild(bgLbl);
+    registerSelectionControl(colorInp);
+    registerSelectionControl(bgInp);
     ui.append(inputRow, [colorWrap, bgWrap]);
     colorBody.appendChild(inputRow);
 
@@ -1627,6 +1846,7 @@ javascript: (function () {
           attrs: { type: 'range', min, max, value: '0' },
           style: { flex: '1', cursor: 'pointer' },
         });
+      registerSelectionControl(inp);
       inp.oninput = () => {
         applyStyleToSelection(prop, `${inp.value}${unit}`);
         lbl.textContent = `${label}: ${inp.value}${unit}`;
@@ -1683,6 +1903,7 @@ javascript: (function () {
 
         /* Viewport Grab Handle Overlay to translate element alignments */
         const grabHandle = ui.create('div', {
+          attrs: { title: 'Move selected' },
           style: {
             position: 'absolute',
             top: '-22px',
@@ -1841,6 +2062,7 @@ javascript: (function () {
       radCtrl.lbl.textContent = `Radius: ${radCtrl.inp.value}px`;
       customFontInp.value = el.style.fontFamily || computed.fontFamily.replace(/['"]/g, '');
       updateOverlay();
+      updateSelectionControlStates();
     };
 
     sizeInp.oninput = () => {
@@ -1906,12 +2128,16 @@ javascript: (function () {
         } else {
           targetView.textContent = 'Target: [None Selected]';
           updateOverlay();
+          updateSelectionControlStates();
         }
       };
 
     window._webbenderToggleSelect = function (e) {
       window._webbenderSelectMode = e;
       selInp.checked = e;
+      selectModeBtn.classList.toggle('active', !!e);
+      selectModeBtn.style.background = e ? '#0066ff' : '#27272a';
+      selectModeBtn.style.borderColor = e ? '#2563eb' : '#3f3f46';
       o.selectMode = e;
       r();
       if (e) {
@@ -1932,10 +2158,12 @@ javascript: (function () {
       }
     };
     selInp.onchange = (e) => window._webbenderToggleSelect(e.target.checked);
+    selectModeBtn.onclick = () => window._webbenderToggleSelect(!window._webbenderSelectMode);
 
     window.addEventListener('resize', updateOverlay);
     window.addEventListener('scroll', updateOverlay);
 
+    updateSelectionControlStates();
     ui.append(wrap, [selectionCard, layerCard, textCard, colorCard, advCard]);
     return { formattingSection: wrap };
   }
@@ -2407,8 +2635,8 @@ javascript: (function () {
   function wbCreateAutosaveBanner(ui, container, savedData, onRestore, onDiscard) {
     const banner = ui.create('div', {
       style: {
-        background: '#1e3a8a',
-        color: '#eff6ff',
+        background: '#0f172a',
+        color: '#f8fafc',
         padding: '10px',
         borderRadius: '8px',
         display: 'flex',
@@ -2419,6 +2647,7 @@ javascript: (function () {
         transition: 'transform 0.2s ease, opacity 0.2s ease',
       },
     });
+    banner.style.cssText += ';background: #0f172a; color: #f8fafc;';
     const title = ui.create('span', {
       textContent: 'Autosave Detected',
       style: {
@@ -2565,6 +2794,9 @@ javascript: (function () {
     const internalIconStyle = document.createElement('style');
     shadow.appendChild(internalIconStyle);
     await loadMaterialSymbols(internalIconStyle);
+    const internalUiStyle = document.createElement('style');
+    internalUiStyle.textContent = `.wb-tool-btn.active { background: #0066ff !important; border-color: #2563eb !important; }`;
+    shadow.appendChild(internalUiStyle);
 
     const autosaveBackup = await getAsset('autosave_' + location.href);
     const container = wbCreateContainer(ui, 'wb-panel-root', state);

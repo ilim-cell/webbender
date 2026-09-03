@@ -64,16 +64,16 @@ jobs:
 
       - name: Verify bookmarklet size
         run: |
-          node -e "const fs=require('fs');const path=require('path');const size=fs.statSync(path.join('dist','bookmarklet.min.js')).size; if(size>102400){throw new Error('Bookmarklet exceeds 100KB: '+size+' bytes');} console.log('✓ Bookmarklet size is', size, 'bytes');"
+          node -e "const fs=require('fs');const path=require('path');const size=fs.statSync(path.join('dist','bookmarklet-runtime.js')).size; if(size>112640){throw new Error('Bookmarklet runtime exceeds 110KB: '+size+' bytes');} console.log('✓ Bookmarklet runtime size is', size, 'bytes');"
 
       - name: Commit generated bookmarklet
         if: github.event_name == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/bookmarklet.min.js dist/bookmarklet.url
+          git add dist/bookmarklet-runtime.js dist/bookmarklet.url site/bookmarklet.js
           if ! git diff --cached --quiet; then
-            git commit -m "chore: update generated bookmarklet.min.js and bookmarklet.url"
+            git commit -m "chore: update generated bookmarklet runtime artifacts"
             git push origin HEAD
           else
             echo "No generated bookmarklet changes to commit."
